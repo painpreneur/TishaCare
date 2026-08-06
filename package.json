@@ -1,0 +1,14 @@
+{
+  "name": "mindsteady",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "db:push": "npm run db:push -w @mindsteady/db",
+    "db:seed": "npm run db:seed -w @mindsteady/db",
+    "web": "npm run dev -w @mindsteady/web",
+    "bot": "npm run dev -w @mindsteady/bot"
+  }
+}

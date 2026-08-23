@@ -1,16 +1,11 @@
 import "dotenv/config";
-import { Scenes, Telegraf, session } from "telegraf";
+import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { prisma } from "@mindsteady/db";
+import { prisma, generateInviteCode, logBotEvent } from "@mindsteady/db";
+import { logStartEvent } from "./eventLog";
 import { BotContext } from "./context";
 import { getPatientByTelegramId } from "./patient";
-import { mainMenuKeyboard, pollMenuKeyboard, visualizationMenuKeyboard } from "./menu";
-import { checkinScene } from "./scenes/checkin";
-import { beckScene } from "./scenes/beck";
-import { mdqScene } from "./scenes/mdq";
-import { medicationsScene } from "./scenes/medications";
-import { thoughtScene } from "./scenes/thought";
-import { psychotherapyScene } from "./scenes/psychotherapy";
+import { openMiniAppKeyboard } from "./menu";
 import { scheduleReminders } from "./reminders";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -20,122 +15,63 @@ if (!token) {
 
 const bot = new Telegraf<BotContext>(token);
 
-const stage = new Scenes.Stage<BotContext>([
-  checkinScene,
-  beckScene,
-  mdqScene,
-  medicationsScene,
-  thoughtScene,
-  psychotherapyScene,
-]);
+// Safety net: the upstream Postgres endpoint occasionally drops a pooled
+// connection in the background (outside any query), which can surface as an
+// unhandled error/rejection rather than a catchable query error. A crashed
+// bot process stops responding entirely, which is worse than logging and
+// carrying on — Telegraf's own per-update error handling covers query
+// errors that happen inside a handler.
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception (bot kept running):", err);
+});
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection (bot kept running):", err);
+});
 
-bot.use(session());
-bot.use(stage.middleware());
-
-const MOOD_EMOJI: Record<number, string> = { [-2]: "😞", [-1]: "🙁", 0: "😐", 1: "🙂", 2: "😄" };
+function miniAppReply(ctx: BotContext, text: string) {
+  const keyboard = openMiniAppKeyboard();
+  if (!keyboard) {
+    return ctx.reply(`${text}\n\nМини-приложение временно недоступно.`);
+  }
+  return ctx.reply(text, keyboard);
+}
 
 bot.start(async (ctx) => {
-  const code = ctx.startPayload?.trim().toUpperCase();
+  const telegramId = String(ctx.from.id);
+  const existing = await getPatientByTelegramId(ctx.from.id);
+  const name = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ") || "Пациент";
 
-  if (!code) {
-    await ctx.reply(
-      "Привет! Я помогу отслеживать ваше состояние между визитами к врачу.\n\n" +
-        "Чтобы начать, отправьте код приглашения, который вам дал врач, в формате:\n/start ВАШКОД"
-    );
-    return;
-  }
+  const eventData = { telegramId, username: ctx.from.username, name };
+  await Promise.all([logBotEvent(eventData), logStartEvent(eventData)]);
 
-  const patient = await prisma.patient.findUnique({ where: { inviteCode: code } });
-  if (!patient) {
-    await ctx.reply("Код не найден. Проверьте код у своего врача и попробуйте снова.");
-    return;
-  }
-
-  await prisma.patient.update({
-    where: { id: patient.id },
-    data: { telegramId: String(ctx.from.id) },
+  // Upsert instead of create: Telegram can redeliver several queued /start
+  // updates in a burst (e.g. after the bot was offline), and concurrent
+  // handlers would otherwise race past the "does this patient exist" check
+  // and collide on the unique telegramId constraint.
+  const patient = await prisma.patient.upsert({
+    where: { telegramId },
+    update: {},
+    create: { name, telegramId, inviteCode: generateInviteCode() },
   });
 
-  await ctx.reply(`Готово, ${patient.name}! Вы привязаны к платформе.`, mainMenuKeyboard);
-});
-
-bot.help((ctx) =>
-  ctx.reply(
-    "Команды:\n/start КОД — привязать аккаунт\n/checkin — ежедневная отметка состояния\n\n" +
-      "Остальное доступно через меню внизу экрана.",
-    mainMenuKeyboard
-  )
-);
-
-bot.command("checkin", (ctx) => ctx.scene.enter("checkin"));
-
-bot.hears("📝 Чек-ин", (ctx) => ctx.scene.enter("checkin"));
-bot.hears("Медикаменты", (ctx) => ctx.scene.enter("medications"));
-bot.hears("Рефлексия", (ctx) => ctx.scene.enter("thought"));
-bot.hears("🧠 Поддержка", (ctx) => ctx.scene.enter("psychotherapy"));
-
-bot.hears("Опрос", (ctx) => ctx.reply("Какой опрос пройти?", pollMenuKeyboard));
-bot.hears("Депрессия (Бек)", (ctx) => ctx.scene.enter("beck"));
-bot.hears("Мания (MDQ)", (ctx) => ctx.scene.enter("mdq"));
-
-bot.hears("Визуализация", (ctx) => ctx.reply("Что посмотреть?", visualizationMenuKeyboard));
-
-bot.hears("Дневник мыслей", async (ctx) => {
-  const patient = await getPatientByTelegramId(ctx.from.id);
-  if (!patient) return;
-
-  const thoughts = await prisma.thought.findMany({
-    where: { patientId: patient.id },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
-
-  if (thoughts.length === 0) {
-    await ctx.reply("У вас пока нет сохранённых мыслей.", mainMenuKeyboard);
-    return;
+  if (existing) {
+    return miniAppReply(ctx, `С возвращением, ${existing.name}! Нажмите кнопку ниже, чтобы открыть приложение.`);
   }
 
-  const list = thoughts
-    .map((t) => `${t.createdAt.toLocaleDateString("ru-RU")}: ${t.content}`)
-    .join("\n\n");
-  await ctx.reply(`Ваши мысли:\n\n${list}`, mainMenuKeyboard);
-});
-
-bot.hears("График настроения", async (ctx) => {
-  const patient = await getPatientByTelegramId(ctx.from.id);
-  if (!patient) return;
-
-  const checkIns = await prisma.checkIn.findMany({
-    where: { patientId: patient.id },
-    orderBy: { date: "desc" },
-    take: 14,
-  });
-
-  if (checkIns.length === 0) {
-    await ctx.reply("Пока нет данных чек-инов.", mainMenuKeyboard);
-    return;
-  }
-
-  const lines = checkIns
-    .reverse()
-    .map((c) => {
-      const date = c.date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
-      const mood = MOOD_EMOJI[c.mood] ?? c.mood;
-      const sleep = c.sleepHours != null ? `${c.sleepHours.toFixed(1)} ч сна` : "—";
-      const meds = c.medsTaken ? "✅ лекарства" : "⛔️ лекарства";
-      return `${date}: ${mood}  ${sleep}  ${meds}`;
-    })
-    .join("\n");
-
-  await ctx.reply(
-    `Последние отметки:\n\n${lines}\n\nПодробный график доступен врачу в веб-панели.`,
-    mainMenuKeyboard
+  return miniAppReply(
+    ctx,
+    `Привет, ${patient.name}! Я помогу отслеживать ваше состояние между визитами к врачу.\n\n` +
+      "Нажмите кнопку ниже, чтобы открыть приложение."
   );
 });
 
-bot.hears("Назад", (ctx) => ctx.reply("Главное меню:", mainMenuKeyboard));
+bot.help((ctx) => miniAppReply(ctx, "Всё управление — через приложение. Нажмите кнопку ниже."));
 
-bot.on(message("text"), (ctx) => ctx.reply("Выберите действие в меню ниже:", mainMenuKeyboard));
+bot.on(message("text"), (ctx) => miniAppReply(ctx, "Нажмите кнопку ниже, чтобы открыть приложение."));
+
+bot.catch((err, ctx) => {
+  console.error(`Telegraf error for update ${ctx.updateType}:`, err);
+});
 
 scheduleReminders(bot);
 

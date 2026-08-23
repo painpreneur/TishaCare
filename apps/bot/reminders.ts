@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { Telegraf } from "telegraf";
 import { prisma } from "@mindsteady/db";
 import { BotContext } from "./context";
+import { openMiniAppKeyboard } from "./menu";
 
 export function scheduleReminders(bot: Telegraf<BotContext>) {
   // Каждый день в 20:00 — напоминание пройти чек-ин тем, кто ещё не отметился сегодня.
@@ -19,11 +20,10 @@ export function scheduleReminders(bot: Telegraf<BotContext>) {
       });
       if (checkedInToday || !patient.telegramId) continue;
 
+      const keyboard = openMiniAppKeyboard("/miniapp/checkin");
+      const text = "Привет! Не забудьте отметить своё состояние сегодня 🙂";
       await bot.telegram
-        .sendMessage(
-          patient.telegramId,
-          "Привет! Не забудьте отметить своё состояние сегодня — отправьте /checkin 🙂"
-        )
+        .sendMessage(patient.telegramId, text, keyboard)
         .catch(() => {});
     }
   });

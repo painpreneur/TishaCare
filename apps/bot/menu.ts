@@ -1,22 +1,7 @@
 import { Markup } from "telegraf";
 
-export const mainMenuKeyboard = Markup.keyboard([
-  ["📝 Чек-ин"],
-  ["Медикаменты", "Опрос"],
-  ["Визуализация"],
-  ["Рефлексия", "🧠 Поддержка"],
-]).resize();
-
-export const pollMenuKeyboard = Markup.keyboard([
-  ["Депрессия (Бек)", "Мания (MDQ)"],
-  ["Назад"],
-]).resize();
-
-export const visualizationMenuKeyboard = Markup.keyboard([
-  ["Дневник мыслей", "График настроения"],
-  ["Назад"],
-]).resize();
-
-export const backKeyboard = Markup.keyboard([["Назад"]]).resize();
-
-export const endChatKeyboard = Markup.keyboard([["Завершить"]]).resize();
+export function openMiniAppKeyboard(path = "/miniapp") {
+  const webAppUrl = process.env.WEBAPP_URL;
+  if (!webAppUrl) return undefined;
+  return Markup.inlineKeyboard([Markup.button.webApp("Открыть миниапп", `${webAppUrl}${path}`)]);
+}

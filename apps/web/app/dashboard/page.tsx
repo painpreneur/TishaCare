@@ -24,16 +24,18 @@ export default async function DashboardPage() {
 
   return (
     <div className="page">
-      <h2>Пациенты ({patients.length})</h2>
+      <div className="page-header">
+        <h2>Пациенты ({patients.length})</h2>
+        <Link href="/dashboard/patients/connect" className="btn-primary btn-inline">
+          + Подключить пациента
+        </Link>
+      </div>
       <div className="patient-grid">
         {patients.map((patient) => {
           const lastCheckIn = patient.checkIns[0];
           return (
             <Link key={patient.id} href={`/dashboard/patients/${patient.id}`} className="patient-card">
               <div className="name">{patient.name}</div>
-              <div className="meta">
-                {patient.telegramId ? "Бот подключён" : "Ожидает подключения бота"}
-              </div>
               {lastCheckIn ? (
                 <span className={`badge ${lastCheckIn.mood >= 0 ? "ok" : "warn"}`}>
                   Последний чек-ин: {MOOD_LABEL[lastCheckIn.mood]}

@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { prisma } from "@mindsteady/db";
+import { SESSION_COOKIE } from "./sessionCookie";
 
-export const SESSION_COOKIE = "doctorId";
+export { SESSION_COOKIE };
 
 export async function getCurrentDoctor() {
   const doctorId = cookies().get(SESSION_COOKIE)?.value;

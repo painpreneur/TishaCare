@@ -1,3 +1,2 @@
-import { Scenes } from "telegraf";
-
-export type BotContext = Scenes.WizardContext;
+import { Context } from "telegraf";
+export type BotContext = Context;

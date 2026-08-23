@@ -1,10 +1,24 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Append-only: rows are only ever created, never updated or deleted, so this
+// stays a durable record of bot usage even if Patient rows get reassigned/reseeded.
+model BotEvent {
+  id         String   @id @default(cuid())
+  telegramId String
+  username   String?
+  name       String?
+  type       String   @default("start")
+  createdAt  DateTime @default(now())
+
+  @@index([telegramId])
 }
 
 model Clinic {
@@ -31,8 +45,8 @@ model Doctor {
 
 model Patient {
   id         String    @id @default(cuid())
-  clinicId   String
-  doctorId   String
+  clinicId   String?
+  doctorId   String?
   name       String
   birthDate  DateTime?
   telegramId String?   @unique
@@ -40,8 +54,8 @@ model Patient {
   anamnesis  String?
   createdAt  DateTime  @default(now())
 
-  clinic      Clinic                 @relation(fields: [clinicId], references: [id])
-  doctor      Doctor                 @relation(fields: [doctorId], references: [id])
+  clinic      Clinic?                @relation(fields: [clinicId], references: [id])
+  doctor      Doctor?                @relation(fields: [doctorId], references: [id])
   checkIns    CheckIn[]
   responses   QuestionnaireResponse[]
   medications Medication[]

@@ -1,10 +1,29 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./index";
 import { BECK_CODE, MDQ_CODE, interpretMdq, mdqScore } from "./clinical";
+import { generateInviteCode } from "./invite";
+import {
+  COGNITIVE_TEST_CODE,
+  COGNITIVE_TEST_TITLE,
+  MEMORY_WORD_LIST,
+  interpretCognitiveTest,
+  cognitiveTestScore,
+  type CognitiveTestSubmission,
+} from "./cognitive";
 
-function randomCode() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
-}
+export const DEV_FIXTURE_TELEGRAM_ID = "1000000001";
+
+const demoCognitiveSubmission: CognitiveTestSubmission = {
+  memoryImmediate: { selected: MEMORY_WORD_LIST.slice(0, 7), correctCount: 7 },
+  attentionSerialSevens: { entered: [55, 48, 41, 34, 27], correctCount: 5 },
+  attentionSchulte: { totalTimeMs: 42000, errors: 0 },
+  thinkingAnalogies: { correctCount: 4, total: 5 },
+  spatial: { correctCount: 2, total: 2 },
+  verbalFluency: { letter: "К", words: ["кот", "книга", "конь", "клён", "капля", "крыло"], count: 6 },
+  regulation: { totalTargets: 5, hits: 4, falseAlarms: 1, misses: 1, avgReactionMs: 480 },
+  psychState: { order: ["blue", "green", "red", "yellow", "violet", "grey", "brown", "black"] },
+  memoryDelayed: { selected: MEMORY_WORD_LIST.slice(0, 5), correctCount: 5 },
+};
 
 async function main() {
   const clinic = await prisma.clinic.create({
@@ -36,15 +55,28 @@ async function main() {
     },
   });
 
+  const cognitive = await prisma.questionnaire.create({
+    data: {
+      code: COGNITIVE_TEST_CODE,
+      title: COGNITIVE_TEST_TITLE,
+      description: "Патопсихологический скрининг: память, внимание, мышление, речь и др.",
+    },
+  });
+
+  const patientNames = ["Иван Петров", "Мария Кузнецова"];
   const patients = await Promise.all(
-    ["Иван Петров", "Мария Кузнецова"].map((name) =>
+    patientNames.map((name, i) =>
       prisma.patient.create({
         data: {
           clinicId: clinic.id,
           doctorId: doctor.id,
           name,
-          inviteCode: randomCode(),
+          inviteCode: generateInviteCode(),
           anamnesis: "Диагноз БАР II типа, наблюдение с 2023 года.",
+          // Первому демо-пациенту присваиваем фиксированный telegramId, чтобы
+          // Mini App можно было тестировать в браузере через dev-bypass
+          // (см. apps/web/lib/telegramAuth.ts), без реальной сессии Telegram.
+          telegramId: i === 0 ? DEV_FIXTURE_TELEGRAM_ID : undefined,
         },
       })
     )
@@ -67,24 +99,66 @@ async function main() {
     });
     await Promise.all(checkIns);
 
-    await prisma.questionnaireResponse.create({
-      data: {
-        patientId: patient.id,
-        questionnaireId: beck.id,
-        score: 12,
-        answers: JSON.stringify(Array(21).fill(1)),
-      },
-    });
+    // Несколько прошлых прохождений каждого опросника (по убыванию давности),
+    // чтобы на панели "Динамика по шкалам" сразу было видно изменение баллов.
+    const beckScoresOverTime = [22, 18, 15, 12];
+    for (const [i, score] of beckScoresOverTime.entries()) {
+      const completedAt = new Date();
+      completedAt.setDate(completedAt.getDate() - (beckScoresOverTime.length - 1 - i) * 14);
+      await prisma.questionnaireResponse.create({
+        data: {
+          patientId: patient.id,
+          questionnaireId: beck.id,
+          score,
+          answers: JSON.stringify(Array(21).fill(1)),
+          completedAt,
+        },
+      });
+    }
 
-    const mdqResult = interpretMdq(Array(13).fill(false).fill(true, 0, 8), true, 2);
-    await prisma.questionnaireResponse.create({
-      data: {
-        patientId: patient.id,
-        questionnaireId: mdq.id,
-        score: mdqScore(mdqResult),
-        answers: JSON.stringify(mdqResult),
+    const mdqYesCountsOverTime = [9, 8, 8, 8];
+    for (const [i, yesCount] of mdqYesCountsOverTime.entries()) {
+      const mdqResult = interpretMdq(Array(13).fill(false).fill(true, 0, yesCount), true, 2);
+      const completedAt = new Date();
+      completedAt.setDate(completedAt.getDate() - (mdqYesCountsOverTime.length - 1 - i) * 14);
+      await prisma.questionnaireResponse.create({
+        data: {
+          patientId: patient.id,
+          questionnaireId: mdq.id,
+          score: mdqScore(mdqResult),
+          answers: JSON.stringify(mdqResult),
+          completedAt,
+        },
+      });
+    }
+
+    const cognitiveSubmissionsOverTime: CognitiveTestSubmission[] = [
+      {
+        ...demoCognitiveSubmission,
+        memoryImmediate: { selected: MEMORY_WORD_LIST.slice(0, 4), correctCount: 4 },
+        attentionSerialSevens: { entered: [55, 48, 41, 34, 27], correctCount: 3 },
       },
-    });
+      {
+        ...demoCognitiveSubmission,
+        memoryImmediate: { selected: MEMORY_WORD_LIST.slice(0, 5), correctCount: 5 },
+        attentionSerialSevens: { entered: [55, 48, 41, 34, 27], correctCount: 4 },
+      },
+      demoCognitiveSubmission,
+    ];
+    for (const [i, submission] of cognitiveSubmissionsOverTime.entries()) {
+      const interpretation = interpretCognitiveTest(submission);
+      const completedAt = new Date();
+      completedAt.setDate(completedAt.getDate() - (cognitiveSubmissionsOverTime.length - 1 - i) * 21);
+      await prisma.questionnaireResponse.create({
+        data: {
+          patientId: patient.id,
+          questionnaireId: cognitive.id,
+          score: cognitiveTestScore(interpretation),
+          answers: JSON.stringify({ submission, interpretation }),
+          completedAt,
+        },
+      });
+    }
 
     await prisma.medication.create({
       data: {
@@ -103,10 +177,20 @@ async function main() {
     });
   }
 
+  const unclaimedPatient = await prisma.patient.create({
+    data: {
+      name: "Пётр Сидоров",
+      inviteCode: generateInviteCode(),
+    },
+  });
+
   console.log("Seed complete.");
   console.log(`Doctor login: doctor@demo.local / demo1234`);
   console.log(
-    `Patient invite codes: ${patients.map((p) => `${p.name} -> ${p.inviteCode}`).join(", ")}`
+    `Connected patients: ${patients.map((p) => p.name).join(", ")}`
+  );
+  console.log(
+    `Unclaimed patient (test "Подключить пациента"): ${unclaimedPatient.name} -> ${unclaimedPatient.inviteCode}`
   );
 }
 

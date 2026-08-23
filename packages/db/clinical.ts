@@ -7,6 +7,7 @@ const beckOptions4 = (lines: string[]): { label: string; value: number }[] =>
   lines.map((label, value) => ({ label, value }));
 
 export const BECK_CODE = "BECK21";
+export const BECK_MAX_SCORE = 63;
 
 export const BECK_QUESTIONS: ScaleQuestion[] = [
   {
@@ -235,6 +236,7 @@ export function interpretBeck(score: number): { diagnosis: string; recommendatio
 }
 
 export const MDQ_CODE = "MDQ";
+export const MDQ_MAX_SCORE = 13;
 
 export const MDQ_SYMPTOM_QUESTIONS: string[] = [
   "Был ли у вас период, когда вы чувствовали себя настолько хорошо или гиперактивно, что окружающие считали, что это не похоже на вас, или у вас возникли из-за этого проблемы?",

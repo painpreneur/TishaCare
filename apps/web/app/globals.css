@@ -50,15 +50,22 @@ a {
   color: #465063;
 }
 
-.field input {
+.field input,
+.field textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #d7dce3;
   border-radius: 8px;
   font-size: 14px;
+  font-family: inherit;
 }
 
-.field input:focus {
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus {
   outline: none;
   border-color: #4f6bfe;
 }
@@ -89,6 +96,19 @@ a {
   margin-top: 16px;
   font-size: 12px;
   color: #9aa4b2;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #4f6bfe;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
 }
 
 .topbar {
@@ -128,6 +148,24 @@ a {
 .page h2 {
   font-size: 18px;
   margin-bottom: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  margin-bottom: 0;
+}
+
+.btn-inline {
+  width: auto;
+  display: inline-block;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .patient-grid {
@@ -201,6 +239,32 @@ a {
   color: #33404f;
 }
 
+.chart-block {
+  margin-bottom: 24px;
+}
+
+.chart-block:last-child {
+  margin-bottom: 0;
+}
+
+.chart-subtitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #465063;
+}
+
+.correlation-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #33404f;
+}
+
 table.responses {
   width: 100%;
   border-collapse: collapse;
@@ -240,4 +304,269 @@ table.responses td {
   font-size: 12px;
   color: #9aa4b2;
   margin-bottom: 2px;
+}
+
+/* Mini App (patient-facing, launched inside Telegram) */
+
+.miniapp {
+  min-height: 100vh;
+  background: #f4f6f8;
+}
+
+.miniapp-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.miniapp-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+}
+
+.miniapp-card h1,
+.miniapp-card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.miniapp-progress {
+  height: 4px;
+  background: #eef1f4;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.miniapp-progress-bar {
+  height: 100%;
+  background: #4f6bfe;
+  transition: width 0.2s ease;
+}
+
+.miniapp-word-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.miniapp-word-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d7dce3;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.miniapp-word-chip.static {
+  cursor: default;
+  font-weight: 600;
+}
+
+.miniapp-word-chip.active {
+  background: #4f6bfe;
+  border-color: #4f6bfe;
+  color: #fff;
+}
+
+.miniapp-schulte-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.miniapp-schulte-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid #d7dce3;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.miniapp-schulte-cell.done {
+  background: #e5f6ea;
+  color: #1f9d4b;
+  border-color: #e5f6ea;
+}
+
+.miniapp-pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 24px);
+  grid-template-rows: repeat(3, 24px);
+  gap: 2px;
+  margin: 8px 0;
+}
+
+.miniapp-pattern-cell {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+}
+
+.miniapp-pattern-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.miniapp-pattern-option {
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.miniapp-gng-letter {
+  font-size: 48px;
+  font-weight: 700;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.miniapp-luscher-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.miniapp-luscher-swatch {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.miniapp-luscher-rank {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c2530;
+}
+
+/* Home menu */
+
+.miniapp-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.miniapp-menu-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.miniapp-menu-emoji {
+  font-size: 22px;
+}
+
+.miniapp-menu-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.miniapp-menu-desc {
+  font-size: 12px;
+  color: #6b7684;
+}
+
+/* Medications list */
+
+.miniapp-med-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.miniapp-med-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  border-bottom: 1px solid #eef1f4;
+  padding-bottom: 10px;
+}
+
+/* Support chat */
+
+.miniapp-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.miniapp-chat-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 85%;
+}
+
+.miniapp-chat-bubble.user {
+  align-self: flex-end;
+  background: #4f6bfe;
+  color: #fff;
+}
+
+.miniapp-chat-bubble.assistant {
+  align-self: flex-start;
+  background: #f4f6f8;
+  color: #1c2530;
+}
+
+/* Questionnaire flow (Beck/MDQ) */
+
+.miniapp-question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.miniapp-option-btn {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d7dce3;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.miniapp-option-btn:hover {
+  border-color: #4f6bfe;
 }

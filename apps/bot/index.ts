@@ -36,6 +36,16 @@ function miniAppReply(ctx: BotContext, text: string) {
   return ctx.reply(text, keyboard);
 }
 
+async function notifyAdminOfNewPatient(ctx: BotContext, name: string, telegramId: string, username?: string) {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (!adminId) return;
+  try {
+    await ctx.telegram.sendMessage(adminId, `Новый пациент в боте: ${name} (@${username ?? "без username"}, id ${telegramId})`);
+  } catch (err) {
+    console.error("Failed to notify admin about new patient:", err);
+  }
+}
+
 bot.start(async (ctx) => {
   const telegramId = String(ctx.from.id);
   const existing = await getPatientByTelegramId(ctx.from.id);
@@ -57,6 +67,8 @@ bot.start(async (ctx) => {
   if (existing) {
     return miniAppReply(ctx, `С возвращением, ${existing.name}! Нажмите кнопку ниже, чтобы открыть приложение.`);
   }
+
+  await notifyAdminOfNewPatient(ctx, patient.name, telegramId, ctx.from.username);
 
   return miniAppReply(
     ctx,

@@ -1,0 +1,117 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Append-only: rows are only ever created, never updated or deleted, so this
+// stays a durable record of bot usage even if Patient rows get reassigned/reseeded.
+model BotEvent {
+  id         String   @id @default(cuid())
+  telegramId String
+  username   String?
+  name       String?
+  type       String   @default("start")
+  createdAt  DateTime @default(now())
+
+  @@index([telegramId])
+}
+
+model Clinic {
+  id            String   @id @default(cuid())
+  name          String
+  licenseActive Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  doctors  Doctor[]
+  patients Patient[]
+}
+
+model Doctor {
+  id           String   @id @default(cuid())
+  clinicId     String
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  clinic   Clinic    @relation(fields: [clinicId], references: [id])
+  patients Patient[]
+}
+
+model Patient {
+  id         String    @id @default(cuid())
+  clinicId   String?
+  doctorId   String?
+  name       String
+  birthDate  DateTime?
+  telegramId String?   @unique
+  inviteCode String    @unique
+  anamnesis  String?
+  createdAt  DateTime  @default(now())
+
+  clinic      Clinic?                @relation(fields: [clinicId], references: [id])
+  doctor      Doctor?                @relation(fields: [doctorId], references: [id])
+  checkIns    CheckIn[]
+  responses   QuestionnaireResponse[]
+  medications Medication[]
+  thoughts    Thought[]
+}
+
+model CheckIn {
+  id         String   @id @default(cuid())
+  patientId  String
+  date       DateTime @default(now())
+  mood       Int
+  sleepHours Float?
+  energyLevel Int?
+  medsTaken  Boolean?
+  note       String?
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model Questionnaire {
+  id          String @id @default(cuid())
+  code        String @unique
+  title       String
+  description String?
+
+  responses QuestionnaireResponse[]
+}
+
+model QuestionnaireResponse {
+  id              String   @id @default(cuid())
+  patientId       String
+  questionnaireId String
+  score           Int
+  answers         String
+  completedAt     DateTime @default(now())
+
+  patient       Patient       @relation(fields: [patientId], references: [id])
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+}
+
+model Medication {
+  id        String   @id @default(cuid())
+  patientId String
+  name      String
+  dosage    String
+  frequency Int
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model Thought {
+  id        String   @id @default(cuid())
+  patientId String
+  content   String
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}

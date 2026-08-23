@@ -1,0 +1,28 @@
+{
+  "name": "@mindsteady/web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@mindsteady/db": "*",
+    "bcryptjs": "^2.4.3",
+    "next": "^14.2.0",
+    "openai": "^4.104.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "recharts": "^2.12.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "prisma": "^5.22.0",
+    "typescript": "^5.6.0"
+  }
+}

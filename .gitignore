@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+apps/bot/logs/
+.next/
+dist/
+build/
+.DS_Store
+*.tsbuildinfo
+.vercel
+.env*

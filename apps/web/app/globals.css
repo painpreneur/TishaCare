@@ -1,0 +1,243 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f6f8;
+  color: #1c2530;
+}
+
+a {
+  color: inherit;
+}
+
+.center-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  width: 340px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 8px 24px rgba(20, 30, 50, 0.08);
+}
+
+.login-card h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.login-card p.subtitle {
+  margin: 0 0 24px;
+  color: #6b7684;
+  font-size: 14px;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #465063;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #4f6bfe;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px 12px;
+  background: #4f6bfe;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #3d57e0;
+}
+
+.error-text {
+  color: #d63939;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.hint {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #9aa4b2;
+}
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e9ee;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar .brand {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.topbar .clinic {
+  font-size: 13px;
+  color: #6b7684;
+}
+
+.logout-btn {
+  background: none;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.patient-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+  display: block;
+  text-decoration: none;
+}
+
+.patient-card .name {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.patient-card .meta {
+  font-size: 13px;
+  color: #6b7684;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 8px;
+}
+
+.badge.ok {
+  background: #e5f6ea;
+  color: #1f9d4b;
+}
+
+.badge.warn {
+  background: #fdeee6;
+  color: #d9631f;
+}
+
+.back-link {
+  font-size: 13px;
+  color: #4f6bfe;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+  margin-bottom: 20px;
+}
+
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.panel p.anamnesis {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #33404f;
+}
+
+table.responses {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.responses th,
+table.responses td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.empty {
+  color: #9aa4b2;
+  font-size: 13px;
+}
+
+.thought-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.thought-list li {
+  font-size: 14px;
+  line-height: 1.5;
+  border-bottom: 1px solid #eef1f4;
+  padding-bottom: 10px;
+}
+
+.thought-date {
+  display: block;
+  font-size: 12px;
+  color: #9aa4b2;
+  margin-bottom: 2px;
+}

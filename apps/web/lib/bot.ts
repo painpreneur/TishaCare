@@ -16,6 +16,20 @@ function miniAppReply(ctx: Context, text: string) {
   return ctx.reply(text, keyboard);
 }
 
+// Awaited (not fire-and-forget) on purpose: on Vercel, once the webhook
+// route's handler promise resolves and the HTTP response is sent, the
+// serverless function can be frozen/torn down — an un-awaited sendMessage
+// here would race that teardown and could get silently dropped mid-flight.
+async function notifyAdminOfNewPatient(ctx: Context, name: string, telegramId: string, username?: string) {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (!adminId) return;
+  try {
+    await ctx.telegram.sendMessage(adminId, `Новый пациент в боте: ${name} (@${username ?? "без username"}, id ${telegramId})`);
+  } catch (err) {
+    console.error("Failed to notify admin about new patient:", err);
+  }
+}
+
 function createBot() {
   const instance = new Telegraf(token!);
 
@@ -39,6 +53,8 @@ function createBot() {
     if (existing) {
       return miniAppReply(ctx, `С возвращением, ${existing.name}! Нажмите кнопку ниже, чтобы открыть приложение.`);
     }
+
+    await notifyAdminOfNewPatient(ctx, patient.name, telegramId, ctx.from.username);
 
     return miniAppReply(
       ctx,

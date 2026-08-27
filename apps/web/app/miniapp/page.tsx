@@ -13,6 +13,7 @@ const FEATURES: PatientFeature[] = [
   { href: "/asrs", emoji: "📋", title: "Внимание (ASRS)", desc: "Скрининг СДВГ, 6 вопросов" },
   { href: "/aq10", emoji: "📋", title: "Черты спектра (AQ-10)", desc: "Скрининг РАС, 10 утверждений" },
   { href: "/msi-bpd", emoji: "📋", title: "Границы (MSI-BPD)", desc: "Скрининг ПРЛ, 10 вопросов" },
+  { href: "/balance", emoji: "🎡", title: "Колесо баланса", desc: "Самоанализ по 8 сферам жизни" },
   { href: "/cognitive-test", emoji: "🧩", title: "Когнитивный тест", desc: "~10 минут, память и внимание" },
   { href: "/profile", emoji: "👤", title: "Профиль", desc: "Данные и код подключения к врачу" },
 ];

@@ -16,6 +16,7 @@ import {
   QUESTIONNAIRE_DEFS,
   questionnaireMaxScore,
   interpretByBands,
+  BALANCE_WHEEL_CODE,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
@@ -76,6 +77,14 @@ function describeResponse(code: string, score: number, answersJson: string): str
   // Sum-scale questionnaires (Beck already handled above): interpret by bands.
   if (QUESTIONNAIRE_DEFS[code]) {
     return interpretByBands(QUESTIONNAIRE_DEFS[code], score).label;
+  }
+  if (code === BALANCE_WHEEL_CODE) {
+    try {
+      const { interpretation } = JSON.parse(answersJson) as { interpretation: { note: string } };
+      return interpretation.note;
+    } catch {
+      return "—";
+    }
   }
   return "—";
 }

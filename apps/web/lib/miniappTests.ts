@@ -10,6 +10,9 @@ import {
   QUESTIONNAIRE_DEFS,
   scoreSum,
   interpretByBands,
+  BALANCE_WHEEL_CODE,
+  BALANCE_WHEEL_TITLE,
+  interpretBalanceWheel,
 } from "@tishacare/db";
 
 export interface MiniAppTestDef<TResults = any> {
@@ -70,6 +73,14 @@ export const MINIAPP_TESTS: Record<string, MiniAppTestDef> = {
       const interpretation = interpretMdq(results.symptomAnswers, results.coOccurrence, results.impact);
       return { score: mdqScore(interpretation), interpretation };
     },
+  },
+  [BALANCE_WHEEL_CODE]: {
+    code: BALANCE_WHEEL_CODE,
+    title: BALANCE_WHEEL_TITLE,
+    interpret: (results: number[]) => ({
+      score: results.reduce((a, b) => a + (Number(b) || 0), 0),
+      interpretation: interpretBalanceWheel(results),
+    }),
   },
   ...scaleTests,
 };

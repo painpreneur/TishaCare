@@ -4,4 +4,5 @@
 // Prisma adapter, which breaks client bundles — Node builtins like `tls`.)
 export * from "./clinical";
 export * from "./questionnaires";
+export * from "./lifeBalance";
 export * from "./cognitive";

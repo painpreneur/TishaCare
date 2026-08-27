@@ -7,7 +7,26 @@ import { Pool, Client } from "pg";
 // endpoint in this environment, while the plain `pg` driver connects fine.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-const RETRYABLE = /Connection terminated|Server has closed the connection|ECONNRESET|timeout/i;
+// Errors that mean the connection died mid-flight.
+const RETRYABLE_ERROR = /Connection terminated|Server has closed the connection|ECONNRESET|timeout/i;
+
+// Read-only Prisma operations. Retrying one of these can only ever repeat
+// work, never change state, so it is safe against a lost response. Writes are
+// deliberately excluded: a `create` whose INSERT committed server-side before
+// the response was lost would be silently duplicated on retry, and tables like
+// CheckIn / QuestionnaireResponse / Thought / Medication have no natural unique
+// key to bounce the second insert off. A lost write now surfaces as an error
+// the caller can retry deliberately.
+const RETRYABLE_OPERATIONS = new Set([
+  "findUnique",
+  "findUniqueOrThrow",
+  "findFirst",
+  "findFirstOrThrow",
+  "findMany",
+  "count",
+  "aggregate",
+  "groupBy",
+]);
 
 function createPrismaClient() {
   const url = process.env.DATABASE_URL ?? "";
@@ -40,19 +59,25 @@ function createPrismaClient() {
 
   startIdleTransactionJanitor(url, isLocal);
 
-  // Workaround for a flaky upstream Postgres endpoint that occasionally
-  // drops a response in transit (the write/read succeeds server-side, but
-  // we never hear back): retry up to twice more on a fresh connection.
+  // Workaround for a flaky upstream Postgres endpoint that occasionally drops
+  // a response in transit (the query succeeds server-side, but we never hear
+  // back). Retry up to twice more — but only for read operations, since the
+  // pool hands out a fresh connection on the next checkout and a repeated read
+  // is harmless, whereas a repeated write is not.
   return new PrismaClient({ adapter }).$extends({
     query: {
-      async $allOperations({ args, query }) {
+      async $allOperations({ operation, args, query }) {
+        if (!RETRYABLE_OPERATIONS.has(operation)) {
+          return query(args);
+        }
         let lastError: unknown;
         for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
           try {
             return await query(args);
           } catch (e) {
             lastError = e;
-            if (!(e instanceof Error && RETRYABLE.test(e.message))) throw e;
+            if (!(e instanceof Error && RETRYABLE_ERROR.test(e.message))) throw e;
           }
         }
         throw lastError;

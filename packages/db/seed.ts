@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./index";
 import { BECK_CODE, MDQ_CODE, interpretMdq, mdqScore } from "./clinical";
-import { generateInviteCode } from "./invite";
+import { generateInviteCode, generateConnectCode } from "./invite";
 import {
   COGNITIVE_TEST_CODE,
   COGNITIVE_TEST_TITLE,
@@ -36,6 +36,7 @@ async function main() {
       email: "doctor@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Анна Смирнова",
+      connectCode: "DEMO01",
     },
   });
 
@@ -46,6 +47,7 @@ async function main() {
       email: "solo@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Дмитрий Волков",
+      connectCode: generateConnectCode(),
     },
   });
 
@@ -90,7 +92,6 @@ async function main() {
       prisma.patient.create({
         data: {
           clinicId: clinic.id,
-          doctorId: doctor.id,
           name,
           birthDate,
           email,
@@ -101,6 +102,22 @@ async function main() {
           // Mini App можно было тестировать в браузере через dev-bypass
           // (см. apps/web/lib/telegramAuth.ts), без реальной сессии Telegram.
           telegramId: i === 0 ? DEV_FIXTURE_TELEGRAM_ID : undefined,
+        },
+      })
+    )
+  );
+
+  // Active CareLink for each connected patient (mirrors the legacy doctorId
+  // until the doctor read paths move onto CareLink).
+  await Promise.all(
+    patients.map((patient) =>
+      prisma.careLink.create({
+        data: {
+          patientId: patient.id,
+          doctorId: doctor.id,
+          status: "active",
+          requestedBy: "doctor",
+          activatedAt: new Date(),
         },
       })
     )

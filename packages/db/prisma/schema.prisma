@@ -40,6 +40,9 @@ model Doctor {
   email        String   @unique
   passwordHash String
   name         String
+  // Short code a patient enters to request a connection to this doctor
+  // (the mirror of Patient.inviteCode for the other direction).
+  connectCode  String   @unique
   createdAt    DateTime @default(now())
 
   // Brute-force protection for /api/login. Counter resets on any successful
@@ -48,9 +51,10 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic   Clinic?   @relation(fields: [clinicId], references: [id])
-  patients Patient[]
-  sessions Session[]
+  clinic     Clinic?     @relation(fields: [clinicId], references: [id])
+  sessions   Session[]
+  careLinks  CareLink[]
+  encounters Encounter[]
 }
 
 // Opaque server-side sessions for the doctor web panel. The cookie holds a
@@ -72,7 +76,6 @@ model Session {
 model Patient {
   id         String    @id @default(cuid())
   clinicId   String?
-  doctorId   String?
   name       String
   birthDate  DateTime?
   telegramId String?   @unique
@@ -98,13 +101,74 @@ model Patient {
   consentAt      DateTime?
   consentVersion String?
 
+  // Living summary, edited in place. `anamnesisUpdatedAt` / `...ById` record the
+  // last change; the encounter history below is the append-only record.
+  anamnesisUpdatedAt   DateTime?
+  anamnesisUpdatedById String?
+
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
-  doctor          Doctor?                @relation(fields: [doctorId], references: [id])
+  careLinks       CareLink[]
+  encounters      Encounter[]
   checkIns        CheckIn[]
   responses       QuestionnaireResponse[]
   medications     Medication[]
   thoughts        Thought[]
   patientSessions PatientSession[]
+}
+
+// One visit / contact note. Append-only: rows are created, never edited or
+// deleted, so the record stays trustworthy (corrections are added as a new
+// entry). Loose SOAP — every text field is optional; `type` and `date` are not.
+//
+//   type: visit | consult | phone | note
+model Encounter {
+  id           String   @id @default(cuid())
+  patientId    String
+  doctorId     String
+  date         DateTime
+  type         String   @default("visit")
+  complaints   String?
+  observations String?
+  assessment   String?
+  plan         String?
+  note         String?
+  createdAt    DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+
+  @@index([patientId])
+}
+
+// A patient <-> doctor connection with an explicit lifecycle. Either side can
+// request it, the other confirms. The patient can Pause (instant, reversible —
+// stops new data reaching the doctor) or End (a cooling-off window: status
+// "ending" until `endsAt`, still reversible by the patient, then "ended").
+// `managedByClinic` links (e.g. a dispensary) can't be ended by the patient
+// unilaterally.
+//
+//   status: pending | active | paused | ending | ended | declined
+//   requestedBy: patient | doctor
+model CareLink {
+  id              String    @id @default(cuid())
+  patientId       String
+  doctorId        String
+  status          String    @default("pending")
+  requestedBy     String
+  managedByClinic Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  activatedAt     DateTime?
+  endsAt          DateTime?
+  endedAt         DateTime?
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, doctorId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
 }
 
 // Opaque server-side sessions for the patient web portal (/app), mirroring

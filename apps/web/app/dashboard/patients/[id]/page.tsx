@@ -15,8 +15,11 @@ import {
   CognitiveTestInterpretation,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
+import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
+import AddEncounter from "@/components/AddEncounter";
+import { ENCOUNTER_FIELDS, ENCOUNTER_FIELD_LABEL, ENCOUNTER_TYPE_LABEL } from "@/lib/encounter";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
@@ -70,12 +73,16 @@ export default async function PatientPage({ params }: { params: { id: string } }
   if (!doctor) return null;
 
   const patient = await prisma.patient.findFirst({
-    where: { id: params.id, doctorId: doctor.id },
+    where: {
+      id: params.id,
+      careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
+    },
     include: {
       checkIns: { orderBy: { date: "asc" } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },
       medications: { orderBy: { createdAt: "asc" } },
       thoughts: { orderBy: { createdAt: "desc" }, take: 20 },
+      encounters: { include: { doctor: { select: { name: true } } }, orderBy: { date: "desc" } },
     },
   });
 
@@ -182,9 +189,42 @@ export default async function PatientPage({ params }: { params: { id: string } }
           anamnesis={patient.anamnesis}
           birthDate={patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : null}
         />
+        {patient.anamnesisUpdatedAt && (
+          <p className="empty" style={{ marginTop: 8 }}>
+            Обновлено {new Date(patient.anamnesisUpdatedAt).toLocaleDateString("ru-RU")}
+          </p>
+        )}
         <p className="empty" style={{ marginTop: 12 }}>
           Код подключения пациента: <strong>{patient.inviteCode}</strong>
         </p>
+      </div>
+
+      <div className="panel">
+        <h3>Приёмы и встречи</h3>
+        <AddEncounter patientId={patient.id} />
+        {patient.encounters.length === 0 ? (
+          <p className="empty" style={{ marginTop: 12 }}>Записей пока нет</p>
+        ) : (
+          <ul className="encounter-list">
+            {patient.encounters.map((e) => (
+              <li key={e.id}>
+                <div className="encounter-head">
+                  <strong>{ENCOUNTER_TYPE_LABEL[e.type as keyof typeof ENCOUNTER_TYPE_LABEL] ?? e.type}</strong>
+                  <span className="thought-date">
+                    {new Date(e.date).toLocaleDateString("ru-RU")} · {e.doctor.name}
+                  </span>
+                </div>
+                {ENCOUNTER_FIELDS.map((f) =>
+                  e[f] ? (
+                    <p key={f} className="encounter-field">
+                      <span className="encounter-field-label">{ENCOUNTER_FIELD_LABEL[f]}:</span> {e[f]}
+                    </p>
+                  ) : null
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="panel">

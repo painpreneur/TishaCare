@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
+import { CareLinkError, connectByInviteCode } from "@/lib/careLink";
 
 export async function POST(req: NextRequest) {
   const doctor = await getCurrentDoctor();
@@ -9,23 +9,14 @@ export async function POST(req: NextRequest) {
   }
 
   const { code } = await req.json();
-  const inviteCode = String(code || "").trim().toUpperCase();
-  if (!inviteCode) {
-    return NextResponse.json({ error: "Введите код" }, { status: 400 });
-  }
 
-  const patient = await prisma.patient.findUnique({ where: { inviteCode } });
-  if (!patient) {
-    return NextResponse.json({ error: "Пациент с таким кодом не найден" }, { status: 404 });
+  try {
+    const { patientId } = await connectByInviteCode(doctor.id, String(code || ""));
+    return NextResponse.json({ ok: true, patientId });
+  } catch (e) {
+    if (e instanceof CareLinkError) {
+      return NextResponse.json({ error: e.message }, { status: e.httpStatus });
+    }
+    throw e;
   }
-  if (patient.doctorId) {
-    return NextResponse.json({ error: "Этот пациент уже подключён к врачу" }, { status: 409 });
-  }
-
-  await prisma.patient.update({
-    where: { id: patient.id },
-    data: { clinicId: doctor.clinicId, doctorId: doctor.id },
-  });
-
-  return NextResponse.json({ ok: true, patientId: patient.id });
 }

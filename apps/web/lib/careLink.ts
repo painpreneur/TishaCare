@@ -125,6 +125,32 @@ export async function cancelEnd(patientId: string, linkId: string) {
 
 // ── Doctor-initiated actions ─────────────────────────────────────────────────
 
+/** Doctor connects to a patient by the patient's invite code (code = consent,
+ *  so the link is active immediately). Reactivates an ended/declined link. */
+export async function connectByInviteCode(doctorId: string, inviteCode: string) {
+  const code = inviteCode.trim().toUpperCase();
+  if (!code) throw new CareLinkError("Введите код");
+  const patient = await prisma.patient.findUnique({ where: { inviteCode: code } });
+  if (!patient) throw new CareLinkError("Пациент с таким кодом не найден", 404);
+
+  const existing = await prisma.careLink.findUnique({
+    where: { patientId_doctorId: { patientId: patient.id, doctorId } },
+  });
+  if (existing && !["ended", "declined"].includes(existing.status)) {
+    throw new CareLinkError("Вы уже связаны с этим пациентом", 409);
+  }
+
+  const data = { status: "active", requestedBy: "doctor", activatedAt: new Date(), endsAt: null, endedAt: null };
+  const link = existing
+    ? await prisma.careLink.update({ where: { id: existing.id }, data })
+    : await prisma.careLink.create({ data: { ...data, patientId: patient.id, doctorId } });
+
+  // Legacy mirror — dropped once the doctor read paths move onto CareLink.
+  await prisma.patient.update({ where: { id: patient.id }, data: { doctorId } });
+
+  return { link, patientId: patient.id };
+}
+
 async function doctorLink(doctorId: string, linkId: string) {
   const link = await prisma.careLink.findUnique({ where: { id: linkId } });
   if (!link || link.doctorId !== doctorId) throw new CareLinkError("Связь не найдена", 404);
@@ -134,10 +160,13 @@ async function doctorLink(doctorId: string, linkId: string) {
 export async function acceptLink(doctorId: string, linkId: string) {
   const link = await doctorLink(doctorId, linkId);
   if (link.status !== "pending") throw new CareLinkError("Этот запрос уже обработан");
-  return prisma.careLink.update({
+  const updated = await prisma.careLink.update({
     where: { id: link.id },
     data: { status: "active", activatedAt: new Date() },
   });
+  // Legacy mirror — dropped once the doctor read paths move onto CareLink.
+  await prisma.patient.update({ where: { id: link.patientId }, data: { doctorId } });
+  return updated;
 }
 
 export async function declineLink(doctorId: string, linkId: string) {

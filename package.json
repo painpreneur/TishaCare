@@ -7,6 +7,9 @@
   ],
   "scripts": {
     "db:push": "npm run db:push -w @tishacare/db",
+    "db:migrate": "npm run db:migrate -w @tishacare/db",
+    "db:migrate:deploy": "npm run db:migrate:deploy -w @tishacare/db",
+    "db:migrate:status": "npm run db:migrate:status -w @tishacare/db",
     "db:seed": "npm run db:seed -w @tishacare/db",
     "web": "npm run dev -w @tishacare/web",
     "bot": "npm run dev -w @tishacare/bot"

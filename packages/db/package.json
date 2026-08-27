@@ -10,6 +10,9 @@
   },
   "scripts": {
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
     "db:seed": "tsx seed.ts",
     "db:studio": "prisma studio"
   },

@@ -11,6 +11,7 @@ interface Profile {
   birthDate: string | null;
   inviteCode: string;
   doctorConnected: boolean;
+  email: string | null;
 }
 
 const MIN_BIRTH_DATE = "1920-01-01";
@@ -37,6 +38,11 @@ function ProfileFormInner() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linkPassword, setLinkPassword] = useState("");
+  const [linking, setLinking] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
@@ -48,6 +54,28 @@ function ProfileFormInner() {
         setBirthDate(data.birthDate ?? "");
       });
   }, []);
+
+  async function linkWebLogin() {
+    if (!linkEmail.trim() || linkPassword.length < 8) {
+      setLinkError("Укажите email и пароль не короче 8 символов");
+      return;
+    }
+    setLinking(true);
+    setLinkError(null);
+    const res = await fetch("/api/app/link-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...miniAppAuthHeaders() },
+      body: JSON.stringify({ email: linkEmail, password: linkPassword }),
+    });
+    setLinking(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setLinkError(data.error || "Не удалось настроить вход");
+      return;
+    }
+    setLinkPassword("");
+    setProfile((p) => (p ? { ...p, email: linkEmail.trim().toLowerCase() } : p));
+  }
 
   async function save() {
     if (!name.trim() || !birthDate) {
@@ -128,6 +156,48 @@ function ProfileFormInner() {
           </p>
         )}
       </div>
+
+      {!onboarding && (
+        <div className="miniapp-card" style={{ marginTop: 16 }}>
+          <h2>Вход на сайте</h2>
+          {profile.email ? (
+            <p className="hint">
+              Вы можете входить в личный кабинет на сайте по адресу <strong>{profile.email}</strong>.
+            </p>
+          ) : (
+            <>
+              <p className="hint">
+                Задайте email и пароль, чтобы открывать личный кабинет на сайте, не через Telegram.
+              </p>
+              <div className="field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={linkEmail}
+                  onChange={(e) => setLinkEmail(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label>Пароль</label>
+                <input
+                  type="password"
+                  value={linkPassword}
+                  onChange={(e) => setLinkPassword(e.target.value)}
+                  minLength={8}
+                />
+              </div>
+              {linkError && <p className="error-text">{linkError}</p>}
+              <button
+                className="btn-primary btn-inline"
+                onClick={linkWebLogin}
+                disabled={linking}
+              >
+                {linking ? "Сохраняем..." : "Настроить вход"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

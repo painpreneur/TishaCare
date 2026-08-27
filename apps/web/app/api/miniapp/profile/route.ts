@@ -13,6 +13,9 @@ function profileDto(patient: Patient) {
     birthDate: patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : null,
     inviteCode: patient.inviteCode,
     doctorConnected: Boolean(patient.doctorId),
+    // Whether a web-portal login is already set up; the address itself, so the
+    // profile screen can show it.
+    email: patient.email,
   };
 }
 

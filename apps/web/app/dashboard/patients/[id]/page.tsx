@@ -30,6 +30,7 @@ import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
 import { toWellbeingSeries } from "@/lib/wellbeing";
+import { buildPatientInsights } from "@/lib/insights";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
@@ -127,6 +128,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
   }
 
   const wellbeingSeries = toWellbeingSeries(patient.checkIns);
+  const insights = buildPatientInsights(patient.checkIns, patient.responses);
 
   const medsVsMood = pearsonCorrelation(
     patient.checkIns.filter((c) => c.medsTaken !== null).map((c) => [c.medsTaken ? 1 : 0, c.mood])
@@ -208,6 +210,21 @@ export default async function PatientPage({ params }: { params: { id: string } }
           </div>
         )}
       </div>
+
+      {insights.length > 0 && (
+        <div className="panel">
+          <h3>Выводы по данным</h3>
+          <ul className="correlation-list">
+            {insights.map((line, i) => (
+              <li key={i}>{line}</li>
+            ))}
+          </ul>
+          <p className="hint">
+            Это описательные наблюдения по самоотчётам пациента за последние 1–2 недели — не диагноз и
+            не замена клинической оценке.
+          </p>
+        </div>
+      )}
 
       <div className="panel">
         <h3>Анамнез</h3>

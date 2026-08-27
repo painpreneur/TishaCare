@@ -1,0 +1,14 @@
+{
+  "name": "@tishacare/bot-core",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@tishacare/db": "*",
+    "telegraf": "^4.16.3"
+  }
+}

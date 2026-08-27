@@ -1,12 +1,23 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { prisma, generateInviteCode, logBotEvent } from "@tishacare/db";
+import { prisma, generateInviteCode, logBotEvent, APP_ENV } from "@tishacare/db";
 import { logStartEvent } from "./eventLog";
 import { BotContext } from "./context";
 import { getPatientByTelegramId } from "./patient";
 import { openMiniAppKeyboard } from "./menu";
 import { scheduleReminders } from "./reminders";
+
+// apps/bot is the local dev loop only (long-polling). Production traffic is
+// served by the webhook in apps/web — see docs/ENVIRONMENTS.md. Starting a
+// poller with the prod contour's token would call deleteWebhook and silently
+// steal real patient updates onto this machine, so refuse outright.
+if (APP_ENV === "production") {
+  throw new Error(
+    "apps/bot is the local dev bot and must not run with APP_ENV=production. " +
+      "Production is served by apps/web's webhook."
+  );
+}
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {

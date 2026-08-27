@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { prisma, isProduction } from "@tishacare/db";
 import { CONSENT_VERSION } from "./consent";
+import { getCurrentPatient } from "./patientSession";
 
 // Fail closed and loud: the dev bypass below skips Telegram's signature check
 // entirely, so it must never be reachable on the production contour. Throwing
@@ -64,18 +65,20 @@ export function verifyTelegramInitData(initData: string, botToken: string): Tele
 export interface MiniAppAuth {
   patientId: string;
   patientName: string;
-  telegramId: string;
+  /** Null for a patient authenticated via the web portal (/app) with no Telegram link. */
+  telegramId: string | null;
   consentAt: Date | null;
   consentVersion: string | null;
 }
 
 /**
- * Resolves the current request to a Patient via Telegram initData.
- * If `MINIAPP_DEV_BYPASS=1` is set, falls back to the `X-Dev-Telegram-Id`
- * header with no signature check — this is what makes the Mini App testable
- * from a plain browser without a real Telegram session. It is honoured only
- * on the staging/local contours: on `APP_ENV=production` the module-load
- * guard above throws, and this branch also ignores the flag as a backstop.
+ * Resolves the current request to a Patient, from whichever channel it arrived on:
+ *  - Telegram Mini App `initData` (signature-checked), or
+ *  - the `X-Dev-Telegram-Id` header when `MINIAPP_DEV_BYPASS=1` (staging/local
+ *    only — the module-load guard above throws on production and this branch
+ *    also ignores the flag as a backstop), or
+ *  - the patient web-portal session cookie (`getCurrentPatient`).
+ * The same `/api/miniapp/*` routes therefore serve both the Mini App and /app.
  */
 export async function resolveMiniAppPatient(req: NextRequest): Promise<MiniAppAuth | null> {
   let telegramId: string | null = null;
@@ -92,15 +95,15 @@ export async function resolveMiniAppPatient(req: NextRequest): Promise<MiniAppAu
     if (devId) telegramId = devId;
   }
 
-  if (!telegramId) return null;
-
-  const patient = await prisma.patient.findUnique({ where: { telegramId } });
+  const patient = telegramId
+    ? await prisma.patient.findUnique({ where: { telegramId } })
+    : await getCurrentPatient();
   if (!patient) return null;
 
   return {
     patientId: patient.id,
     patientName: patient.name,
-    telegramId,
+    telegramId: patient.telegramId,
     consentAt: patient.consentAt,
     consentVersion: patient.consentVersion,
   };

@@ -10,9 +10,11 @@
 
 ```bash
 npm install
-npm run db:push
+npm run db:migrate:deploy
 npm run db:seed
 ```
+
+Схема БД ведётся через Prisma Migrate — см. [docs/DATABASE.md](docs/DATABASE.md).
 
 Сид создаёт демо-клинику, врача (`doctor@demo.local` / `demo1234`) и двух пациентов с историей чек-инов, опросников, медикаментов и записей дневника.
 

@@ -15,6 +15,8 @@ Production. Их не должно быть ни на одной машине р
 | Напоминания | Vercel Cron | Vercel Cron | выкл.; `ENABLE_LOCAL_REMINDERS=1` для теста |
 | Схема БД | только `prisma migrate deploy` | `prisma migrate deploy` | `migrate dev` / `db push` |
 
+Миграции БД — см. [DATABASE.md](DATABASE.md).
+
 ## `APP_ENV`
 
 Единый признак контура, читается в `packages/db/env.ts` (`APP_ENV`,
@@ -45,9 +47,9 @@ Production. Их не должно быть ни на одной машине р
 
 ### local
 1. `APP_ENV=local` во всех `.env` (`apps/web/.env.local`, `apps/bot/.env`, `packages/db/.env`).
-2. `DATABASE_URL` — локальный PG (`createdb mindsteady`) или личная ветка Neon. **Не боевой.**
+2. `DATABASE_URL` — локальный PG (`createdb tishacare`) или личная ветка Neon. **Не боевой.**
 3. `TELEGRAM_BOT_TOKEN` — токен `@…_dev_bot`.
-4. `npm run db:push && npm run db:seed`, затем `npm run web` и/или `npm run bot`.
+4. `npm run db:migrate:deploy && npm run db:seed`, затем `npm run web` и/или `npm run bot`.
 5. Для webhook-режима / Mini App на телефоне — туннель (cloudflared/ngrok), его адрес в `WEBAPP_URL`.
 
 ### staging

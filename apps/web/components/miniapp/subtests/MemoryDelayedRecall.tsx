@@ -1,6 +1,6 @@
 "use client";
 
-import type { MemorySubtestResult } from "@mindsteady/db/client";
+import type { MemorySubtestResult } from "@tishacare/db/client";
 import WordRecognitionGrid from "./WordRecognitionGrid";
 import type { SubtestProps } from "../TestRunner";
 

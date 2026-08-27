@@ -9,7 +9,7 @@ import {
   MDQ_CODE,
   interpretMdq,
   mdqScore,
-} from "@mindsteady/db";
+} from "@tishacare/db";
 
 export interface MiniAppTestDef<TResults = any> {
   code: string;

@@ -13,7 +13,7 @@ import {
   MdqResult,
   CognitiveCategory,
   CognitiveTestInterpretation,
-} from "@mindsteady/db";
+} from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";

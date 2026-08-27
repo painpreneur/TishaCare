@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { SESSION_COOKIE } from "@/lib/session";
 
 export async function POST(req: NextRequest) {

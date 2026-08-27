@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { GO_NO_GO_LETTER_POOL, GO_NO_GO_TARGET_LETTER, GO_NO_GO_INTERVAL_MS, type GoNoGoResult } from "@mindsteady/db/client";
+import { GO_NO_GO_LETTER_POOL, GO_NO_GO_TARGET_LETTER, GO_NO_GO_INTERVAL_MS, type GoNoGoResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 export default function RegulationGoNoGo({ onComplete }: SubtestProps<GoNoGoResult>) {

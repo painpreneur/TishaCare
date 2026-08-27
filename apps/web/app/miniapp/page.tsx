@@ -37,7 +37,7 @@ export default function MiniAppHome() {
         }
         setPatientName(data.patientName);
       })
-      .catch(() => setError("Не удалось определить пациента. Откройте это приложение через бота MindSteady."));
+      .catch(() => setError("Не удалось определить пациента. Откройте это приложение через бота TishaCare."));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

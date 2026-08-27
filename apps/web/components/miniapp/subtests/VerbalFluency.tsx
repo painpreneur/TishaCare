@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FLUENCY_LETTER, FLUENCY_SECONDS, type FluencyResult } from "@mindsteady/db/client";
+import { FLUENCY_LETTER, FLUENCY_SECONDS, type FluencyResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 export default function VerbalFluency({ onComplete }: SubtestProps<FluencyResult>) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MEMORY_WORD_LIST, type MemorySubtestResult } from "@mindsteady/db/client";
+import { MEMORY_WORD_LIST, type MemorySubtestResult } from "@tishacare/db/client";
 import WordRecognitionGrid from "./WordRecognitionGrid";
 import type { SubtestProps } from "../TestRunner";
 

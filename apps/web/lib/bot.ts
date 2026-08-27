@@ -1,6 +1,6 @@
 import { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
-import { prisma, generateInviteCode, logBotEvent } from "@mindsteady/db";
+import { prisma, generateInviteCode, logBotEvent } from "@tishacare/db";
 import { openMiniAppKeyboard } from "./botMenu";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;

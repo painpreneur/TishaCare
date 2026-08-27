@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div>
       <div className="topbar">
         <div>
-          <div className="brand">MindSteady</div>
+          <div className="brand">TishaCare</div>
           <div className="clinic">{doctor?.clinic.name}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

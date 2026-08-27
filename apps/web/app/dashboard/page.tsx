@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 
 const MOOD_LABEL: Record<number, string> = {

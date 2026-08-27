@@ -1,5 +1,5 @@
 import CheckinForm from "@/components/patient/CheckinForm";
 
-export default function CheckinPage() {
+export default function AppCheckinPage() {
   return <CheckinForm />;
 }

@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function PatientLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("doctor@demo.local");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/login", {
+    const res = await fetch("/api/app/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -30,7 +30,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/app");
     router.refresh();
   }
 
@@ -38,16 +38,11 @@ export default function LoginPage() {
     <div className="center-screen">
       <div className="login-card">
         <h1>TishaCare</h1>
-        <p className="subtitle">Панель врача — вход в систему</p>
+        <p className="subtitle">Личный кабинет пациента</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="field">
             <label>Пароль</label>
@@ -63,9 +58,8 @@ export default function LoginPage() {
             {loading ? "Входим..." : "Войти"}
           </button>
         </form>
-        <p className="hint">Демо-доступ: doctor@demo.local / demo1234</p>
         <p className="hint">
-          Нет аккаунта? <Link href="/register">Зарегистрироваться</Link>
+          Нет аккаунта? <Link href="/app/register">Зарегистрироваться</Link>
         </p>
       </div>
     </div>

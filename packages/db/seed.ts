@@ -39,6 +39,16 @@ async function main() {
     },
   });
 
+  // Solo practitioner (no clinic) — exercises the practiceType = "solo" path.
+  await prisma.doctor.create({
+    data: {
+      practiceType: "solo",
+      email: "solo@demo.local",
+      passwordHash: await bcrypt.hash("demo1234", 10),
+      name: "Дмитрий Волков",
+    },
+  });
+
   const beck = await prisma.questionnaire.create({
     data: {
       code: BECK_CODE,
@@ -63,14 +73,28 @@ async function main() {
     },
   });
 
-  const patientNames = ["Иван Петров", "Мария Кузнецова"];
+  const demoPatientPasswordHash = await bcrypt.hash("demo1234", 10);
+  const patientSeeds = [
+    {
+      name: "Иван Петров",
+      birthDate: new Date(Date.UTC(1988, 2, 14)),
+      // Both auth methods on one row: Telegram (dev-bypass fixture id) and an
+      // email/password for the web portal (/app).
+      email: "patient@demo.local",
+      passwordHash: demoPatientPasswordHash,
+    },
+    { name: "Мария Кузнецова", birthDate: new Date(Date.UTC(1995, 10, 2)), email: undefined, passwordHash: undefined },
+  ];
   const patients = await Promise.all(
-    patientNames.map((name, i) =>
+    patientSeeds.map(({ name, birthDate, email, passwordHash }, i) =>
       prisma.patient.create({
         data: {
           clinicId: clinic.id,
           doctorId: doctor.id,
           name,
+          birthDate,
+          email,
+          passwordHash,
           inviteCode: generateInviteCode(),
           anamnesis: "Диагноз БАР II типа, наблюдение с 2023 года.",
           // Первому демо-пациенту присваиваем фиксированный telegramId, чтобы
@@ -185,7 +209,9 @@ async function main() {
   });
 
   console.log("Seed complete.");
-  console.log(`Doctor login: doctor@demo.local / demo1234`);
+  console.log(`Doctor login (clinic): doctor@demo.local / demo1234`);
+  console.log(`Doctor login (solo):   solo@demo.local / demo1234`);
+  console.log(`Patient web login:     patient@demo.local / demo1234`);
   console.log(
     `Connected patients: ${patients.map((p) => p.name).join(", ")}`
   );

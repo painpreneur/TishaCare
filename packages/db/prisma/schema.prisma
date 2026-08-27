@@ -33,7 +33,10 @@ model Clinic {
 
 model Doctor {
   id           String   @id @default(cuid())
-  clinicId     String
+  // Null for a solo practitioner (practiceType = "solo"). A clinic doctor
+  // always has one. See lib/practiceType.ts for the allowed values.
+  clinicId     String?
+  practiceType String   @default("clinic")
   email        String   @unique
   passwordHash String
   name         String
@@ -45,7 +48,7 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic   Clinic    @relation(fields: [clinicId], references: [id])
+  clinic   Clinic?   @relation(fields: [clinicId], references: [id])
   patients Patient[]
   sessions Session[]
 }
@@ -77,18 +80,47 @@ model Patient {
   anamnesis  String?
   createdAt  DateTime  @default(now())
 
+  // Optional email + password login for the web portal (/app), independent of
+  // Telegram: a patient may have Telegram only, a password only, or both linked
+  // to the same row. Null passwordHash = no web login set up yet.
+  email        String? @unique
+  passwordHash String?
+
+  // Brute-force protection for /api/app/login, mirroring Doctor. Counter resets
+  // on any successful login; on reaching the threshold `lockedUntil` is set and
+  // the account refuses logins until it passes.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   // Data-processing consent captured in the Mini App onboarding. `consentAt`
   // is when the patient accepted; `consentVersion` is which text they saw
   // (lib/consent.ts CONSENT_VERSION) so a text change can re-prompt.
   consentAt      DateTime?
   consentVersion String?
 
-  clinic      Clinic?                @relation(fields: [clinicId], references: [id])
-  doctor      Doctor?                @relation(fields: [doctorId], references: [id])
-  checkIns    CheckIn[]
-  responses   QuestionnaireResponse[]
-  medications Medication[]
-  thoughts    Thought[]
+  clinic          Clinic?                @relation(fields: [clinicId], references: [id])
+  doctor          Doctor?                @relation(fields: [doctorId], references: [id])
+  checkIns        CheckIn[]
+  responses       QuestionnaireResponse[]
+  medications     Medication[]
+  thoughts        Thought[]
+  patientSessions PatientSession[]
+}
+
+// Opaque server-side sessions for the patient web portal (/app), mirroring
+// Session for doctors: the cookie holds a random token, `id` is its SHA-256
+// hash, so a DB leak alone can't impersonate anyone. Deleting rows revokes
+// access immediately.
+model PatientSession {
+  id        String   @id
+  patientId String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([expiresAt])
 }
 
 model CheckIn {

@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function PatientRegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("doctor@demo.local");
-  const [password, setPassword] = useState("demo1234");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,21 +17,21 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/login", {
+    const res = await fetch("/api/app/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ name, email, password }),
     });
 
     setLoading(false);
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Ошибка входа");
+      setError(data.error ?? "Не удалось зарегистрироваться");
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/app");
     router.refresh();
   }
 
@@ -38,16 +39,15 @@ export default function LoginPage() {
     <div className="center-screen">
       <div className="login-card">
         <h1>TishaCare</h1>
-        <p className="subtitle">Панель врача — вход в систему</p>
+        <p className="subtitle">Регистрация пациента</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
+            <label>Имя</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div className="field">
             <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="field">
             <label>Пароль</label>
@@ -55,17 +55,17 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
               required
             />
           </div>
           {error && <p className="error-text">{error}</p>}
           <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? "Входим..." : "Войти"}
+            {loading ? "Регистрируем..." : "Зарегистрироваться"}
           </button>
         </form>
-        <p className="hint">Демо-доступ: doctor@demo.local / demo1234</p>
         <p className="hint">
-          Нет аккаунта? <Link href="/register">Зарегистрироваться</Link>
+          Уже есть аккаунт? <Link href="/app/login">Войти</Link>
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import ConsentFlow from "@/components/patient/ConsentFlow";
 
-export default function ConsentPage() {
+export default function AppConsentPage() {
   return <ConsentFlow />;
 }

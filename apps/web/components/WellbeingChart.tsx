@@ -13,18 +13,9 @@ import {
   TooltipProps,
 } from "recharts";
 import { useIsolatedLegend } from "@/lib/useIsolatedLegend";
+import type { WellbeingPoint } from "@/lib/wellbeing";
 
-export interface WellbeingPoint {
-  date: string;
-  moodRaw: number;
-  moodPct: number;
-  energyRaw: number | null;
-  energyPct: number | null;
-  sleepRaw: number | null;
-  sleepPct: number | null;
-  medsRaw: boolean | null;
-  medsPct: number | null;
-}
+export type { WellbeingPoint };
 
 const MOOD_LABEL: Record<number, string> = {
   [-2]: "Очень плохо",

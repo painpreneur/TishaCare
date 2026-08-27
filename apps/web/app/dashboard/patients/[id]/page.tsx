@@ -13,6 +13,9 @@ import {
   MdqResult,
   CognitiveCategory,
   CognitiveTestInterpretation,
+  QUESTIONNAIRE_DEFS,
+  questionnaireMaxScore,
+  interpretByBands,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
@@ -31,6 +34,9 @@ const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
   [MDQ_CODE]: MDQ_MAX_SCORE,
   [COGNITIVE_TEST_CODE]: COGNITIVE_TEST_MAX_SCORE,
+  ...Object.fromEntries(
+    Object.values(QUESTIONNAIRE_DEFS).map((def) => [def.code, questionnaireMaxScore(def)])
+  ),
 };
 
 const COGNITIVE_CATEGORY_COLORS: Record<CognitiveCategory, string> = {
@@ -66,6 +72,10 @@ function describeResponse(code: string, score: number, answersJson: string): str
     } catch {
       return "—";
     }
+  }
+  // Sum-scale questionnaires (Beck already handled above): interpret by bands.
+  if (QUESTIONNAIRE_DEFS[code]) {
+    return interpretByBands(QUESTIONNAIRE_DEFS[code], score).label;
   }
   return "—";
 }

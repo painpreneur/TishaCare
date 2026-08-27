@@ -9,6 +9,10 @@ const FEATURES: PatientFeature[] = [
   { href: "/support", emoji: "🧠", title: "Поддержка", desc: "Чат с GPT-ассистентом" },
   { href: "/beck", emoji: "📋", title: "Депрессия (Бек)", desc: "Опросник, 21 вопрос" },
   { href: "/mdq", emoji: "📋", title: "Мания (MDQ)", desc: "Скрининг биполярного спектра" },
+  { href: "/gad7", emoji: "📋", title: "Тревога (GAD-7)", desc: "Скрининг тревоги, 7 вопросов" },
+  { href: "/asrs", emoji: "📋", title: "Внимание (ASRS)", desc: "Скрининг СДВГ, 6 вопросов" },
+  { href: "/aq10", emoji: "📋", title: "Черты спектра (AQ-10)", desc: "Скрининг РАС, 10 утверждений" },
+  { href: "/msi-bpd", emoji: "📋", title: "Границы (MSI-BPD)", desc: "Скрининг ПРЛ, 10 вопросов" },
   { href: "/cognitive-test", emoji: "🧩", title: "Когнитивный тест", desc: "~10 минут, память и внимание" },
   { href: "/profile", emoji: "👤", title: "Профиль", desc: "Данные и код подключения к врачу" },
 ];

@@ -108,6 +108,9 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
           </p>
           <p className="hint">{interp.note}</p>
           <p className="hint" style={{ marginTop: 12 }}>{def.disclaimer}</p>
+          {def.attribution && (
+            <p className="hint" style={{ marginTop: 6, fontSize: 11 }}>{def.attribution}</p>
+          )}
         </div>
       </div>
     );

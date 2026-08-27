@@ -12,6 +12,8 @@
     "db:migrate:status": "npm run db:migrate:status -w @tishacare/db",
     "db:seed": "npm run db:seed -w @tishacare/db",
     "web": "npm run dev -w @tishacare/web",
-    "bot": "npm run dev -w @tishacare/bot"
+    "bot": "npm run dev -w @tishacare/bot",
+    "typecheck": "npm run typecheck -w @tishacare/web && npm run typecheck -w @tishacare/bot",
+    "lint": "npm run lint -w @tishacare/web"
   }
 }

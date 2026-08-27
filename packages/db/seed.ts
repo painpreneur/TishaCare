@@ -201,12 +201,44 @@ async function main() {
       });
     }
 
+    // A stopped earlier course + the current one, with a patient report.
+    const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
     await prisma.medication.create({
+      data: {
+        patientId: patient.id,
+        name: "Ламотриджин",
+        dosage: "100 мг",
+        frequency: 1,
+        status: "switched",
+        reason: "Стабилизация настроения",
+        prescriberType: "doctor",
+        prescriberDoctorId: doctor.id,
+        startedAt: daysAgo(120),
+        endedAt: daysAgo(40),
+      },
+    });
+    const current = await prisma.medication.create({
       data: {
         patientId: patient.id,
         name: "Кветиапин",
         dosage: "200 мг",
         frequency: 2,
+        reason: "Сон и тревога",
+        prescriberType: "doctor",
+        prescriberDoctorId: doctor.id,
+        startedAt: daysAgo(40),
+      },
+    });
+    await prisma.medicationReport.create({
+      data: {
+        medicationId: current.id,
+        patientId: patient.id,
+        date: daysAgo(7),
+        tolerability: 2,
+        perceivedBenefit: 4,
+        sideEffects: "Сильная сонливость по утрам, тяжело вставать",
+        sideEffectTags: "drowsiness,weight",
+        note: "Помогает со сном, но днём разбитость",
       },
     });
 

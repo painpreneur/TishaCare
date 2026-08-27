@@ -110,12 +110,13 @@ model Patient {
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
   careLinks       CareLink[]
   encounters      Encounter[]
-  checkIns          CheckIn[]
-  responses         QuestionnaireResponse[]
-  medications       Medication[]
-  medicationReports MedicationReport[]
-  thoughts          Thought[]
-  patientSessions   PatientSession[]
+  checkIns           CheckIn[]
+  responses          QuestionnaireResponse[]
+  questionnaireDrafts QuestionnaireDraft[]
+  medications        Medication[]
+  medicationReports  MedicationReport[]
+  thoughts           Thought[]
+  patientSessions    PatientSession[]
 }
 
 // One visit / contact note. Append-only: rows are created, never edited or
@@ -221,6 +222,23 @@ model QuestionnaireResponse {
 
   patient       Patient       @relation(fields: [patientId], references: [id])
   questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+}
+
+// A questionnaire the patient started but hasn't submitted. Autosaved on every
+// answer so they can leave and resume. Deleted on submit or discard.
+// `answers` is a JSON array of option values, indexed by question order.
+model QuestionnaireDraft {
+  id                String   @id @default(cuid())
+  patientId         String
+  questionnaireCode String
+  answers           String   @default("[]")
+  lastIndex         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, questionnaireCode])
 }
 
 // A course of a medication, not just a current-list row. Never deleted:

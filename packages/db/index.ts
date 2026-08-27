@@ -125,6 +125,7 @@ if (process.env.NODE_ENV !== "production") {
 
 export * from "@prisma/client";
 export * from "./clinical";
+export * from "./questionnaires";
 export * from "./invite";
 export * from "./cognitive";
 export * from "./events";

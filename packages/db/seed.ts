@@ -106,6 +106,22 @@ async function main() {
     )
   );
 
+  // Active CareLink for each connected patient (mirrors the legacy doctorId
+  // until the doctor read paths move onto CareLink).
+  await Promise.all(
+    patients.map((patient) =>
+      prisma.careLink.create({
+        data: {
+          patientId: patient.id,
+          doctorId: doctor.id,
+          status: "active",
+          requestedBy: "doctor",
+          activatedAt: new Date(),
+        },
+      })
+    )
+  );
+
   for (const patient of patients) {
     const checkIns = Array.from({ length: 14 }).map((_, i) => {
       const date = new Date();

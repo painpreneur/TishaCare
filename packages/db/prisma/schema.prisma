@@ -48,9 +48,10 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic   Clinic?   @relation(fields: [clinicId], references: [id])
-  patients Patient[]
-  sessions Session[]
+  clinic    Clinic?    @relation(fields: [clinicId], references: [id])
+  patients  Patient[]
+  sessions  Session[]
+  careLinks CareLink[]
 }
 
 // Opaque server-side sessions for the doctor web panel. The cookie holds a
@@ -99,12 +100,46 @@ model Patient {
   consentVersion String?
 
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
+  // Legacy single-doctor link. Being replaced by CareLink (a patient can have
+  // several doctors); kept in sync until the doctor read paths move over.
   doctor          Doctor?                @relation(fields: [doctorId], references: [id])
+  careLinks       CareLink[]
   checkIns        CheckIn[]
   responses       QuestionnaireResponse[]
   medications     Medication[]
   thoughts        Thought[]
   patientSessions PatientSession[]
+}
+
+// A patient <-> doctor connection with an explicit lifecycle. Either side can
+// request it, the other confirms. The patient can Pause (instant, reversible —
+// stops new data reaching the doctor) or End (a cooling-off window: status
+// "ending" until `endsAt`, still reversible by the patient, then "ended").
+// `managedByClinic` links (e.g. a dispensary) can't be ended by the patient
+// unilaterally.
+//
+//   status: pending | active | paused | ending | ended | declined
+//   requestedBy: patient | doctor
+model CareLink {
+  id              String    @id @default(cuid())
+  patientId       String
+  doctorId        String
+  status          String    @default("pending")
+  requestedBy     String
+  managedByClinic Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  activatedAt     DateTime?
+  endsAt          DateTime?
+  endedAt         DateTime?
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, doctorId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
 }
 
 // Opaque server-side sessions for the patient web portal (/app), mirroring

@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
 
   const medications = await prisma.medication.findMany({
     where: { patientId: auth.patientId },
-    orderBy: { createdAt: "asc" },
+    orderBy: [{ status: "asc" }, { startedAt: "desc" }],
+    include: { reports: { orderBy: { date: "desc" } } },
   });
 
   return NextResponse.json({ medications });

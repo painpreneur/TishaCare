@@ -1,5 +1,5 @@
 import MedicationsPanel from "@/components/patient/MedicationsPanel";
 
-export default function MedicationsPage() {
+export default function AppMedicationsPage() {
   return <MedicationsPanel />;
 }

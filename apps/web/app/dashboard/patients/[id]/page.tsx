@@ -19,7 +19,9 @@ import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
+import PrescribeMedication from "@/components/PrescribeMedication";
 import { ENCOUNTER_FIELDS, ENCOUNTER_FIELD_LABEL, ENCOUNTER_TYPE_LABEL } from "@/lib/encounter";
+import { MED_STATUS_LABEL, PRESCRIBER_LABEL, tagsToLabels, isPoorlyTolerated } from "@/lib/medication";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
@@ -80,7 +82,13 @@ export default async function PatientPage({ params }: { params: { id: string } }
     include: {
       checkIns: { orderBy: { date: "asc" } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },
-      medications: { orderBy: { createdAt: "asc" } },
+      medications: {
+        orderBy: [{ status: "asc" }, { startedAt: "desc" }],
+        include: {
+          reports: { orderBy: { date: "desc" } },
+          prescriberDoctor: { select: { name: true } },
+        },
+      },
       thoughts: { orderBy: { createdAt: "desc" }, take: 20 },
       encounters: { include: { doctor: { select: { name: true } } }, orderBy: { date: "desc" } },
     },
@@ -331,27 +339,58 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
       <div className="panel">
         <h3>Медикаменты</h3>
+        <PrescribeMedication patientId={patient.id} />
         {patient.medications.length === 0 ? (
-          <p className="empty">Медикаменты не назначены</p>
+          <p className="empty" style={{ marginTop: 12 }}>Медикаменты не назначены</p>
         ) : (
-          <table className="responses">
-            <thead>
-              <tr>
-                <th>Название</th>
-                <th>Дозировка</th>
-                <th>Частота</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patient.medications.map((m) => (
-                <tr key={m.id}>
-                  <td>{m.name}</td>
-                  <td>{m.dosage}</td>
-                  <td>{m.frequency} раз/день</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul className="encounter-list">
+            {patient.medications.map((m) => {
+              const poorlyTolerated = m.reports.some((r) => isPoorlyTolerated(r.tolerability));
+              return (
+                <li key={m.id}>
+                  <div className="encounter-head">
+                    <strong>
+                      {m.name}, {m.dosage}, {m.frequency} раз/день
+                    </strong>
+                    <span className={`badge ${m.status === "active" ? "ok" : "warn"}`}>
+                      {MED_STATUS_LABEL[m.status as keyof typeof MED_STATUS_LABEL] ?? m.status}
+                    </span>
+                  </div>
+                  <p className="encounter-field">
+                    <span className="encounter-field-label">
+                      {new Date(m.startedAt).toLocaleDateString("ru-RU")}
+                      {m.endedAt ? ` – ${new Date(m.endedAt).toLocaleDateString("ru-RU")}` : " – по настоящее время"}
+                    </span>
+                    {" · "}
+                    {PRESCRIBER_LABEL[m.prescriberType] ?? m.prescriberType}
+                    {m.prescriberDoctor && ` (${m.prescriberDoctor.name})`}
+                    {m.reason && ` · ${m.reason}`}
+                  </p>
+                  {poorlyTolerated && (
+                    <p className="encounter-field" style={{ color: "#d64545" }}>
+                      ⚠ Пациент отмечает плохую переносимость
+                    </p>
+                  )}
+                  {m.reports.length > 0 && (
+                    <div style={{ marginTop: 4 }}>
+                      {m.reports.map((r) => (
+                        <p key={r.id} className="encounter-field">
+                          <span className="encounter-field-label">
+                            {new Date(r.date).toLocaleDateString("ru-RU")}:
+                          </span>{" "}
+                          переносимость {r.tolerability ?? "—"}/5, польза {r.perceivedBenefit ?? "—"}/5
+                          {tagsToLabels(r.sideEffectTags).length > 0 &&
+                            ` · ${tagsToLabels(r.sideEffectTags).join(", ")}`}
+                          {r.sideEffects && ` · ${r.sideEffects}`}
+                          {r.note && ` · ${r.note}`}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
 

@@ -51,10 +51,11 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic     Clinic?     @relation(fields: [clinicId], references: [id])
-  sessions   Session[]
-  careLinks  CareLink[]
-  encounters Encounter[]
+  clinic                Clinic?      @relation(fields: [clinicId], references: [id])
+  sessions              Session[]
+  careLinks             CareLink[]
+  encounters            Encounter[]
+  prescribedMedications Medication[]
 }
 
 // Opaque server-side sessions for the doctor web panel. The cookie holds a
@@ -109,11 +110,12 @@ model Patient {
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
   careLinks       CareLink[]
   encounters      Encounter[]
-  checkIns        CheckIn[]
-  responses       QuestionnaireResponse[]
-  medications     Medication[]
-  thoughts        Thought[]
-  patientSessions PatientSession[]
+  checkIns          CheckIn[]
+  responses         QuestionnaireResponse[]
+  medications       Medication[]
+  medicationReports MedicationReport[]
+  thoughts          Thought[]
+  patientSessions   PatientSession[]
 }
 
 // One visit / contact note. Append-only: rows are created, never edited or
@@ -221,15 +223,50 @@ model QuestionnaireResponse {
   questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
 }
 
+// A course of a medication, not just a current-list row. Never deleted:
+// stopping a course sets `endedAt` + status, so the history stays intact.
+//
+//   status:        active | stopped | switched
+//   prescriberType: self | doctor | external
 model Medication {
-  id        String   @id @default(cuid())
-  patientId String
-  name      String
-  dosage    String
-  frequency Int
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  patientId      String
+  name           String
+  dosage         String
+  frequency      Int
+  reason         String?
+  status         String    @default("active")
+  prescriberType String    @default("self")
+  prescriberDoctorId String?
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  createdAt      DateTime  @default(now())
 
-  patient Patient @relation(fields: [patientId], references: [id])
+  patient          Patient            @relation(fields: [patientId], references: [id])
+  prescriberDoctor Doctor?            @relation(fields: [prescriberDoctorId], references: [id])
+  reports          MedicationReport[]
+
+  @@index([patientId])
+}
+
+// Patient's own account of how a medication is going. Surfaces on the doctor's
+// card next to the course.
+model MedicationReport {
+  id              String   @id @default(cuid())
+  medicationId    String
+  patientId       String
+  date            DateTime @default(now())
+  tolerability    Int?
+  perceivedBenefit Int?
+  sideEffects     String?
+  sideEffectTags  String?
+  note            String?
+  createdAt       DateTime @default(now())
+
+  medication Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  patient    Patient    @relation(fields: [patientId], references: [id])
+
+  @@index([medicationId])
 }
 
 model Thought {

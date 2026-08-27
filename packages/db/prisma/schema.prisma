@@ -33,7 +33,10 @@ model Clinic {
 
 model Doctor {
   id           String   @id @default(cuid())
-  clinicId     String
+  // Null for a solo practitioner (practiceType = "solo"). A clinic doctor
+  // always has one. See lib/practiceType.ts for the allowed values.
+  clinicId     String?
+  practiceType String   @default("clinic")
   email        String   @unique
   passwordHash String
   name         String
@@ -45,7 +48,7 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic   Clinic    @relation(fields: [clinicId], references: [id])
+  clinic   Clinic?   @relation(fields: [clinicId], references: [id])
   patients Patient[]
   sessions Session[]
 }

@@ -11,7 +11,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="topbar">
         <div>
           <div className="brand">TishaCare</div>
-          <div className="clinic">{doctor.clinic.name}</div>
+          <div className="clinic">{doctor.clinic?.name ?? "Частная практика"}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 13, color: "#465063" }}>{doctor.name}</span>

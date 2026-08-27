@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./index";
 import { BECK_CODE, MDQ_CODE, interpretMdq, mdqScore } from "./clinical";
-import { generateInviteCode } from "./invite";
+import { generateInviteCode, generateConnectCode } from "./invite";
 import {
   COGNITIVE_TEST_CODE,
   COGNITIVE_TEST_TITLE,
@@ -36,6 +36,7 @@ async function main() {
       email: "doctor@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Анна Смирнова",
+      connectCode: "DEMO01",
     },
   });
 
@@ -46,6 +47,7 @@ async function main() {
       email: "solo@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Дмитрий Волков",
+      connectCode: generateConnectCode(),
     },
   });
 

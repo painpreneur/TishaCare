@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { Prisma, prisma } from "@tishacare/db";
+import { Prisma, prisma, generateConnectCode } from "@tishacare/db";
 import { createSession } from "@/lib/session";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/sessionCookie";
 import { clientIp, loginAttemptThrottled } from "@/lib/loginThrottle";
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const connectCode = generateConnectCode();
 
   let doctorId: string;
   try {
@@ -54,13 +55,13 @@ export async function POST(req: NextRequest) {
       const doctor = await prisma.$transaction(async (tx) => {
         const clinic = await tx.clinic.create({ data: { name: clinicName } });
         return tx.doctor.create({
-          data: { clinicId: clinic.id, practiceType, email, passwordHash, name },
+          data: { clinicId: clinic.id, practiceType, email, passwordHash, name, connectCode },
         });
       });
       doctorId = doctor.id;
     } else {
       const doctor = await prisma.doctor.create({
-        data: { practiceType, email, passwordHash, name },
+        data: { practiceType, email, passwordHash, name, connectCode },
       });
       doctorId = doctor.id;
     }

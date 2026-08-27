@@ -40,6 +40,9 @@ model Doctor {
   email        String   @unique
   passwordHash String
   name         String
+  // Short code a patient enters to request a connection to this doctor
+  // (the mirror of Patient.inviteCode for the other direction).
+  connectCode  String   @unique
   createdAt    DateTime @default(now())
 
   // Brute-force protection for /api/login. Counter resets on any successful

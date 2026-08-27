@@ -19,7 +19,8 @@ import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
-import WellbeingChart, { WellbeingPoint } from "@/components/WellbeingChart";
+import WellbeingChart from "@/components/WellbeingChart";
+import { toWellbeingSeries } from "@/lib/wellbeing";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
@@ -91,17 +92,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
     }
   }
 
-  const wellbeingSeries: WellbeingPoint[] = patient.checkIns.map((c) => ({
-    date: new Date(c.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" }),
-    moodRaw: c.mood,
-    moodPct: ((c.mood + 2) / 4) * 100,
-    energyRaw: c.energyLevel,
-    energyPct: c.energyLevel != null ? ((c.energyLevel - 1) / 4) * 100 : null,
-    sleepRaw: c.sleepHours,
-    sleepPct: c.sleepHours != null ? Math.min((c.sleepHours / 12) * 100, 100) : null,
-    medsRaw: c.medsTaken,
-    medsPct: c.medsTaken == null ? null : c.medsTaken ? 100 : 0,
-  }));
+  const wellbeingSeries = toWellbeingSeries(patient.checkIns);
 
   const medsVsMood = pearsonCorrelation(
     patient.checkIns.filter((c) => c.medsTaken !== null).map((c) => [c.medsTaken ? 1 : 0, c.mood])

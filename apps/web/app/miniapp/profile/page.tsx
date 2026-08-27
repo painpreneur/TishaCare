@@ -7,10 +7,12 @@ import BackLink from "@/components/miniapp/BackLink";
 
 interface Profile {
   name: string;
-  birthYear: number | null;
+  birthDate: string | null;
   inviteCode: string;
   doctorConnected: boolean;
 }
+
+const MIN_BIRTH_DATE = "1920-01-01";
 
 export default function ProfilePage() {
   return (
@@ -27,9 +29,11 @@ function ProfilePageInner() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [name, setName] = useState("");
-  const [birthYear, setBirthYear] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     fetch("/api/miniapp/profile", { headers: miniAppAuthHeaders() })
@@ -37,14 +41,13 @@ function ProfilePageInner() {
       .then((data: Profile) => {
         setProfile(data);
         setName(data.name);
-        setBirthYear(data.birthYear ? String(data.birthYear) : "");
+        setBirthDate(data.birthDate ?? "");
       });
   }, []);
 
   async function save() {
-    const year = Number(birthYear);
-    if (!name.trim() || !Number.isInteger(year)) {
-      setError("Укажите имя и год рождения");
+    if (!name.trim() || !birthDate) {
+      setError("Укажите имя и дату рождения");
       return;
     }
     setSaving(true);
@@ -52,7 +55,7 @@ function ProfilePageInner() {
     const res = await fetch("/api/miniapp/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...miniAppAuthHeaders() },
-      body: JSON.stringify({ name, birthYear: year }),
+      body: JSON.stringify({ name, birthDate }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -93,12 +96,13 @@ function ProfilePageInner() {
           <input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="field">
-          <label>Год рождения</label>
+          <label>Дата рождения</label>
           <input
-            type="number"
-            value={birthYear}
-            onChange={(e) => setBirthYear(e.target.value)}
-            placeholder="1990"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            min={MIN_BIRTH_DATE}
+            max={today}
           />
         </div>
         {error && <p className="error-text">{error}</p>}

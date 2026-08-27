@@ -63,14 +63,18 @@ async function main() {
     },
   });
 
-  const patientNames = ["Иван Петров", "Мария Кузнецова"];
+  const patientSeeds = [
+    { name: "Иван Петров", birthDate: new Date(Date.UTC(1988, 2, 14)) },
+    { name: "Мария Кузнецова", birthDate: new Date(Date.UTC(1995, 10, 2)) },
+  ];
   const patients = await Promise.all(
-    patientNames.map((name, i) =>
+    patientSeeds.map(({ name, birthDate }, i) =>
       prisma.patient.create({
         data: {
           clinicId: clinic.id,
           doctorId: doctor.id,
           name,
+          birthDate,
           inviteCode: generateInviteCode(),
           anamnesis: "Диагноз БАР II типа, наблюдение с 2023 года.",
           // Первому демо-пациенту присваиваем фиксированный telegramId, чтобы

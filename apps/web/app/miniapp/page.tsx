@@ -3,6 +3,7 @@ import PatientHome, { PatientFeature } from "@/components/patient/PatientHome";
 const FEATURES: PatientFeature[] = [
   { href: "/checkin", emoji: "📝", title: "Чек-ин", desc: "Настроение, сон, энергия, лекарства" },
   { href: "/progress", emoji: "📈", title: "Моя динамика", desc: "График настроения, сна и энергии" },
+  { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
   { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Список и приём" },
   { href: "/thoughts", emoji: "📓", title: "Дневник мыслей", desc: "Записать, что беспокоит" },
   { href: "/support", emoji: "🧠", title: "Поддержка", desc: "Чат с GPT-ассистентом" },

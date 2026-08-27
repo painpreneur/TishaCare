@@ -583,3 +583,32 @@ table.responses td {
 .miniapp-option-btn:hover {
   border-color: #4f6bfe;
 }
+
+.care-link-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.care-link-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.care-link-list li:last-child {
+  border-bottom: none;
+}
+
+.care-link-name {
+  font-weight: 600;
+}
+
+.care-link-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.link-btn.danger {
+  color: #d64545;
+}

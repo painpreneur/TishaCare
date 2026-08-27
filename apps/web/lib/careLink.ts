@@ -34,6 +34,29 @@ function cooldownEnd(): Date {
   return new Date(Date.now() + CARE_LINK_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
 }
 
+// Best-effort Telegram nudge to the patient when a doctor acts on their link.
+// No-ops without a bot token or a Telegram-linked patient; the bot module is
+// imported lazily so a missing token can't break the routes that use CareLink.
+async function notifyPatient(patientId: string, message: string) {
+  if (!process.env.TELEGRAM_BOT_TOKEN) return;
+  const patient = await prisma.patient.findUnique({
+    where: { id: patientId },
+    select: { telegramId: true },
+  });
+  if (!patient?.telegramId) return;
+  try {
+    const { bot } = await import("./bot");
+    await bot.telegram.sendMessage(patient.telegramId, message);
+  } catch (e) {
+    console.error("CareLink patient notification failed:", e);
+  }
+}
+
+async function doctorName(doctorId: string): Promise<string> {
+  const d = await prisma.doctor.findUnique({ where: { id: doctorId }, select: { name: true } });
+  return d?.name ?? "Врач";
+}
+
 /** The care links a doctor currently sees data through. */
 export function activeLinksForDoctor(doctorId: string) {
   return prisma.careLink.findMany({
@@ -161,26 +184,35 @@ async function doctorLink(doctorId: string, linkId: string) {
 export async function acceptLink(doctorId: string, linkId: string) {
   const link = await doctorLink(doctorId, linkId);
   if (link.status !== "pending") throw new CareLinkError("Этот запрос уже обработан");
-  return prisma.careLink.update({
+  const updated = await prisma.careLink.update({
     where: { id: link.id },
     data: { status: "active", activatedAt: new Date() },
   });
+  await notifyPatient(link.patientId, `${await doctorName(doctorId)} подтвердил(а) ваш запрос на подключение.`);
+  return updated;
 }
 
 export async function declineLink(doctorId: string, linkId: string) {
   const link = await doctorLink(doctorId, linkId);
   if (link.status !== "pending") throw new CareLinkError("Этот запрос уже обработан");
-  return prisma.careLink.update({ where: { id: link.id }, data: { status: "declined" } });
+  const updated = await prisma.careLink.update({
+    where: { id: link.id },
+    data: { status: "declined" },
+  });
+  await notifyPatient(link.patientId, `${await doctorName(doctorId)} отклонил(а) ваш запрос на подключение.`);
+  return updated;
 }
 
 /** Doctor ends a link (offboarding) — takes effect immediately. */
 export async function endLinkByDoctor(doctorId: string, linkId: string) {
   const link = await doctorLink(doctorId, linkId);
   if (["ended", "declined"].includes(link.status)) throw new CareLinkError("Связь уже завершена");
-  return prisma.careLink.update({
+  const updated = await prisma.careLink.update({
     where: { id: link.id },
     data: { status: "ended", endedAt: new Date(), endsAt: null },
   });
+  await notifyPatient(link.patientId, `${await doctorName(doctorId)} завершил(а) наблюдение. Данные больше не передаются этому врачу.`);
+  return updated;
 }
 
 // ── Cron ────────────────────────────────────────────────────────────────────

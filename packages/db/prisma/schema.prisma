@@ -51,9 +51,10 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
-  clinic    Clinic?    @relation(fields: [clinicId], references: [id])
-  sessions  Session[]
-  careLinks CareLink[]
+  clinic     Clinic?     @relation(fields: [clinicId], references: [id])
+  sessions   Session[]
+  careLinks  CareLink[]
+  encounters Encounter[]
 }
 
 // Opaque server-side sessions for the doctor web panel. The cookie holds a
@@ -100,13 +101,43 @@ model Patient {
   consentAt      DateTime?
   consentVersion String?
 
+  // Living summary, edited in place. `anamnesisUpdatedAt` / `...ById` record the
+  // last change; the encounter history below is the append-only record.
+  anamnesisUpdatedAt   DateTime?
+  anamnesisUpdatedById String?
+
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
   careLinks       CareLink[]
+  encounters      Encounter[]
   checkIns        CheckIn[]
   responses       QuestionnaireResponse[]
   medications     Medication[]
   thoughts        Thought[]
   patientSessions PatientSession[]
+}
+
+// One visit / contact note. Append-only: rows are created, never edited or
+// deleted, so the record stays trustworthy (corrections are added as a new
+// entry). Loose SOAP — every text field is optional; `type` and `date` are not.
+//
+//   type: visit | consult | phone | note
+model Encounter {
+  id           String   @id @default(cuid())
+  patientId    String
+  doctorId     String
+  date         DateTime
+  type         String   @default("visit")
+  complaints   String?
+  observations String?
+  assessment   String?
+  plan         String?
+  note         String?
+  createdAt    DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+
+  @@index([patientId])
 }
 
 // A patient <-> doctor connection with an explicit lifecycle. Either side can

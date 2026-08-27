@@ -51,13 +51,15 @@ a {
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #d7dce3;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
+  background: #fff;
 }
 
 .field textarea {
@@ -611,4 +613,36 @@ table.responses td {
 
 .link-btn.danger {
   color: #d64545;
+}
+
+.encounter-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.encounter-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.encounter-list li:last-child {
+  border-bottom: none;
+}
+
+.encounter-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.encounter-field {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.encounter-field-label {
+  color: #6b7684;
 }

@@ -20,11 +20,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const { anamnesis, birthDate } = await req.json();
+  const anamnesisChanged =
+    typeof anamnesis === "string" && (anamnesis.trim() || null) !== patient.anamnesis;
 
   await prisma.patient.update({
     where: { id: patient.id },
     data: {
       anamnesis: typeof anamnesis === "string" ? anamnesis.trim() || null : undefined,
+      anamnesisUpdatedAt: anamnesisChanged ? new Date() : undefined,
+      anamnesisUpdatedById: anamnesisChanged ? doctor.id : undefined,
       birthDate: birthDate ? new Date(birthDate) : birthDate === "" ? null : undefined,
     },
   });

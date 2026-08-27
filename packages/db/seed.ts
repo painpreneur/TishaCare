@@ -39,6 +39,16 @@ async function main() {
     },
   });
 
+  // Solo practitioner (no clinic) — exercises the practiceType = "solo" path.
+  await prisma.doctor.create({
+    data: {
+      practiceType: "solo",
+      email: "solo@demo.local",
+      passwordHash: await bcrypt.hash("demo1234", 10),
+      name: "Дмитрий Волков",
+    },
+  });
+
   const beck = await prisma.questionnaire.create({
     data: {
       code: BECK_CODE,
@@ -189,7 +199,8 @@ async function main() {
   });
 
   console.log("Seed complete.");
-  console.log(`Doctor login: doctor@demo.local / demo1234`);
+  console.log(`Doctor login (clinic): doctor@demo.local / demo1234`);
+  console.log(`Doctor login (solo):   solo@demo.local / demo1234`);
   console.log(
     `Connected patients: ${patients.map((p) => p.name).join(", ")}`
   );

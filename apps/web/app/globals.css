@@ -70,6 +70,19 @@ a {
   border-color: #4f6bfe;
 }
 
+.field input[type="radio"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.field label.choice {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1f2733;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
 .btn-primary {
   width: 100%;
   padding: 10px 12px;

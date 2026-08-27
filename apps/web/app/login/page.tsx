@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -63,6 +64,9 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="hint">Демо-доступ: doctor@demo.local / demo1234</p>
+        <p className="hint">
+          Нет аккаунта? <Link href="/register">Зарегистрироваться</Link>
+        </p>
       </div>
     </div>
   );

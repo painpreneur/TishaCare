@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { Telegraf } from "telegraf";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { BotContext } from "./context";
 import { openMiniAppKeyboard } from "./menu";
 

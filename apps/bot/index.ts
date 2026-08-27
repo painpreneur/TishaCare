@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { prisma, generateInviteCode, logBotEvent } from "@mindsteady/db";
+import { prisma, generateInviteCode, logBotEvent } from "@tishacare/db";
 import { logStartEvent } from "./eventLog";
 import { BotContext } from "./context";
 import { getPatientByTelegramId } from "./patient";

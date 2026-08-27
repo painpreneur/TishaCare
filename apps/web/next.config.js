@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@mindsteady/db"],
+  transpilePackages: ["@tishacare/db"],
   async headers() {
     return [
       {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { bot } from "@/lib/bot";
 import { openMiniAppKeyboard } from "@/lib/botMenu";
 

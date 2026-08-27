@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BECK_CODE, BECK_QUESTIONS, interpretBeck } from "@mindsteady/db/client";
+import { BECK_CODE, BECK_QUESTIONS, interpretBeck } from "@tishacare/db/client";
 import { miniAppAuthHeaders } from "@/lib/miniappClient";
 import QuestionFlow from "@/components/miniapp/QuestionFlow";
 import BackLink from "@/components/miniapp/BackLink";

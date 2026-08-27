@@ -8,7 +8,7 @@ import {
   MDQ_IMPACT_QUESTION,
   MDQ_SYMPTOM_QUESTIONS,
   interpretMdq,
-} from "@mindsteady/db/client";
+} from "@tishacare/db/client";
 import { miniAppAuthHeaders } from "@/lib/miniappClient";
 import QuestionFlow from "@/components/miniapp/QuestionFlow";
 import BackLink from "@/components/miniapp/BackLink";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LUSCHER_COLORS, type LuscherResult } from "@mindsteady/db/client";
+import { LUSCHER_COLORS, type LuscherResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 function shuffled<T>(items: T[]): T[] {

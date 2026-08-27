@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MEMORY_WORD_LIST, MEMORY_DISTRACTOR_WORDS, type MemorySubtestResult } from "@mindsteady/db/client";
+import { MEMORY_WORD_LIST, MEMORY_DISTRACTOR_WORDS, type MemorySubtestResult } from "@tishacare/db/client";
 
 function shuffled<T>(items: T[]): T[] {
   const arr = [...items];

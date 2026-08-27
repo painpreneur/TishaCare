@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient } from "@/lib/telegramAuth";
 
 async function assertOwnership(patientId: string, medicationId: string) {

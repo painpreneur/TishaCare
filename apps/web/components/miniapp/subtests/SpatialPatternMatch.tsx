@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SPATIAL_ITEMS, type SpatialColorId, type SpatialResult } from "@mindsteady/db/client";
+import { SPATIAL_ITEMS, type SpatialColorId, type SpatialResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 const COLOR_HEX: Record<SpatialColorId, string> = {

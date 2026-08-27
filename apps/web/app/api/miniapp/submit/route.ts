@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient } from "@/lib/telegramAuth";
 import { MINIAPP_TESTS } from "@/lib/miniappTests";
 

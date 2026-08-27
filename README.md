@@ -1,4 +1,4 @@
-# mindsteady
+# TishaCare
 
 Цифровая платформа мониторинга пациентов с БАР (по мотивам ВКР). MVP из двух частей:
 
@@ -64,4 +64,4 @@ npm run bot
 
 Из MVP пока не реализовано: биллинг клиник (лицензии, оплата за тест), роли/мультиклиники в UI, деплой (хостинг для `apps/web` и `apps/bot`, публичный `WEBAPP_URL`).
 
-БД — Postgres (`packages/db/prisma/schema.prisma`). Локально: `brew install postgresql@14 && createdb mindsteady`, см. `packages/db/.env.example`.
+БД — Postgres (`packages/db/prisma/schema.prisma`). Локально: `brew install postgresql@14 && createdb tishacare`, см. `packages/db/.env.example`.

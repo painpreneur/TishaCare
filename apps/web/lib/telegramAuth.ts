@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { NextRequest } from "next/server";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 
 export interface TelegramUser {
   id: number;

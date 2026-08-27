@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {

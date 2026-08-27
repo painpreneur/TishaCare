@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { COGNITIVE_TEST_CODE, CATEGORY_LABELS, type CognitiveTestInterpretation } from "@mindsteady/db/client";
+import { COGNITIVE_TEST_CODE, CATEGORY_LABELS, type CognitiveTestInterpretation } from "@tishacare/db/client";
 import TestRunner, { type SubtestDef } from "@/components/miniapp/TestRunner";
 import MemoryEncode from "@/components/miniapp/subtests/MemoryEncode";
 import AttentionSerialSevens from "@/components/miniapp/subtests/AttentionSerialSevens";

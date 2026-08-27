@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ANALOGY_ITEMS, type AnalogiesResult } from "@mindsteady/db/client";
+import { ANALOGY_ITEMS, type AnalogiesResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 export default function ThinkingAnalogies({ onComplete }: SubtestProps<AnalogiesResult>) {

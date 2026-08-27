@@ -58,7 +58,7 @@ export default function ConnectPatientPage() {
       </form>
 
       <p className="hint">
-        Пациент получает этот код в Telegram-боте (@MindSteady_bot) при первом запуске и должен
+        Пациент получает этот код в Telegram-боте (@tishacarebot) при первом запуске и должен
         передать его вам.
       </p>
     </div>

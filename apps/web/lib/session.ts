@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { prisma } from "@mindsteady/db";
+import { prisma } from "@tishacare/db";
 import { SESSION_COOKIE } from "./sessionCookie";
 
 export { SESSION_COOKIE };

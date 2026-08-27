@@ -7,7 +7,7 @@ import {
   SERIAL_SEVENS_COUNT,
   serialSevensCorrectSequence,
   type SerialSevensResult,
-} from "@mindsteady/db/client";
+} from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 export default function AttentionSerialSevens({ onComplete }: SubtestProps<SerialSevensResult>) {

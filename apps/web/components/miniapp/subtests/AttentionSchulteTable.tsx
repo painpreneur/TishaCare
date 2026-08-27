@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { SCHULTE_GRID_SIZE, type SchulteResult } from "@mindsteady/db/client";
+import { SCHULTE_GRID_SIZE, type SchulteResult } from "@tishacare/db/client";
 import type { SubtestProps } from "../TestRunner";
 
 function shuffledNumbers(count: number): number[] {

@@ -39,6 +39,12 @@ model Doctor {
   name         String
   createdAt    DateTime @default(now())
 
+  // Brute-force protection for /api/login. Counter resets on any successful
+  // login; on reaching the threshold `lockedUntil` is set and the account
+  // refuses logins until it passes.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   clinic   Clinic    @relation(fields: [clinicId], references: [id])
   patients Patient[]
   sessions Session[]

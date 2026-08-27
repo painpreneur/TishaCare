@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
-import { resolveMiniAppPatient } from "@/lib/telegramAuth";
+import { resolveMiniAppPatient, hasCurrentConsent } from "@/lib/telegramAuth";
 
 export async function GET(req: NextRequest) {
   const auth = await resolveMiniAppPatient(req);
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const patient = await prisma.patient.findUnique({ where: { id: auth.patientId } });
   return NextResponse.json({
     patientName: auth.patientName,
+    needsConsent: !hasCurrentConsent(auth),
     needsOnboarding: !patient?.birthDate,
   });
 }

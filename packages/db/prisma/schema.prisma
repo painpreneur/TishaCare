@@ -77,6 +77,12 @@ model Patient {
   anamnesis  String?
   createdAt  DateTime  @default(now())
 
+  // Data-processing consent captured in the Mini App onboarding. `consentAt`
+  // is when the patient accepted; `consentVersion` is which text they saw
+  // (lib/consent.ts CONSENT_VERSION) so a text change can re-prompt.
+  consentAt      DateTime?
+  consentVersion String?
+
   clinic      Clinic?                @relation(fields: [clinicId], references: [id])
   doctor      Doctor?                @relation(fields: [doctorId], references: [id])
   checkIns    CheckIn[]

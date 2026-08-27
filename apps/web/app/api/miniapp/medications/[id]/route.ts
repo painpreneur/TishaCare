@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
-import { resolveMiniAppPatient } from "@/lib/telegramAuth";
+import { resolveConsentedPatient } from "@/lib/telegramAuth";
 
 async function assertOwnership(patientId: string, medicationId: string) {
   const medication = await prisma.medication.findUnique({ where: { id: medicationId } });
@@ -8,7 +8,7 @@ async function assertOwnership(patientId: string, medicationId: string) {
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await resolveMiniAppPatient(req);
+  const auth = await resolveConsentedPatient(req);
   if (!auth) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await resolveMiniAppPatient(req);
+  const auth = await resolveConsentedPatient(req);
   if (!auth) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }

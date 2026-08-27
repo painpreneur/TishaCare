@@ -41,6 +41,23 @@ model Doctor {
 
   clinic   Clinic    @relation(fields: [clinicId], references: [id])
   patients Patient[]
+  sessions Session[]
+}
+
+// Opaque server-side sessions for the doctor web panel. The cookie holds a
+// random token; `id` is its SHA-256 hash, so a DB leak alone can't be used to
+// impersonate anyone. Deleting rows here revokes access immediately (logout,
+// "sign out everywhere", offboarding).
+model Session {
+  id        String   @id
+  doctorId  String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+  @@index([expiresAt])
 }
 
 model Patient {

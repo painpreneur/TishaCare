@@ -15,6 +15,7 @@ import {
   CognitiveTestInterpretation,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
+import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
@@ -70,7 +71,10 @@ export default async function PatientPage({ params }: { params: { id: string } }
   if (!doctor) return null;
 
   const patient = await prisma.patient.findFirst({
-    where: { id: params.id, doctorId: doctor.id },
+    where: {
+      id: params.id,
+      careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
+    },
     include: {
       checkIns: { orderBy: { date: "asc" } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },

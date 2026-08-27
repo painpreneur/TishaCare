@@ -92,7 +92,6 @@ async function main() {
       prisma.patient.create({
         data: {
           clinicId: clinic.id,
-          doctorId: doctor.id,
           name,
           birthDate,
           email,

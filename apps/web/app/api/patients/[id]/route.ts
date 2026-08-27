@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
+import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const doctor = await getCurrentDoctor();
@@ -9,7 +10,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const patient = await prisma.patient.findFirst({
-    where: { id: params.id, doctorId: doctor.id },
+    where: {
+      id: params.id,
+      careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
+    },
   });
   if (!patient) {
     return NextResponse.json({ error: "Пациент не найден" }, { status: 404 });

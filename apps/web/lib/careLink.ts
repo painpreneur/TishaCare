@@ -20,6 +20,10 @@ export const CARE_LINK_COOLDOWN_DAYS = 7;
 /** Statuses in which the doctor still sees the patient's data. */
 export const SHARING_STATUSES = ["active", "ending"] as const;
 
+/** Statuses in which a patient appears in the doctor's list (paused = shown,
+ *  flagged, but no fresh data). */
+export const DOCTOR_VISIBLE_STATUSES = ["active", "paused", "ending"] as const;
+
 export class CareLinkError extends Error {
   constructor(message: string, readonly httpStatus = 400) {
     super(message);
@@ -145,9 +149,6 @@ export async function connectByInviteCode(doctorId: string, inviteCode: string) 
     ? await prisma.careLink.update({ where: { id: existing.id }, data })
     : await prisma.careLink.create({ data: { ...data, patientId: patient.id, doctorId } });
 
-  // Legacy mirror — dropped once the doctor read paths move onto CareLink.
-  await prisma.patient.update({ where: { id: patient.id }, data: { doctorId } });
-
   return { link, patientId: patient.id };
 }
 
@@ -160,13 +161,10 @@ async function doctorLink(doctorId: string, linkId: string) {
 export async function acceptLink(doctorId: string, linkId: string) {
   const link = await doctorLink(doctorId, linkId);
   if (link.status !== "pending") throw new CareLinkError("Этот запрос уже обработан");
-  const updated = await prisma.careLink.update({
+  return prisma.careLink.update({
     where: { id: link.id },
     data: { status: "active", activatedAt: new Date() },
   });
-  // Legacy mirror — dropped once the doctor read paths move onto CareLink.
-  await prisma.patient.update({ where: { id: link.patientId }, data: { doctorId } });
-  return updated;
 }
 
 export async function declineLink(doctorId: string, linkId: string) {

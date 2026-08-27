@@ -52,7 +52,6 @@ model Doctor {
   lockedUntil         DateTime?
 
   clinic    Clinic?    @relation(fields: [clinicId], references: [id])
-  patients  Patient[]
   sessions  Session[]
   careLinks CareLink[]
 }
@@ -76,7 +75,6 @@ model Session {
 model Patient {
   id         String    @id @default(cuid())
   clinicId   String?
-  doctorId   String?
   name       String
   birthDate  DateTime?
   telegramId String?   @unique
@@ -103,9 +101,6 @@ model Patient {
   consentVersion String?
 
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
-  // Legacy single-doctor link. Being replaced by CareLink (a patient can have
-  // several doctors); kept in sync until the doctor read paths move over.
-  doctor          Doctor?                @relation(fields: [doctorId], references: [id])
   careLinks       CareLink[]
   checkIns        CheckIn[]
   responses       QuestionnaireResponse[]

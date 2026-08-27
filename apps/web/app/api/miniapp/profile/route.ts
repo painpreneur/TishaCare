@@ -7,16 +7,23 @@ const MIN_BIRTH_DATE = "1920-01-01";
 // Serialises a patient to the shape the profile screen expects. `birthDate` is
 // a plain `YYYY-MM-DD` string (or null) so the client can bind it straight to
 // <input type="date">.
-function profileDto(patient: Patient) {
+function profileDto(patient: Patient, doctorConnected: boolean) {
   return {
     name: patient.name,
     birthDate: patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : null,
     inviteCode: patient.inviteCode,
-    doctorConnected: Boolean(patient.doctorId),
+    doctorConnected,
     // Whether a web-portal login is already set up; the address itself, so the
     // profile screen can show it.
     email: patient.email,
   };
+}
+
+// Any care link that isn't terminal counts as "connected to a doctor".
+function countActiveLinks(patientId: string) {
+  return prisma.careLink.count({
+    where: { patientId, status: { in: ["pending", "active", "paused", "ending"] } },
+  });
 }
 
 /** Parses a `YYYY-MM-DD` string to a UTC-midnight Date, or null if invalid. */
@@ -42,7 +49,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Пациент не найден" }, { status: 404 });
   }
 
-  return NextResponse.json(profileDto(patient));
+  return NextResponse.json(profileDto(patient, (await countActiveLinks(patient.id)) > 0));
 }
 
 export async function PATCH(req: NextRequest) {
@@ -69,5 +76,8 @@ export async function PATCH(req: NextRequest) {
     data: { name: name.trim(), birthDate: parsedBirthDate },
   });
 
-  return NextResponse.json({ ok: true, ...profileDto(patient) });
+  return NextResponse.json({
+    ok: true,
+    ...profileDto(patient, (await countActiveLinks(patient.id)) > 0),
+  });
 }

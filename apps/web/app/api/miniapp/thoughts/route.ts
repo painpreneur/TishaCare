@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
-import { resolveMiniAppPatient } from "@/lib/telegramAuth";
+import { resolveMiniAppPatient, resolveConsentedPatient } from "@/lib/telegramAuth";
 
 export async function GET(req: NextRequest) {
   const auth = await resolveMiniAppPatient(req);
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await resolveMiniAppPatient(req);
+  const auth = await resolveConsentedPatient(req);
   if (!auth) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }

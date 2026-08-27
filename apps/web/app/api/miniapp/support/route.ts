@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import { resolveMiniAppPatient } from "@/lib/telegramAuth";
+import { resolveConsentedPatient } from "@/lib/telegramAuth";
 
 const SYSTEM_PROMPT = `Вы — виртуальный ассистент поддержки для пациента с биполярным аффективным расстройством. Ваша цель — выслушать, помочь разобраться в чувствах и мягко направить к конструктивным шагам.
 
@@ -15,7 +15,7 @@ const MAX_TURNS = 12;
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: NextRequest) {
-  const auth = await resolveMiniAppPatient(req);
+  const auth = await resolveConsentedPatient(req);
   if (!auth) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }

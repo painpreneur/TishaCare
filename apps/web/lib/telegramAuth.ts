@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { prisma, isProduction } from "@tishacare/db";
+import { CONSENT_VERSION } from "./consent";
 
 // Fail closed and loud: the dev bypass below skips Telegram's signature check
 // entirely, so it must never be reachable on the production contour. Throwing
@@ -64,6 +65,8 @@ export interface MiniAppAuth {
   patientId: string;
   patientName: string;
   telegramId: string;
+  consentAt: Date | null;
+  consentVersion: string | null;
 }
 
 /**
@@ -94,5 +97,27 @@ export async function resolveMiniAppPatient(req: NextRequest): Promise<MiniAppAu
   const patient = await prisma.patient.findUnique({ where: { telegramId } });
   if (!patient) return null;
 
-  return { patientId: patient.id, patientName: patient.name, telegramId };
+  return {
+    patientId: patient.id,
+    patientName: patient.name,
+    telegramId,
+    consentAt: patient.consentAt,
+    consentVersion: patient.consentVersion,
+  };
+}
+
+export function hasCurrentConsent(auth: Pick<MiniAppAuth, "consentAt" | "consentVersion">): boolean {
+  return Boolean(auth.consentAt) && auth.consentVersion === CONSENT_VERSION;
+}
+
+/**
+ * Like resolveMiniAppPatient, but also requires the patient to have accepted
+ * the current consent version. Use this on every route that records or
+ * processes patient data; onboarding routes (session, profile, consent) stay
+ * on resolveMiniAppPatient so the patient can reach the consent step.
+ */
+export async function resolveConsentedPatient(req: NextRequest): Promise<MiniAppAuth | null> {
+  const auth = await resolveMiniAppPatient(req);
+  if (!auth || !hasCurrentConsent(auth)) return null;
+  return auth;
 }

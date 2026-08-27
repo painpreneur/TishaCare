@@ -31,6 +31,10 @@ export default function MiniAppHome() {
         return res.json();
       })
       .then((data) => {
+        if (data.needsConsent) {
+          router.replace(withDevTelegramIdParam("/miniapp/consent"));
+          return;
+        }
         if (data.needsOnboarding) {
           router.replace(withDevTelegramIdParam("/miniapp/profile?onboarding=1"));
           return;

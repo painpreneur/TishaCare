@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tishacare/bot-core": "*",
     "@tishacare/db": "*",
     "telegraf": "^4.16.3",
     "node-cron": "^3.0.3",

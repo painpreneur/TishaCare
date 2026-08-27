@@ -17,7 +17,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <PatientLogoutButton />
         </div>
       </div>
-      {children}
+      <div className="miniapp-page">{children}</div>
     </div>
   );
 }

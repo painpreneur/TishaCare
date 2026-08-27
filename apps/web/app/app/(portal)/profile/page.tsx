@@ -1,5 +1,5 @@
 import ProfileForm from "@/components/patient/ProfileForm";
 
-export default function ProfilePage() {
+export default function AppProfilePage() {
   return <ProfileForm />;
 }

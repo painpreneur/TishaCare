@@ -130,7 +130,7 @@ export async function resumeLink(patientId: string, linkId: string) {
 export async function beginEnd(patientId: string, linkId: string) {
   const link = await patientLink(patientId, linkId);
   if (link.managedByClinic) {
-    throw new CareLinkError("Эта связь ведётся клиникой — завершить её может только клиника", 403);
+    throw new CareLinkError("Эта связь ведётся клиникой, завершить её может только клиника", 403);
   }
   if (!["active", "paused"].includes(link.status)) {
     throw new CareLinkError("Эту связь нельзя завершить");

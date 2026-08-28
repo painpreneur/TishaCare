@@ -37,7 +37,7 @@ export default function ProgressChart() {
         <h1>Моя динамика</h1>
         <p className="hint">
           Здесь видно, как за последнее время менялись настроение, сон и энергия. Это не оценка
-          и не диагноз — просто ваши отметки на графике.
+          и не диагноз, просто ваши отметки на графике.
         </p>
         <div className="miniapp-word-grid" style={{ margin: "12px 0" }}>
           {RANGES.map((r) => (

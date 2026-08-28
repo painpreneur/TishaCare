@@ -138,7 +138,7 @@ export default function MedicationsPanel() {
         </div>
         {last && (
           <div className="hint">
-            Переносимость {last.tolerability ?? "—"}/5, польза {last.perceivedBenefit ?? "—"}/5
+            Переносимость {last.tolerability ?? "?"}/5, польза {last.perceivedBenefit ?? "?"}/5
             {tagsToLabels(last.sideEffectTags).length > 0 && ` · ${tagsToLabels(last.sideEffectTags).join(", ")}`}
           </div>
         )}
@@ -172,11 +172,11 @@ export default function MedicationsPanel() {
         {reportFor === m.id && (
           <div style={{ marginTop: 8 }}>
             <div className="field">
-              <label>Как переносится? (1 — плохо, 5 — отлично)</label>
+              <label>Как переносится? (1 = плохо, 5 = отлично)</label>
               <ScalePick value={tolerability} onChange={setTolerability} />
             </div>
             <div className="field">
-              <label>Помогает? (1 — нет, 5 — сильно)</label>
+              <label>Помогает? (1 = нет, 5 = сильно)</label>
               <ScalePick value={benefit} onChange={setBenefit} />
             </div>
             <div className="field">

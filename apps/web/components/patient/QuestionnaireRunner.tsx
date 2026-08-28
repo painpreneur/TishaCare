@@ -156,7 +156,7 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
           </button>
         )}
         <p className="hint" style={{ marginTop: 8 }}>
-          Прогресс сохраняется — можно закрыть и вернуться позже.
+          Прогресс сохраняется, можно закрыть и вернуться позже.
         </p>
       </div>
     </div>

@@ -34,7 +34,7 @@ export default function AttentionSerialSevens({ onComplete }: SubtestProps<Seria
   return (
     <div>
       <p className="hint">
-        Последовательно вычитайте {SERIAL_SEVENS_STEP} — {SERIAL_SEVENS_COUNT} раз подряд.
+        Последовательно вычитайте {SERIAL_SEVENS_STEP}, {SERIAL_SEVENS_COUNT} раз подряд.
       </p>
       <p style={{ fontSize: 20, fontWeight: 600, margin: "12px 0" }}>
         {entered.length === 0 ? SERIAL_SEVENS_SEED : base} − {SERIAL_SEVENS_STEP} = ?

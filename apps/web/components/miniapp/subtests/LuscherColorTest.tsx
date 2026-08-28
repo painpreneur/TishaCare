@@ -28,7 +28,7 @@ export default function LuscherColorTest({ onComplete }: SubtestProps<LuscherRes
 
   return (
     <div>
-      <p className="hint">Выбирайте карточки по порядку — от наиболее приятного цвета к наименее приятному.</p>
+      <p className="hint">Выбирайте карточки по порядку, от наиболее приятного цвета к наименее приятному.</p>
       <div className="miniapp-luscher-grid">
         {shuffledColors.map((color) => {
           const picked = order.includes(color.id);

@@ -41,7 +41,7 @@ export default function ThoughtsPage() {
       <BackLink />
       <div className="miniapp-card">
         <h1>Дневник мыслей</h1>
-        <p className="hint">Поделитесь мыслью — она сохранится здесь.</p>
+        <p className="hint">Поделитесь мыслью, она сохранится здесь.</p>
         <div className="field">
           <textarea rows={3} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Что вас беспокоит?" />
         </div>

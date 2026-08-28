@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="center-screen">
       <div className="login-card">
         <h1>TishaCare</h1>
-        <p className="subtitle">Панель врача — вход в систему</p>
+        <p className="subtitle">Панель врача: вход в систему</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Email</label>

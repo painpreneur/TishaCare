@@ -5,7 +5,7 @@
 export const BALANCE_WHEEL_CODE = "BALANCE_WHEEL";
 export const BALANCE_WHEEL_TITLE = "Колесо баланса";
 export const BALANCE_WHEEL_DISCLAIMER =
-  "Колесо баланса — инструмент для самоанализа, а не диагностика. Оценки субъективны " +
+  "Колесо баланса: инструмент для самоанализа, а не диагностика. Оценки субъективны " +
   "и отражают ваше ощущение здесь и сейчас.";
 
 export const LIFE_AREAS: { id: string; label: string }[] = [
@@ -43,7 +43,7 @@ export function interpretBalanceWheel(values: number[]): BalanceWheelResult {
   const note =
     max - min <= 2
       ? "Сферы жизни ощущаются довольно ровно."
-      : `Заметен перекос: слабее всего — ${lowest.join(", ")}; сильнее всего — ${highest.join(", ")}.`;
+      : `Заметен перекос: слабее всего ${lowest.join(", ")}; сильнее всего ${highest.join(", ")}.`;
 
   return { average: Math.round(avg * 10) / 10, lowest, highest, note };
 }

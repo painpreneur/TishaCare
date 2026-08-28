@@ -72,7 +72,7 @@ export function createBot(): Telegraf {
     );
   });
 
-  bot.help((ctx) => miniAppReply(ctx, "Всё управление — через приложение. Нажмите кнопку ниже."));
+  bot.help((ctx) => miniAppReply(ctx, "Всё управление через приложение. Нажмите кнопку ниже."));
   bot.on(message("text"), (ctx) => miniAppReply(ctx, "Нажмите кнопку ниже, чтобы открыть приложение."));
   bot.catch((err, ctx) => {
     console.error(`Telegraf error for update ${ctx.updateType}:`, err);

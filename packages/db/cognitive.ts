@@ -282,7 +282,7 @@ export interface CognitiveTestInterpretation {
 
 const DISCLAIMER =
   "Результат носит ориентировочный, скрининговый характер и не является клиническим диагнозом. " +
-  "Пороговые значения не валидированы специалистом — для точной диагностики нужна очная консультация.";
+  "Пороговые значения не валидированы специалистом, для точной диагностики нужна очная консультация.";
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));

@@ -13,6 +13,66 @@ import {
 
 export const DEV_FIXTURE_TELEGRAM_ID = "1000000001";
 
+// A2 backfill: freeze the "Плотина Тиши" milestone timeline for demo patients so
+// /progress is not empty on a fresh seed. Mirrors the stage gates in
+// apps/web/lib/gamification.ts — KEEP IN SYNC. Each PatientMilestone.reachedAt is
+// the day the patient's Nth qualifying entry first cleared both gates (cumulative
+// entries AND days since the first entry), not "now".
+const MS_DAY = 24 * 60 * 60 * 1000;
+const MILESTONE_GATES = [
+  { stage: 1, entries: 1, days: 0 },
+  { stage: 2, entries: 7, days: 7 },
+  { stage: 3, entries: 25, days: 30 },
+  { stage: 4, entries: 60, days: 90 },
+  { stage: 5, entries: 120, days: 180 },
+  { stage: 6, entries: 0, days: 365 },
+];
+
+async function backfillMilestones(patientId: string) {
+  const [checkIns, responses, medReports] = await Promise.all([
+    prisma.checkIn.findMany({ where: { patientId }, select: { date: true } }),
+    prisma.questionnaireResponse.findMany({ where: { patientId }, select: { completedAt: true } }),
+    prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
+  ]);
+  const times = [
+    ...checkIns.map((c) => c.date.getTime()),
+    ...responses.map((r) => r.completedAt.getTime()),
+    ...medReports.map((m) => m.date.getTime()),
+  ].sort((a, b) => a - b);
+  if (!times.length) return;
+
+  // Earliest timestamp on each distinct UTC day, in order (max one entry / day).
+  const dayFirstTs = new Map<string, number>();
+  for (const t of times) {
+    const key = new Date(t).toISOString().slice(0, 10);
+    if (!dayFirstTs.has(key)) dayFirstTs.set(key, t);
+  }
+  const days = [...dayFirstTs.values()];
+  const firstTs = days[0];
+
+  const rows: { patientId: string; stage: number; reachedAt: Date }[] = [];
+  for (const gate of MILESTONE_GATES) {
+    let reachedAt: number | null = null;
+    for (let i = 0; i < days.length; i++) {
+      const count = i + 1;
+      const elapsedDays = Math.floor((days[i] - firstTs) / MS_DAY);
+      if (count >= gate.entries && elapsedDays >= gate.days) {
+        reachedAt = days[i];
+        break;
+      }
+    }
+    // Stage 6 is time-only: reachable purely by elapsed time since the first
+    // entry. Not expected in demo data; handled so the rule stays honest.
+    if (reachedAt == null && gate.entries === 0) {
+      const t = firstTs + gate.days * MS_DAY;
+      if (t <= Date.now()) reachedAt = t;
+    }
+    if (reachedAt != null) rows.push({ patientId, stage: gate.stage, reachedAt: new Date(reachedAt) });
+  }
+  if (rows.length) await prisma.patientMilestone.createMany({ data: rows });
+  return rows.map((r) => r.stage);
+}
+
 const demoCognitiveSubmission: CognitiveTestSubmission = {
   memoryImmediate: { selected: MEMORY_WORD_LIST.slice(0, 7), correctCount: 7 },
   attentionSerialSevens: { entered: [55, 48, 41, 34, 27], correctCount: 5 },
@@ -124,7 +184,7 @@ async function main() {
   );
 
   const TAG_POOL = ["calm", "anxious", "activated", "slowed", "irritable", "mixed"];
-  for (const patient of patients) {
+  for (const [pIndex, patient] of patients.entries()) {
     const checkInOps = [];
     for (let i = 0; i < 14; i++) {
       const day = new Date();
@@ -155,6 +215,38 @@ async function main() {
       }
     }
     await Promise.all(checkInOps);
+
+    // Первому демо-пациенту добавляем длинную предысторию (одна запись в день,
+    // примерно за 3 месяца до недавних 14 дней), чтобы на /progress была видна
+    // непустая лента вех ("Плотина Тиши"). Иногда день пропускаем: лента при
+    // этом замирает, а не откатывается. Свежие 14 дней выше не трогаем, там
+    // детализация точек на графике.
+    if (pIndex === 0) {
+      const historyOps = [];
+      for (let d = 95; d > 14; d--) {
+        if (Math.random() < 0.15) continue;
+        const date = new Date();
+        date.setDate(date.getDate() - d);
+        date.setHours(9 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 50));
+        historyOps.push(
+          prisma.checkIn.create({
+            data: {
+              patientId: patient.id,
+              date,
+              mood: Math.floor(Math.random() * 5) - 2,
+              stateTags:
+                Math.random() > 0.6
+                  ? JSON.stringify([TAG_POOL[Math.floor(Math.random() * TAG_POOL.length)]])
+                  : null,
+              sleepHours: 5 + Math.random() * 4,
+              energyLevel: Math.floor(Math.random() * 5) + 1,
+              medsStatus: Math.random() > 0.15 ? "yes" : "partial",
+            },
+          })
+        );
+      }
+      await Promise.all(historyOps);
+    }
 
     // Несколько прошлых прохождений каждого опросника (по убыванию давности),
     // чтобы на панели "Динамика по шкалам" сразу было видно изменение баллов.
@@ -264,6 +356,9 @@ async function main() {
         content: "Сегодня было тяжело сосредоточиться на работе, но настроение ровное.",
       },
     });
+
+    const stages = await backfillMilestones(patient.id);
+    console.log(`Milestones for ${patient.name}: ${stages?.join(", ") || "none"}`);
   }
 
   const unclaimedPatient = await prisma.patient.create({

@@ -598,6 +598,59 @@ table.responses td {
   color: #465063;
 }
 
+.checkin-modes {
+  display: flex;
+  gap: 6px;
+  background: #eef1f4;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+
+.checkin-mode {
+  flex: 1;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 7px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #6b7684;
+  cursor: pointer;
+}
+
+.checkin-mode.active {
+  background: #fff;
+  color: #1c2530;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.12);
+}
+
+.checkin-today {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.checkin-today li {
+  display: flex;
+  gap: 8px;
+}
+
+.checkin-today-time {
+  color: #9aa4b2;
+  flex: none;
+  width: 42px;
+}
+
+.checkin-today-tags {
+  color: #6b7684;
+}
+
 /* Medications list */
 
 .miniapp-med-list {

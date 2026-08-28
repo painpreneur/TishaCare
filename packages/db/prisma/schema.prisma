@@ -196,15 +196,22 @@ model PatientSession {
   @@index([expiresAt])
 }
 
+// One check-in. Two shapes share this table:
+//   - a "moment" entry: mood (always) + stateTags + note, logged any number
+//     of times a day, including one-tap from the bot;
+//   - a "day summary": also carries sleepHours and medsStatus, entered once.
+// stateTags is a JSON array of ids from lib/checkin.ts (calm, anxious,
+// activated, slowed, irritable, mixed). medsStatus is "yes" | "no" | "partial".
 model CheckIn {
-  id         String   @id @default(cuid())
-  patientId  String
-  date       DateTime @default(now())
-  mood       Int
-  sleepHours Float?
+  id          String   @id @default(cuid())
+  patientId   String
+  date        DateTime @default(now())
+  mood        Int
+  stateTags   String?
+  note        String?
+  sleepHours  Float?
   energyLevel Int?
-  medsTaken  Boolean?
-  note       String?
+  medsStatus  String?
 
   patient Patient @relation(fields: [patientId], references: [id])
 }

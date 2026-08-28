@@ -123,22 +123,38 @@ async function main() {
     )
   );
 
+  const TAG_POOL = ["calm", "anxious", "activated", "slowed", "irritable", "mixed"];
   for (const patient of patients) {
-    const checkIns = Array.from({ length: 14 }).map((_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (13 - i));
-      return prisma.checkIn.create({
-        data: {
-          patientId: patient.id,
-          date,
-          mood: Math.floor(Math.random() * 5) - 2,
-          sleepHours: 5 + Math.random() * 4,
-          energyLevel: Math.floor(Math.random() * 5) + 1,
-          medsTaken: Math.random() > 0.15,
-        },
-      });
-    });
-    await Promise.all(checkIns);
+    const checkInOps = [];
+    for (let i = 0; i < 14; i++) {
+      const day = new Date();
+      day.setDate(day.getDate() - (13 - i));
+
+      // A morning "moment" entry, and on most days an evening one too, so the
+      // per-entry dots and within-day spread show on the chart.
+      const entriesToday = Math.random() > 0.3 ? 2 : 1;
+      for (let e = 0; e < entriesToday; e++) {
+        const date = new Date(day);
+        date.setHours(e === 0 ? 9 : 21, Math.floor(Math.random() * 50));
+        const tags = Math.random() > 0.5 ? [TAG_POOL[Math.floor(Math.random() * TAG_POOL.length)]] : [];
+        checkInOps.push(
+          prisma.checkIn.create({
+            data: {
+              patientId: patient.id,
+              date,
+              mood: Math.floor(Math.random() * 5) - 2,
+              stateTags: tags.length ? JSON.stringify(tags) : null,
+              note: e === 1 && Math.random() > 0.6 ? "вечером тяжелее, много мыслей" : null,
+              // Sleep and meds ride on the first (morning) entry of the day.
+              sleepHours: e === 0 ? 5 + Math.random() * 4 : null,
+              energyLevel: Math.floor(Math.random() * 5) + 1,
+              medsStatus: e === 0 ? (Math.random() > 0.15 ? "yes" : Math.random() > 0.5 ? "partial" : "no") : null,
+            },
+          })
+        );
+      }
+    }
+    await Promise.all(checkInOps);
 
     // Несколько прошлых прохождений каждого опросника (по убыванию давности),
     // чтобы на панели "Динамика по шкалам" сразу было видно изменение баллов.

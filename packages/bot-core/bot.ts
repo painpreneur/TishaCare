@@ -1,7 +1,17 @@
-import { Telegraf, Context } from "telegraf";
+import { Telegraf, Context, Markup } from "telegraf";
 import { message } from "telegraf/filters";
 import { prisma, generateInviteCode, logBotEvent } from "@tishacare/db";
 import { openMiniAppKeyboard } from "./menu";
+
+// One-tap mood buttons for /checkin. A tap stores a minimal "moment" check-in
+// (mood only); state tags, energy and a note are added in the Mini App.
+const MOOD_BUTTONS: [string, number][] = [
+  ["😞", -2],
+  ["🙁", -1],
+  ["😐", 0],
+  ["🙂", 1],
+  ["😄", 2],
+];
 
 // Single source of truth for the bot's behaviour. Both entry points wrap this:
 // apps/web/lib/bot.ts (webhook, production) and apps/bot/index.ts (long-polling,
@@ -72,11 +82,53 @@ export function createBot(): Telegraf {
     );
   });
 
+  bot.command("checkin", async (ctx) => {
+    const telegramId = String(ctx.from.id);
+    const patient = await prisma.patient.findUnique({ where: { telegramId } });
+    if (!patient) {
+      return miniAppReply(ctx, "Сначала нажмите /start, чтобы начать.");
+    }
+    if (!patient.consentAt) {
+      return miniAppReply(
+        ctx,
+        "Откройте приложение и подтвердите согласие на обработку данных, потом можно будет отмечаться командой."
+      );
+    }
+    return ctx.reply(
+      "Как настроение сейчас?",
+      Markup.inlineKeyboard([MOOD_BUTTONS.map(([e, v]) => Markup.button.callback(e, `ci:${v}`))])
+    );
+  });
+
+  bot.action(/^ci:(-?[0-2])$/, async (ctx) => {
+    const mood = Number(ctx.match[1]);
+    const telegramId = String(ctx.from.id);
+    const patient = await prisma.patient.findUnique({ where: { telegramId } });
+    if (!patient || !patient.consentAt) {
+      await ctx.answerCbQuery();
+      return ctx.editMessageText("Откройте приложение, чтобы отметиться.");
+    }
+    await prisma.checkIn.create({ data: { patientId: patient.id, mood } });
+    await ctx.answerCbQuery("Записал");
+    const emoji = MOOD_BUTTONS.find(([, v]) => v === mood)?.[0] ?? "";
+    const keyboard = openMiniAppKeyboard("/miniapp/checkin");
+    return ctx.editMessageText(
+      `Записал: ${emoji}. Детали и заметку можно добавить в приложении.`,
+      keyboard
+    );
+  });
+
   bot.help((ctx) => miniAppReply(ctx, "Всё управление через приложение. Нажмите кнопку ниже."));
   bot.on(message("text"), (ctx) => miniAppReply(ctx, "Нажмите кнопку ниже, чтобы открыть приложение."));
   bot.catch((err, ctx) => {
     console.error(`Telegraf error for update ${ctx.updateType}:`, err);
   });
+
+  // Show /checkin in the bot's command menu. Idempotent; fire-and-forget so it
+  // doesn't block webhook cold starts.
+  bot.telegram
+    .setMyCommands([{ command: "checkin", description: "Быстро отметить настроение" }])
+    .catch((err) => console.error("setMyCommands failed:", err));
 
   return bot;
 }

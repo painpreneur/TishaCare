@@ -31,6 +31,7 @@ import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
 import { toWellbeingSeries } from "@/lib/wellbeing";
 import { buildPatientInsights } from "@/lib/insights";
+import { medsToNumber } from "@/lib/checkin";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
@@ -130,18 +131,19 @@ export default async function PatientPage({ params }: { params: { id: string } }
   const wellbeingSeries = toWellbeingSeries(patient.checkIns);
   const insights = buildPatientInsights(patient.checkIns, patient.responses);
 
+  const medsNum = (c: { medsStatus: string | null }) => medsToNumber(c.medsStatus);
   const medsVsMood = pearsonCorrelation(
-    patient.checkIns.filter((c) => c.medsTaken !== null).map((c) => [c.medsTaken ? 1 : 0, c.mood])
+    patient.checkIns.filter((c) => medsNum(c) !== null).map((c) => [medsNum(c) as number, c.mood])
   );
   const medsVsEnergy = pearsonCorrelation(
     patient.checkIns
-      .filter((c) => c.medsTaken !== null && c.energyLevel !== null)
-      .map((c) => [c.medsTaken ? 1 : 0, c.energyLevel as number])
+      .filter((c) => medsNum(c) !== null && c.energyLevel !== null)
+      .map((c) => [medsNum(c) as number, c.energyLevel as number])
   );
   const medsVsSleep = pearsonCorrelation(
     patient.checkIns
-      .filter((c) => c.medsTaken !== null && c.sleepHours !== null)
-      .map((c) => [c.medsTaken ? 1 : 0, c.sleepHours as number])
+      .filter((c) => medsNum(c) !== null && c.sleepHours !== null)
+      .map((c) => [medsNum(c) as number, c.sleepHours as number])
   );
   const medsCorrelations = [
     { label: "настроением", result: medsVsMood },

@@ -12,7 +12,7 @@ interface CheckInLike {
   date: Date | string;
   mood: number;
   sleepHours: number | null;
-  medsTaken: boolean | null;
+  medsStatus: string | null;
 }
 interface ResponseLike {
   score: number;
@@ -75,7 +75,7 @@ export function buildPatientInsights(checkIns: CheckInLike[], responses: Respons
   }
 
   // Missed medication.
-  const medsMissed = last7.filter((c) => c.medsTaken === false).length;
+  const medsMissed = last7.filter((c) => c.medsStatus === "no").length;
   if (medsMissed >= 2) {
     out.push(`Препараты отмечены как не принятые в ${days(medsMissed)} из последней недели.`);
   }

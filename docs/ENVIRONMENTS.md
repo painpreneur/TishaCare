@@ -11,11 +11,11 @@ Production. Их не должно быть ни на одной машине р
 | Telegram-бот | боевой `@…bot` | `@…_staging_bot` | `@…_dev_bot` |
 | Postgres | ветка Neon `main` (или отд. проект) | ветка Neon `staging` | локальный PG / личная ветка Neon |
 | `DATABASE_URL` | пуленая строка (`-pooler`) | пуленая строка (`-pooler`) | локальный PG |
-| `DIRECT_URL` | прямая строка Neon (без `-pooler`) | прямая строка Neon | = `DATABASE_URL` |
+| `DIRECT_URL` | прямая строка Neon (без `-pooler`), в Vercel env | только для ручного `migrate deploy`, не в Vercel | = `DATABASE_URL` |
 | `APP_ENV` | `production` | `staging` | `local` |
 | `MINIAPP_DEV_BYPASS` | **запрещён** (падаем при старте) | разрешён | разрешён |
 | Напоминания | Vercel Cron | Vercel Cron | выкл.; `ENABLE_LOCAL_REMINDERS=1` для теста |
-| Схема БД | `prisma migrate deploy` в `vercel-build` | то же (Preview) | `migrate dev` / `db push` |
+| Схема БД | `migrate deploy` авто в `vercel-build` | `migrate deploy` вручную (staging creds) | `migrate dev` / `db push` |
 
 Миграции БД — см. [DATABASE.md](DATABASE.md).
 
@@ -57,10 +57,10 @@ Production. Их не должно быть ни на одной машине р
 ### staging
 1. Ветка Neon `staging` от `main`.
 2. Отдельный бот `@…_staging_bot`.
-3. Vercel: переменные в окружении **Preview** (`APP_ENV=staging`, `DATABASE_URL` = пуленая строка ветки `staging`, `DIRECT_URL` = она же без `-pooler`, токен, `WEBAPP_URL` = алиас Preview, свои секреты).
+3. Vercel: переменные в окружении **Preview** (`APP_ENV=staging`, `DATABASE_URL` = пуленая строка ветки `staging`, токен, `WEBAPP_URL` = алиас Preview, свои секреты).
 4. `setWebhook` на `<staging-alias>/api/bot/webhook` с `secret_token` = `TELEGRAM_WEBHOOK_SECRET`.
 
-`vercel-build` сам применит `prisma migrate deploy` к ветке `staging` на каждом Preview-деплое.
+Миграции staging накатываются вручную (`prisma migrate deploy` со staging-строкой и её прямым, не-пуленым `DIRECT_URL`) — Preview-деплой их не трогает, чтобы открытые PR не гоняли миграции по общей ветке.
 
 ### production
 1. Ветка Neon `main` / отдельный проект. Строка — **только** в Vercel Production env.
@@ -68,7 +68,7 @@ Production. Их не должно быть ни на одной машине р
 3. Vercel: переменные в окружении **Production** (`APP_ENV=production`, `DATABASE_URL` пуленая, `DIRECT_URL` прямая, `MINIAPP_DEV_BYPASS` не задан).
 4. `setWebhook` на боевой домен с `secret_token`.
 
-`vercel-build` применит `prisma migrate deploy` к ветке Neon `main` на каждом Production-деплое. Первый такой деплой после долгого дрейфа лучше делать вручную (см. [DATABASE.md](DATABASE.md)) со снапшотом БД.
+`vercel-build` применяет `prisma migrate deploy` к ветке Neon `main` на каждом Production-деплое (`VERCEL_ENV=production`); при отсутствии `DIRECT_URL` сборка падает намеренно. Первый деплой после долгого дрейфа лучше сделать вручную (см. [DATABASE.md](DATABASE.md)) со снапшотом БД.
 
 ## Чеклист выноса прод-доступа с локальной машины
 

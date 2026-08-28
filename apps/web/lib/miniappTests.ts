@@ -4,11 +4,15 @@ import {
   interpretCognitiveTest,
   cognitiveTestScore,
   type CognitiveTestSubmission,
-  BECK_CODE,
-  interpretBeck,
   MDQ_CODE,
   interpretMdq,
   mdqScore,
+  QUESTIONNAIRE_DEFS,
+  scoreSum,
+  interpretByBands,
+  BALANCE_WHEEL_CODE,
+  BALANCE_WHEEL_TITLE,
+  interpretBalanceWheel,
 } from "@tishacare/db";
 
 export interface MiniAppTestDef<TResults = any> {
@@ -23,11 +27,35 @@ interface MdqSubmission {
   impact: number;
 }
 
+// Every sum-of-Likert questionnaire (Beck, GAD-7, ASRS, AQ-10, MSI-BPD) is
+// scored the same way from its QuestionnaireDef — the item bank + bands live in
+// packages/db/questionnaires.ts, nothing here changes when one is added.
+const scaleTests: Record<string, MiniAppTestDef> = Object.fromEntries(
+  Object.values(QUESTIONNAIRE_DEFS).map((def) => [
+    def.code,
+    {
+      code: def.code,
+      title: def.title,
+      interpret: (results: number[]) => {
+        const score = scoreSum(results);
+        const band = interpretByBands(def, score);
+        return {
+          score,
+          interpretation: {
+            diagnosis: band.label,
+            recommendation: band.note,
+            disclaimer: def.disclaimer,
+            attribution: def.attribution ?? null,
+          },
+        };
+      },
+    },
+  ])
+);
+
 /**
- * Registry of Mini App-driven diagnostic tests. Adding a new test later is
- * a matter of defining its item bank + scoring in packages/db (mirroring
- * cognitive.ts) and registering it here — the submit route and UI runner
- * don't need to change.
+ * Registry of Mini App-driven diagnostic tests. The cognitive battery and MDQ
+ * have bespoke scoring; the sum-scale questionnaires come from QUESTIONNAIRE_DEFS.
  */
 export const MINIAPP_TESTS: Record<string, MiniAppTestDef> = {
   [COGNITIVE_TEST_CODE]: {
@@ -38,14 +66,6 @@ export const MINIAPP_TESTS: Record<string, MiniAppTestDef> = {
       return { score: cognitiveTestScore(interpretation), interpretation };
     },
   },
-  [BECK_CODE]: {
-    code: BECK_CODE,
-    title: "Опросник депрессии Бека",
-    interpret: (results: number[]) => {
-      const score = results.reduce((a, b) => a + b, 0);
-      return { score, interpretation: interpretBeck(score) };
-    },
-  },
   [MDQ_CODE]: {
     code: MDQ_CODE,
     title: "MDQ (Mood Disorder Questionnaire)",
@@ -54,4 +74,13 @@ export const MINIAPP_TESTS: Record<string, MiniAppTestDef> = {
       return { score: mdqScore(interpretation), interpretation };
     },
   },
+  [BALANCE_WHEEL_CODE]: {
+    code: BALANCE_WHEEL_CODE,
+    title: BALANCE_WHEEL_TITLE,
+    interpret: (results: number[]) => ({
+      score: results.reduce((a, b) => a + (Number(b) || 0), 0),
+      interpretation: interpretBalanceWheel(results),
+    }),
+  },
+  ...scaleTests,
 };

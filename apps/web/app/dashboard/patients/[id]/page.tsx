@@ -13,6 +13,10 @@ import {
   MdqResult,
   CognitiveCategory,
   CognitiveTestInterpretation,
+  QUESTIONNAIRE_DEFS,
+  questionnaireMaxScore,
+  interpretByBands,
+  BALANCE_WHEEL_CODE,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
@@ -26,11 +30,15 @@ import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
 import { toWellbeingSeries } from "@/lib/wellbeing";
+import { buildPatientInsights } from "@/lib/insights";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
   [MDQ_CODE]: MDQ_MAX_SCORE,
   [COGNITIVE_TEST_CODE]: COGNITIVE_TEST_MAX_SCORE,
+  ...Object.fromEntries(
+    Object.values(QUESTIONNAIRE_DEFS).map((def) => [def.code, questionnaireMaxScore(def)])
+  ),
 };
 
 const COGNITIVE_CATEGORY_COLORS: Record<CognitiveCategory, string> = {
@@ -63,6 +71,18 @@ function describeResponse(code: string, score: number, answersJson: string): str
     try {
       const { interpretation } = JSON.parse(answersJson) as { interpretation: CognitiveTestInterpretation };
       return interpretation.summary;
+    } catch {
+      return "—";
+    }
+  }
+  // Sum-scale questionnaires (Beck already handled above): interpret by bands.
+  if (QUESTIONNAIRE_DEFS[code]) {
+    return interpretByBands(QUESTIONNAIRE_DEFS[code], score).label;
+  }
+  if (code === BALANCE_WHEEL_CODE) {
+    try {
+      const { interpretation } = JSON.parse(answersJson) as { interpretation: { note: string } };
+      return interpretation.note;
     } catch {
       return "—";
     }
@@ -108,6 +128,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
   }
 
   const wellbeingSeries = toWellbeingSeries(patient.checkIns);
+  const insights = buildPatientInsights(patient.checkIns, patient.responses);
 
   const medsVsMood = pearsonCorrelation(
     patient.checkIns.filter((c) => c.medsTaken !== null).map((c) => [c.medsTaken ? 1 : 0, c.mood])
@@ -189,6 +210,21 @@ export default async function PatientPage({ params }: { params: { id: string } }
           </div>
         )}
       </div>
+
+      {insights.length > 0 && (
+        <div className="panel">
+          <h3>Выводы по данным</h3>
+          <ul className="correlation-list">
+            {insights.map((line, i) => (
+              <li key={i}>{line}</li>
+            ))}
+          </ul>
+          <p className="hint">
+            Это описательные наблюдения по самоотчётам пациента за последние 1–2 недели — не диагноз и
+            не замена клинической оценке.
+          </p>
+        </div>
+      )}
 
       <div className="panel">
         <h3>Анамнез</h3>

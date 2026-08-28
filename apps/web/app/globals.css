@@ -586,6 +586,11 @@ table.responses td {
   border-color: #4f6bfe;
 }
 
+.miniapp-option-btn.active {
+  border-color: #4f6bfe;
+  background: #eef1ff;
+}
+
 .care-link-list {
   list-style: none;
   padding: 0;

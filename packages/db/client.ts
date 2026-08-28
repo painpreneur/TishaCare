@@ -3,4 +3,6 @@
 // (The root package entry (index.ts) pulls in the `pg` driver for the
 // Prisma adapter, which breaks client bundles — Node builtins like `tls`.)
 export * from "./clinical";
+export * from "./questionnaires";
+export * from "./lifeBalance";
 export * from "./cognitive";

@@ -1,15 +1,19 @@
-import PatientHome, { PatientFeature } from "@/components/patient/PatientHome";
+import PatientHome from "@/components/patient/PatientHome";
+import type { PatientFeature } from "@/components/patient/patientFeature";
 
-// Web portal menu. A subset of the Mini App for now; the questionnaires and
-// thoughts screens are ported in a later slice.
+// Same menu as the Mini App; the web portal is now at feature parity.
+const PRIMARY: PatientFeature[] = [
+  { href: "/checkin", emoji: "📝", title: "Чек-ин", desc: "Отметить состояние" },
+  { href: "/progress", emoji: "📈", title: "Моя динамика", desc: "График по вашим отметкам" },
+];
+
 const FEATURES: PatientFeature[] = [
-  { href: "/checkin", emoji: "📝", title: "Чек-ин", desc: "Настроение, сон, энергия, лекарства" },
-  { href: "/progress", emoji: "📈", title: "Моя динамика", desc: "График настроения, сна и энергии" },
-  { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
+  { href: "/tests", emoji: "📋", title: "Опросники и тесты", desc: "Скрининги и самонаблюдение" },
+  { href: "/thoughts", emoji: "📓", title: "Дневник мыслей", desc: "Записать, что беспокоит" },
   { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Курсы приёма и переносимость" },
-  { href: "/profile", emoji: "👤", title: "Профиль", desc: "Данные и код подключения к врачу" },
+  { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
 ];
 
 export default function PortalHome() {
-  return <PatientHome features={FEATURES} />;
+  return <PatientHome primary={PRIMARY} features={FEATURES} />;
 }

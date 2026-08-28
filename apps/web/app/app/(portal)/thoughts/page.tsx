@@ -1,5 +1,5 @@
 import ThoughtsJournal from "@/components/patient/ThoughtsJournal";
 
-export default function ThoughtsPage() {
+export default function Page() {
   return <ThoughtsJournal />;
 }

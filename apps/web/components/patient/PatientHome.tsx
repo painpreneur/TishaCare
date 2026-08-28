@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
 import { usePatientBasePath } from "@/lib/patientPortal";
 import { INTRO_SEEN_KEY } from "@/lib/intro";
+import FeatureGrid from "./FeatureGrid";
+import type { PatientFeature } from "./patientFeature";
+
+export type { PatientFeature };
 
 function introSeen(): boolean {
   try {
@@ -15,17 +19,15 @@ function introSeen(): boolean {
   }
 }
 
-export interface PatientFeature {
-  /** Path relative to the surface root, e.g. "/checkin". */
-  href: string;
-  emoji: string;
-  title: string;
-  desc: string;
-}
-
 // Shared home for /miniapp and /app: runs the consent -> onboarding gate, then
-// shows the surface's feature menu.
-export default function PatientHome({ features }: { features: PatientFeature[] }) {
+// shows the daily pair (primary) and the rest of the menu (features).
+export default function PatientHome({
+  primary,
+  features,
+}: {
+  primary: PatientFeature[];
+  features: PatientFeature[];
+}) {
   const router = useRouter();
   const base = usePatientBasePath();
   const [patientName, setPatientName] = useState<string | null>(null);
@@ -99,23 +101,20 @@ export default function PatientHome({ features }: { features: PatientFeature[] }
 
   return (
     <div>
-      <div className="miniapp-card" style={{ marginBottom: 16 }}>
+      <div className="patient-home-head">
         <h1>Здравствуйте, {patientName}!</h1>
-        <p className="hint">Выберите, чем хотите заняться.</p>
+        <Link
+          href={withDevTelegramIdParam(`${base}/profile`)}
+          className="patient-home-profile"
+          aria-label="Профиль"
+          title="Профиль"
+        >
+          ⚙
+        </Link>
       </div>
-      <div className="miniapp-menu-grid">
-        {features.map((f) => (
-          <Link
-            key={f.href}
-            href={withDevTelegramIdParam(`${base}${f.href}`)}
-            className="miniapp-menu-card"
-          >
-            <span className="miniapp-menu-emoji">{f.emoji}</span>
-            <span className="miniapp-menu-title">{f.title}</span>
-            <span className="miniapp-menu-desc">{f.desc}</span>
-          </Link>
-        ))}
-      </div>
+      <FeatureGrid features={primary} cardClassName="primary" />
+      <div style={{ height: 12 }} />
+      <FeatureGrid features={features} />
     </div>
   );
 }

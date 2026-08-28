@@ -20,6 +20,14 @@ export interface QDefBand {
   label: string;
   note: string;
 }
+/** Clinical role of an instrument, used to decide when to offer it:
+ *  - intake:      broad screening for/at the first appointment
+ *  - diagnostic:  deeper instrument used while establishing a diagnosis
+ *  - monitoring:  repeated over time to track a known condition
+ *  - self:        non-clinical self-reflection, patient's own use
+ *  An instrument can serve several roles (Beck: diagnostic + monitoring). */
+export type QuestionnairePhase = "intake" | "diagnostic" | "monitoring" | "self";
+
 export interface QuestionnaireDef {
   code: string;
   title: string;
@@ -28,6 +36,7 @@ export interface QuestionnaireDef {
   /** Copyright / source line shown under the result, when the instrument
    *  requires attribution. */
   attribution?: string;
+  phases: QuestionnairePhase[];
   questions: QDefQuestion[];
   bands: QDefBand[];
 }
@@ -52,6 +61,7 @@ export const BECK_DEF: QuestionnaireDef = {
   code: BECK_CODE,
   title: "Опросник депрессии Бека",
   description: "Скрининг выраженности депрессивной симптоматики (21 вопрос)",
+  phases: ["diagnostic", "monitoring"],
   disclaimer:
     "Опросник Бека: скрининговый инструмент. Результат не является диагнозом; " +
     "интерпретируйте его вместе с врачом.",
@@ -100,6 +110,7 @@ export const GAD7_DEF: QuestionnaireDef = {
   code: GAD7_CODE,
   title: "GAD-7 (шкала тревоги)",
   description: "Скрининг генерализованного тревожного расстройства (7 вопросов)",
+  phases: ["intake", "monitoring"],
   disclaimer:
     "GAD-7: скрининговый инструмент, а не диагноз. Обсудите результат с врачом; " +
     "особенно при выраженной тревоге не откладывайте обращение за помощью.",
@@ -137,6 +148,7 @@ export const ASRS_DEF: QuestionnaireDef = {
   code: ASRS_CODE,
   title: "ASRS v1.1 (скрининг СДВГ, часть A)",
   description: "Скрининг синдрома дефицита внимания и гиперактивности у взрослых (6 вопросов)",
+  phases: ["intake"],
   disclaimer:
     "ASRS: скрининг, а не диагноз. Положительный результат означает, что стоит " +
     "обсудить симптомы с врачом; диагноз СДВГ ставится только по итогам очной оценки.",
@@ -177,6 +189,7 @@ export const AQ10_DEF: QuestionnaireDef = {
   code: AQ10_CODE,
   title: "AQ-10 (скрининг черт аутистического спектра)",
   description: "Короткий скрининг признаков расстройств аутистического спектра (10 утверждений)",
+  phases: ["intake"],
   disclaimer:
     "AQ-10: короткий скрининг, а не диагноз. Он не валидирован для русскоязычной " +
     "популяции в этой реализации. Результат имеет смысл обсуждать только со специалистом.",
@@ -212,6 +225,7 @@ export const MSI_BPD_DEF: QuestionnaireDef = {
   code: MSI_BPD_CODE,
   title: "MSI-BPD (скрининг пограничного расстройства)",
   description: "Скрининг признаков пограничного расстройства личности (10 вопросов)",
+  phases: ["intake"],
   disclaimer:
     "MSI-BPD: скрининг, а не диагноз, и не заменяет очную оценку. Если какие-то " +
     "из этих вопросов отзываются тяжело, обсудите это со своим врачом.",

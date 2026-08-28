@@ -1,5 +1,5 @@
 import CognitiveTest from "@/components/patient/CognitiveTest";
 
-export default function CognitiveTestPage() {
+export default function Page() {
   return <CognitiveTest />;
 }

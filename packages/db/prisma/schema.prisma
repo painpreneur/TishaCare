@@ -6,6 +6,12 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // CLI-only (migrate deploy / diff / studio). The runtime client connects
+  // through @prisma/adapter-pg, which reads DATABASE_URL directly and ignores
+  // this. Point DIRECT_URL at Neon's NON-pooled endpoint: Prisma Migrate takes
+  // a session-level advisory lock the transaction pooler (-pooler host) drops.
+  // Locally / in CI (plain Postgres, no pooler) set it equal to DATABASE_URL.
+  directUrl = env("DIRECT_URL")
 }
 
 // Append-only: rows are only ever created, never updated or deleted, so this

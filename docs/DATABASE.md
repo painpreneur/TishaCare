@@ -41,12 +41,23 @@ npm exec -w @tishacare/db -- prisma migrate resolve --applied 0_init
 `prisma migrate deploy` — применяет только невыполненные миграции по
 порядку, ничего не генерирует и не удаляет.
 
-```
-npm run db:migrate:deploy      # с DATABASE_URL нужного контура
-```
+**На Production-деплое — автоматически** (E1.2): `vercel-build`
+(`apps/web/scripts/vercel-build.mjs`) при `VERCEL_ENV=production` гоняет
+`prisma migrate deploy` к ветке Neon `main` перед `next build`. Миграция
+упала — упала сборка, предыдущий деплой остаётся живым. Preview- и
+dev-деплои только собираются; миграции staging — отдельный ручной шаг
+(та же команда со staging-креденшелами), а не действие каждого PR.
 
-Пока это ручной шаг релиза (запускать сразу после мёрджа в `main`, до
-или вместе с деплоем Vercel). Автоматизация в пайплайн — задача E1.2.
+`DIRECT_URL` — прямое (не пуленое) подключение к тому же Postgres. Миграции
+берут session-lock, которого нет в транзакционном пулере Neon (`-pooler` в
+хосте). Обязателен в Vercel Production (иначе `vercel-build` падает
+намеренно); для ручного прогона staging — свой; локально/CI = `DATABASE_URL`.
+
+Вручную (staging, разовый backfill, догнать отставшую БД, откат) — та же команда:
+
+```
+npm run db:migrate:deploy      # с DATABASE_URL / DIRECT_URL нужного контура
+```
 
 ### Проверить состояние
 

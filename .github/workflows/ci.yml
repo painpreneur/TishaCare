@@ -35,6 +35,8 @@ jobs:
       # `next build` evaluates. No real Telegram or DB traffic happens here.
       TELEGRAM_BOT_TOKEN: "123456:ci-placeholder-token"
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tishacare_ci?schema=public"
+      # Plain Postgres here — no pooler — so the direct URL is the same one.
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/tishacare_ci?schema=public"
 
     steps:
       - uses: actions/checkout@v5

@@ -1,23 +1,20 @@
-import PatientHome, { PatientFeature } from "@/components/patient/PatientHome";
+import PatientHome from "@/components/patient/PatientHome";
+import type { PatientFeature } from "@/components/patient/patientFeature";
 
+// The daily pair, shown large at the top.
+const PRIMARY: PatientFeature[] = [
+  { href: "/checkin", emoji: "📝", title: "Чек-ин", desc: "Отметить состояние" },
+  { href: "/progress", emoji: "📈", title: "Моя динамика", desc: "График по вашим отметкам" },
+];
+
+// Everything else.
 const FEATURES: PatientFeature[] = [
-  { href: "/checkin", emoji: "📝", title: "Чек-ин", desc: "Настроение, сон, энергия, лекарства" },
-  { href: "/progress", emoji: "📈", title: "Моя динамика", desc: "График настроения, сна и энергии" },
-  { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
-  { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Список и приём" },
+  { href: "/tests", emoji: "📋", title: "Опросники и тесты", desc: "Скрининги и самонаблюдение" },
   { href: "/thoughts", emoji: "📓", title: "Дневник мыслей", desc: "Записать, что беспокоит" },
-  { href: "/support", emoji: "🧠", title: "Поддержка", desc: "Чат с GPT-ассистентом" },
-  { href: "/beck", emoji: "📋", title: "Депрессия (Бек)", desc: "Опросник, 21 вопрос" },
-  { href: "/mdq", emoji: "📋", title: "Мания (MDQ)", desc: "Скрининг биполярного спектра" },
-  { href: "/gad7", emoji: "📋", title: "Тревога (GAD-7)", desc: "Скрининг тревоги, 7 вопросов" },
-  { href: "/asrs", emoji: "📋", title: "Внимание (ASRS)", desc: "Скрининг СДВГ, 6 вопросов" },
-  { href: "/aq10", emoji: "📋", title: "Черты спектра (AQ-10)", desc: "Скрининг РАС, 10 утверждений" },
-  { href: "/msi-bpd", emoji: "📋", title: "Границы (MSI-BPD)", desc: "Скрининг ПРЛ, 10 вопросов" },
-  { href: "/balance", emoji: "🎡", title: "Колесо баланса", desc: "Самоанализ по 8 сферам жизни" },
-  { href: "/cognitive-test", emoji: "🧩", title: "Когнитивный тест", desc: "~10 минут, память и внимание" },
-  { href: "/profile", emoji: "👤", title: "Профиль", desc: "Данные и код подключения к врачу" },
+  { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Список и приём" },
+  { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
 ];
 
 export default function MiniAppHome() {
-  return <PatientHome features={FEATURES} />;
+  return <PatientHome primary={PRIMARY} features={FEATURES} />;
 }

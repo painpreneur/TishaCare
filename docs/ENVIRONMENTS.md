@@ -75,5 +75,5 @@ Production. Их не должно быть ни на одной машине р
 - [ ] `apps/web/.env.local` — `DATABASE_URL` / `DIRECT_URL` не боевые, `APP_ENV=local`
 - [ ] `apps/bot/.env` — `DATABASE_URL` не боевой, токен dev-бота, `APP_ENV=local`
 - [ ] `packages/db/.env` — `DATABASE_URL` / `DIRECT_URL` не боевые
-- [ ] боевые `DATABASE_URL` / `DIRECT_URL` / `OPENAI_API_KEY` / `*_SECRET` — только в Vercel Production
+- [ ] боевые `DATABASE_URL` / `DIRECT_URL` / `*_SECRET` — только в Vercel Production
 - [ ] исторически утёкшие токены отозваны и перевыпущены (см. README)

@@ -59,7 +59,7 @@ export default function MdqPage() {
           <h1>Опрос завершён</h1>
           <p className="hint">Результат: {result.diagnosis}.</p>
           <p className="hint">{result.recommendation}</p>
-          <p className="hint">Напоминание: MDQ — это скрининговый, а не диагностический инструмент.</p>
+          <p className="hint">Напоминание: MDQ это скрининговый, а не диагностический инструмент.</p>
         </div>
       </div>
     );

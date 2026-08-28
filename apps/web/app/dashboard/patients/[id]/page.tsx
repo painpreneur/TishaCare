@@ -64,7 +64,7 @@ function describeResponse(code: string, score: number, answersJson: string): str
       const result = JSON.parse(answersJson) as MdqResult;
       return result.diagnosis;
     } catch {
-      return "—";
+      return "·";
     }
   }
   if (code === COGNITIVE_TEST_CODE) {
@@ -72,7 +72,7 @@ function describeResponse(code: string, score: number, answersJson: string): str
       const { interpretation } = JSON.parse(answersJson) as { interpretation: CognitiveTestInterpretation };
       return interpretation.summary;
     } catch {
-      return "—";
+      return "·";
     }
   }
   // Sum-scale questionnaires (Beck already handled above): interpret by bands.
@@ -84,10 +84,10 @@ function describeResponse(code: string, score: number, answersJson: string): str
       const { interpretation } = JSON.parse(answersJson) as { interpretation: { note: string } };
       return interpretation.note;
     } catch {
-      return "—";
+      return "·";
     }
   }
-  return "—";
+  return "·";
 }
 
 export default async function PatientPage({ params }: { params: { id: string } }) {
@@ -204,7 +204,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
               ))}
             </ul>
             <p className="hint">
-              Корреляция рассчитана по самоотчётам пациента и носит описательный характер — она не доказывает
+              Корреляция рассчитана по самоотчётам пациента и носит описательный характер: она не доказывает
               причинно-следственную связь и не заменяет клиническую оценку.
             </p>
           </div>
@@ -220,7 +220,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
             ))}
           </ul>
           <p className="hint">
-            Это описательные наблюдения по самоотчётам пациента за последние 1–2 недели — не диагноз и
+            Это описательные наблюдения по самоотчётам пациента за последние одну-две недели, не диагноз и
             не замена клинической оценке.
           </p>
         </div>
@@ -330,7 +330,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           )}
           {cognitiveCategorySeries.length > 0 && (
             <div className="chart-block">
-              <h4 className="chart-subtitle">Когнитивный тест — по категориям</h4>
+              <h4 className="chart-subtitle">Когнитивный тест: по категориям</h4>
               <CognitiveCategoryChart data={cognitiveCategorySeries} series={cognitiveChartSeries} />
               {cognitiveCategorySeries.length < 2 && (
                 <p className="hint">Динамика появится после повторного прохождения опросника.</p>
@@ -342,7 +342,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
       {cognitiveInterpretation && (
         <div className="panel">
-          <h3>Когнитивный тест — последний результат</h3>
+          <h3>Когнитивный тест: последний результат</h3>
           <table className="responses">
             <thead>
               <tr>
@@ -394,8 +394,8 @@ export default async function PatientPage({ params }: { params: { id: string } }
                   </div>
                   <p className="encounter-field">
                     <span className="encounter-field-label">
-                      {new Date(m.startedAt).toLocaleDateString("ru-RU")}
-                      {m.endedAt ? ` – ${new Date(m.endedAt).toLocaleDateString("ru-RU")}` : " – по настоящее время"}
+                      с {new Date(m.startedAt).toLocaleDateString("ru-RU")}
+                      {m.endedAt ? ` по ${new Date(m.endedAt).toLocaleDateString("ru-RU")}` : ", по настоящее время"}
                     </span>
                     {" · "}
                     {PRESCRIBER_LABEL[m.prescriberType] ?? m.prescriberType}
@@ -414,7 +414,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
                           <span className="encounter-field-label">
                             {new Date(r.date).toLocaleDateString("ru-RU")}:
                           </span>{" "}
-                          переносимость {r.tolerability ?? "—"}/5, польза {r.perceivedBenefit ?? "—"}/5
+                          переносимость {r.tolerability ?? "?"}/5, польза {r.perceivedBenefit ?? "?"}/5
                           {tagsToLabels(r.sideEffectTags).length > 0 &&
                             ` · ${tagsToLabels(r.sideEffectTags).join(", ")}`}
                           {r.sideEffects && ` · ${r.sideEffects}`}

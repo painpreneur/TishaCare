@@ -10,7 +10,7 @@ import { getCurrentPatient } from "./patientSession";
 // the affected routes down rather than serving them unauthenticated.
 if (isProduction && process.env.MINIAPP_DEV_BYPASS === "1") {
   throw new Error(
-    "MINIAPP_DEV_BYPASS=1 is set with APP_ENV=production — refusing to start. " +
+    "MINIAPP_DEV_BYPASS=1 is set with APP_ENV=production. Refusing to start. " +
       "Unset it in the production environment; it belongs only on staging/local."
   );
 }

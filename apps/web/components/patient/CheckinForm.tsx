@@ -161,9 +161,9 @@ export default function CheckinForm() {
                 <tr key={c.id}>
                   <td>{new Date(c.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })}</td>
                   <td>{MOOD_EMOJI[c.mood] ?? c.mood}</td>
-                  <td>{c.sleepHours != null ? `${c.sleepHours.toFixed(1)} ч` : "—"}</td>
-                  <td>{c.energyLevel ?? "—"}</td>
-                  <td>{c.medsTaken === null ? "—" : c.medsTaken ? "✅" : "⛔️"}</td>
+                  <td>{c.sleepHours != null ? `${c.sleepHours.toFixed(1)} ч` : "·"}</td>
+                  <td>{c.energyLevel ?? "·"}</td>
+                  <td>{c.medsTaken === null ? "·" : c.medsTaken ? "✅" : "⛔️"}</td>
                 </tr>
               ))}
             </tbody>

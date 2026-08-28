@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!owned) return NextResponse.json({ error: "Медикамент не найден" }, { status: 404 });
   if (owned._count.reports > 0) {
     return NextResponse.json(
-      { error: "У этого препарата есть отметки о переносимости — его можно только отменить" },
+      { error: "У этого препарата есть отметки о переносимости, его можно только отменить" },
       { status: 409 }
     );
   }

@@ -5,6 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
 import { usePatientBasePath } from "@/lib/patientPortal";
+import { INTRO_SEEN_KEY } from "@/lib/intro";
+
+function introSeen(): boolean {
+  try {
+    return localStorage.getItem(INTRO_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export interface PatientFeature {
   /** Path relative to the surface root, e.g. "/checkin". */
@@ -39,7 +48,11 @@ export default function PatientHome({ features }: { features: PatientFeature[] }
       .then((data) => {
         if (!active) return;
         if (data.needsConsent) {
-          router.replace(withDevTelegramIdParam(`${base}/consent`));
+          // New patient: show the one-time intro before the consent step
+          // (Mini App only, once per device). Everyone else skips straight
+          // to consent.
+          const next = base === "/miniapp" && !introSeen() ? "/intro" : "/consent";
+          router.replace(withDevTelegramIdParam(`${base}${next}`));
           return;
         }
         if (data.needsOnboarding) {

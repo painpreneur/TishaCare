@@ -347,6 +347,49 @@ table.responses td {
   font-size: 17px;
 }
 
+.intro-card {
+  text-align: center;
+}
+
+.intro-emoji {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.intro-body {
+  margin: 8px 0 0;
+}
+
+.intro-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 20px 0 16px;
+}
+
+.intro-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4d8e2;
+}
+
+.intro-dot.active {
+  background: #4f6bfe;
+}
+
+.intro-skip {
+  display: block;
+  margin: 10px auto 0;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: #9aa4b2;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .miniapp-progress {
   height: 4px;
   background: #eef1f4;

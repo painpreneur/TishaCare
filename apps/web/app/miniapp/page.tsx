@@ -6,7 +6,6 @@ const FEATURES: PatientFeature[] = [
   { href: "/care", emoji: "🩺", title: "Мои врачи", desc: "Подключение и управление доступом" },
   { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Список и приём" },
   { href: "/thoughts", emoji: "📓", title: "Дневник мыслей", desc: "Записать, что беспокоит" },
-  { href: "/support", emoji: "🧠", title: "Поддержка", desc: "Чат с GPT-ассистентом" },
   { href: "/beck", emoji: "📋", title: "Депрессия (Бек)", desc: "Опросник, 21 вопрос" },
   { href: "/mdq", emoji: "📋", title: "Мания (MDQ)", desc: "Скрининг биполярного спектра" },
   { href: "/gad7", emoji: "📋", title: "Тревога (GAD-7)", desc: "Скрининг тревоги, 7 вопросов" },

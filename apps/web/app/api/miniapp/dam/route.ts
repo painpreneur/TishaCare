@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient } from "@/lib/telegramAuth";
 import { describeDam, welcomeBackLine } from "@/lib/gamification";
+import { buildPath, unlockContext } from "@/lib/unlocks";
 
 // Snapshot for the "Плотина Тиши" scene (DamScene): current stage, the calm
 // status line, today's state, and the frozen milestone timeline. Read-only and
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
     prisma.checkIn.findMany({ where: { patientId }, select: { date: true, sleepHours: true } }),
     prisma.questionnaireResponse.findMany({
       where: { patientId },
-      select: { completedAt: true },
+      select: { completedAt: true, questionnaire: { select: { code: true } } },
     }),
     prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
     prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
@@ -61,6 +62,13 @@ export async function GET(req: NextRequest) {
     todayState = checkInsToday.some((c) => c.sleepHours != null) ? "done" : "added";
   }
 
+  const path = buildPath(
+    unlockContext(
+      responses.map((r) => r.questionnaire.code),
+      snapshot,
+    ),
+  );
+
   const allTimes = [
     ...checkIns.map((c) => c.date.getTime()),
     ...responses.map((r) => r.completedAt.getTime()),
@@ -81,5 +89,6 @@ export async function GET(req: NextRequest) {
     lastEntryAt,
     milestones: milestones.map((m) => ({ stage: m.stage, reachedAt: m.reachedAt.toISOString() })),
     unlocks: unlocks.map((u) => u.code),
+    path,
   });
 }

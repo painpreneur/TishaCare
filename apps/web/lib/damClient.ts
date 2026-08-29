@@ -1,4 +1,5 @@
 import { miniAppAuthHeaders } from "@/lib/miniappClient";
+import type { PatientPath } from "@/lib/unlocks";
 
 // Shape of GET /api/miniapp/dam — the home-screen summary: dam stage + status,
 // today's state, the milestone timeline, and a minimal activity summary (last
@@ -19,6 +20,8 @@ export interface DamHomeData {
   milestones: { stage: number; reachedAt: string }[];
   /** Earned "Открытия" codes (see lib/unlocks.ts). */
   unlocks: string[];
+  /** Staged "Открытия" view: pre-appointment path + long-haul unlocks. */
+  path: PatientPath;
 }
 
 export async function fetchDamHome(): Promise<DamHomeData | null> {

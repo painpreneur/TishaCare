@@ -960,3 +960,10 @@ table.responses td {
 .dam-compact .dam-illustration {
   max-width: 220px;
 }
+
+/* DamScene full, now below the chart on /progress */
+.dam-full {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eef1f4;
+}

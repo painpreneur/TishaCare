@@ -120,10 +120,10 @@ export default function PatientHome({
         </Link>
       </div>
       <MilestoneCard data={damData} />
+      <ActivityBlock data={damData} />
       <FeatureGrid features={primary} cardClassName="primary" />
       <div style={{ height: 12 }} />
       <FeatureGrid features={features} />
-      <ActivityBlock data={damData} />
       <DamScene size="compact" data={damData} />
     </div>
   );

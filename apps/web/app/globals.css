@@ -1055,6 +1055,60 @@ table.responses td {
   color: #9aa4b2;
 }
 
+/* "Путь к первому приёму" — the Block A checklist on the Открытия screen */
+.path-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.path-step {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #eef1f4;
+}
+
+.path-step:first-child {
+  border-top: none;
+}
+
+.path-mark {
+  flex: none;
+  width: 20px;
+  text-align: center;
+  font-weight: 600;
+  color: #9aa4b2;
+}
+
+.path-step.done .path-mark {
+  color: #4f6bfe;
+}
+
+.path-step-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.path-step-text {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #4a5560;
+}
+
+.path-grant {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #4f6bfe;
+}
+
+.path-complete-note {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #2f6b4f;
+}
+
 /* "Связи" block under the mood chart (connections unlock) */
 .connections-block {
   margin-top: 20px;

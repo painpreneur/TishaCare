@@ -34,3 +34,19 @@ card, so the two never look inconsistent.
 | `tisha-today-content.png` | done | sitting content, paws folded |
 | `tisha-today-pending.png` | pending | looking toward the water, inviting |
 | `tisha-return.png` | (welcome-back) | a small warm wave, after a 14+ day gap |
+
+## Unlock medallions — 512², transparent
+
+Wooden-ring medallions for the "Открытия" screen (`UnlocksList` / `DiscoveriesScreen`),
+one per unlock code in `apps/web/lib/unlocks.ts`. Shown at ~44px; a locked one is
+rendered grayscale + dimmed by CSS. Source 1024² RGBA from ChatGPT, downscaled LANCZOS.
+
+| file | unlock | motif |
+|---|---|---|
+| `unlock-connections.png` | connections | two twigs crossed, bound with a glowing knot |
+| `unlock-balance.png` | balance | the balance wheel on water |
+| `unlock-compare.png` | compare | a framed chart with two lines |
+| `unlock-baseline.png` | baseline | a marker stake set in the ground by the water |
+| `unlock-rhythm.png` | rhythm | moon phases over the water |
+| `unlock-year.png` | year | a tree-ring stump with a sprout |
+| `unlock-seasons.png` | seasons | a branch with a spring bud and an autumn leaf |

@@ -145,3 +145,92 @@ export function unlockContext(
     scaleResponseCount: responseCodes.filter((c) => SCALE_CODES.has(c)).length,
   };
 }
+
+// ---- "Открытия", staged ------------------------------------------------------
+//
+// The flat list reads better as two parts. Block A is a pre-appointment path:
+// a short, ordered checklist a patient can actually finish before the first
+// visit, and here — unlike a locked unlock — step progress IS shown, because it
+// is an explicit onboarding task, not a hidden mechanic. Block B is the
+// long-haul unlocks (volume / time / dam stage): no order, no counters.
+
+export interface PathStep {
+  id: string;
+  title: string;
+  /** plain statement of the act; shown while not done */
+  hint: string;
+  done: boolean;
+  /** progress within a multi-part step, e.g. "3 из 5" (Block A only, while not done) */
+  detail?: string;
+  /** unlock codes this step grants once done (titles via unlockInfo) */
+  grants: string[];
+}
+
+export interface PathBlockBItem {
+  code: string;
+  title: string;
+  copy: string;
+  lockedHint: string;
+  open: boolean;
+}
+
+export interface PatientPath {
+  blockA: PathStep[];
+  blockAComplete: boolean;
+  blockB: PathBlockBItem[];
+}
+
+const BLOCK_B_CODES = ["rhythm", "seasons", "year"];
+
+export function buildPath(ctx: UnlockContext): PatientPath {
+  const has = (code: string) => ctx.completedCodes.has(code);
+  const intakeDone = INTAKE_CODES.filter(has).length;
+  const intakeAll = intakeDone >= INTAKE_CODES.length;
+
+  const blockA: PathStep[] = [
+    {
+      id: "first-entry",
+      title: "Первая запись состояния",
+      hint: "Одна отметка о том, как дела",
+      done: ctx.qualifyingEntryCount >= 1,
+      grants: [],
+    },
+    {
+      id: "week",
+      title: "Неделя записей",
+      hint: "Семь дней с отметкой о состоянии",
+      done: ctx.qualifyingEntryCount >= 7,
+      detail: ctx.qualifyingEntryCount >= 7 ? undefined : `${Math.min(ctx.qualifyingEntryCount, 7)} из 7`,
+      grants: ["connections"],
+    },
+    {
+      id: "wheel",
+      title: "Колесо баланса пройдено",
+      hint: "Восемь сфер жизни по разу",
+      done: has(BALANCE_WHEEL_CODE),
+      grants: ["balance"],
+    },
+    {
+      id: "intake",
+      title: "Скрининговые опросники к приёму",
+      hint: "MDQ, тревога, внимание, черты спектра, границы",
+      done: intakeAll,
+      detail: intakeAll ? undefined : `${intakeDone} из ${INTAKE_CODES.length}`,
+      grants: ["baseline", "compare"],
+    },
+  ];
+
+  const earned = evaluateUnlocks(ctx);
+  const blockB: PathBlockBItem[] = BLOCK_B_CODES.map((code) => {
+    const info = unlockInfo(code);
+    return {
+      code,
+      title: info?.title ?? code,
+      copy: info?.copy ?? "",
+      lockedHint: info?.lockedHint ?? "",
+      open: earned.includes(code),
+    };
+  });
+
+  return { blockA, blockAComplete: blockA.every((s) => s.done), blockB };
+}

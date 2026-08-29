@@ -1059,3 +1059,29 @@ table.responses td {
 .connections-block {
   margin-top: 20px;
 }
+
+/* "Сезоны у плотины" (seasons unlock) — a gentle season touch on the full scene */
+.dam-season {
+  margin: 4px 0 0;
+}
+
+.dam-season .hint {
+  margin: 0;
+}
+
+.dam-season .miniapp-word-grid {
+  justify-content: center;
+}
+
+.dam-season--spring {
+  filter: saturate(1.06) brightness(1.02);
+}
+.dam-season--summer {
+  filter: saturate(1.12) brightness(1.03);
+}
+.dam-season--autumn {
+  filter: sepia(0.18) saturate(1.12);
+}
+.dam-season--winter {
+  filter: saturate(0.85) brightness(1.05) hue-rotate(8deg);
+}

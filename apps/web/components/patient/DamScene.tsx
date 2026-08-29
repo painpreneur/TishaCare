@@ -18,11 +18,22 @@ const SPRITE: Record<TodayState, { src: string; alt: string }> = {
   pending: { src: "/gamification/tisha-today-pending.png", alt: "Тиша смотрит на воду" },
 };
 
-function stageSrc(stage: number): string {
-  if (stage < 6) return `/gamification/stage-${stage}.png`;
+type Season = "spring" | "summer" | "autumn" | "winter";
+const SEASONS: Season[] = ["spring", "summer", "autumn", "winter"];
+const SEASON_LABEL: Record<Season, string> = {
+  spring: "весна",
+  summer: "лето",
+  autumn: "осень",
+  winter: "зима",
+};
+
+function currentSeason(): Season {
   const m = new Date().getMonth();
-  const season =
-    m === 11 || m <= 1 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "autumn";
+  return m === 11 || m <= 1 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "autumn";
+}
+
+function stageSrc(stage: number, season: Season): string {
+  if (stage < 6) return `/gamification/stage-${stage}.png`;
   return `/gamification/stage-6-${season}.png`;
 }
 
@@ -38,6 +49,7 @@ export default function DamScene({
 }) {
   const selfFetch = dataProp === undefined;
   const [fetched, setFetched] = useState<DamHomeData | null>(null);
+  const [seasonOverride, setSeasonOverride] = useState<Season | null>(null);
 
   useEffect(() => {
     if (!selfFetch) return;
@@ -58,16 +70,42 @@ export default function DamScene({
   const spriteDim = full ? 56 : 44;
   const sprite = SPRITE[data.todayState];
 
+  // "Сезоны у плотины": a cosmetic touch on the full scene once unlocked — a
+  // season label, a gentle season-matched tint, and (at stage 6) a manual pick.
+  const seasonsUnlocked = full && data.unlocks.includes("seasons");
+  const season = seasonOverride ?? currentSeason();
+
   return (
     <div className={`dam-scene ${full ? "dam-full" : "dam-compact"}`}>
       <Image
-        className="dam-illustration"
-        src={stageSrc(data.stage)}
+        className={`dam-illustration ${seasonsUnlocked ? `dam-season--${season}` : ""}`}
+        src={stageSrc(data.stage, season)}
         width={dim}
         height={dim}
         alt={data.stageTitle}
         priority={!full}
       />
+
+      {seasonsUnlocked && (
+        <div className="dam-season">
+          {data.stage === 6 ? (
+            <div className="miniapp-word-grid">
+              {SEASONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`miniapp-word-chip ${season === s ? "active" : ""}`}
+                  onClick={() => setSeasonOverride(s)}
+                >
+                  {SEASON_LABEL[s]}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="hint">Сейчас у плотины: {SEASON_LABEL[season]}.</p>
+          )}
+        </div>
+      )}
 
       <div className="dam-today">
         <Image src={sprite.src} width={spriteDim} height={spriteDim} alt={sprite.alt} />

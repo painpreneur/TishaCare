@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveConsentedPatient } from "@/lib/telegramAuth";
 import { MINIAPP_TESTS } from "@/lib/miniappTests";
-import { recordDamMilestones } from "@/lib/damMilestones";
+import { recordPatientProgress } from "@/lib/patientProgress";
 
 export async function POST(req: NextRequest) {
   const auth = await resolveConsentedPatient(req);
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  await recordDamMilestones(auth.patientId);
+  await recordPatientProgress(auth.patientId);
 
   return NextResponse.json({ ok: true, interpretation });
 }

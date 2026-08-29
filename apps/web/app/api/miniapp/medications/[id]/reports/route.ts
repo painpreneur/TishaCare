@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveConsentedPatient } from "@/lib/telegramAuth";
 import { SIDE_EFFECT_TAG_LABEL } from "@/lib/medication";
+import { recordPatientProgress } from "@/lib/patientProgress";
 
 function scale(v: unknown): number | null {
   return Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 5 ? (v as number) : null;
@@ -41,6 +42,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       sideEffectTags: sideEffectTags.length ? sideEffectTags.join(",") : null,
     },
   });
+
+  await recordPatientProgress(auth.patientId);
 
   return NextResponse.json({ ok: true, id: report.id });
 }

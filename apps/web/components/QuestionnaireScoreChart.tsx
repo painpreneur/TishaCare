@@ -30,7 +30,7 @@ export default function QuestionnaireScoreChart({
         {thresholds.map((t) => (
           <ReferenceLine key={t} y={t} stroke="#d8dee6" strokeDasharray="4 4" />
         ))}
-        <Line type="monotone" dataKey="score" stroke={color} strokeWidth={2} dot={{ r: 3 }} />
+        <Line type="monotone" dataKey="score" name="Балл" stroke={color} strokeWidth={2} dot={{ r: 3 }} />
       </LineChart>
     </ResponsiveContainer>
   );

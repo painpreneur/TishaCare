@@ -73,6 +73,46 @@ async function backfillMilestones(patientId: string) {
   return rows.map((r) => r.stage);
 }
 
+// Backfill "Открытия" for demo patients so the /progress section is not empty.
+// Mirrors apps/web/lib/unlocks.ts — KEEP IN SYNC. Triggers are acts only.
+const INTAKE_CODES = ["MDQ", "GAD7", "ASRS_A", "AQ10", "MSI_BPD"];
+const SCALE_CODES = new Set(["BECK21", "GAD7", "ASRS_A", "AQ10", "MSI_BPD", "MDQ"]);
+
+async function backfillUnlocks(patientId: string, damStage: number) {
+  const [checkIns, responses, medReports] = await Promise.all([
+    prisma.checkIn.findMany({ where: { patientId }, select: { date: true } }),
+    prisma.questionnaireResponse.findMany({
+      where: { patientId },
+      select: { completedAt: true, questionnaire: { select: { code: true } } },
+    }),
+    prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
+  ]);
+
+  const times = [
+    ...checkIns.map((c) => c.date.getTime()),
+    ...responses.map((r) => r.completedAt.getTime()),
+    ...medReports.map((m) => m.date.getTime()),
+  ];
+  const days = new Set(times.map((t) => new Date(t).toISOString().slice(0, 10)));
+  const entryCount = days.size;
+  const daysActive = times.length ? Math.floor((Date.now() - Math.min(...times)) / MS_DAY) : 0;
+  const codes = responses.map((r) => r.questionnaire.code);
+  const completed = new Set(codes);
+  const scaleCount = codes.filter((c) => SCALE_CODES.has(c)).length;
+
+  const earned: string[] = [];
+  if (entryCount >= 7) earned.push("connections");
+  if (completed.has("BALANCE_WHEEL")) earned.push("balance");
+  if (scaleCount >= 5) earned.push("compare");
+  if (INTAKE_CODES.every((c) => completed.has(c))) earned.push("baseline");
+  if (entryCount >= 30) earned.push("rhythm");
+  if (daysActive >= 365) earned.push("year");
+  if (damStage >= 3) earned.push("seasons");
+
+  if (earned.length) await prisma.patientUnlock.createMany({ data: earned.map((code) => ({ patientId, code })) });
+  return earned;
+}
+
 const demoCognitiveSubmission: CognitiveTestSubmission = {
   memoryImmediate: { selected: MEMORY_WORD_LIST.slice(0, 7), correctCount: 7 },
   attentionSerialSevens: { entered: [55, 48, 41, 34, 27], correctCount: 5 },
@@ -359,6 +399,9 @@ async function main() {
 
     const stages = await backfillMilestones(patient.id);
     console.log(`Milestones for ${patient.name}: ${stages?.join(", ") || "none"}`);
+
+    const unlocks = await backfillUnlocks(patient.id, stages && stages.length ? Math.max(...stages) : 1);
+    console.log(`Unlocks for ${patient.name}: ${unlocks.join(", ") || "none"}`);
   }
 
   const unclaimedPatient = await prisma.patient.create({

@@ -9,6 +9,7 @@ import { INTRO_SEEN_KEY } from "@/lib/intro";
 import FeatureGrid from "./FeatureGrid";
 import DamScene from "./DamScene";
 import MilestoneCard from "./MilestoneCard";
+import UnlockCard from "./UnlockCard";
 import ActivityBlock from "./ActivityBlock";
 import { fetchDamHome, type DamHomeData } from "@/lib/damClient";
 import type { PatientFeature } from "./patientFeature";
@@ -120,10 +121,11 @@ export default function PatientHome({
         </Link>
       </div>
       <MilestoneCard data={damData} />
+      <UnlockCard data={damData} />
+      <ActivityBlock data={damData} />
       <FeatureGrid features={primary} cardClassName="primary" />
       <div style={{ height: 12 }} />
       <FeatureGrid features={features} />
-      <ActivityBlock data={damData} />
       <DamScene size="compact" data={damData} />
     </div>
   );

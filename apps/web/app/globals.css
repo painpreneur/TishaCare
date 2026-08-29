@@ -759,6 +759,31 @@ table.responses td {
   color: #d64545;
 }
 
+/* "Мои врачи" — the patient's own invite code, for a doctor to enter */
+.care-code-mine {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eef1f4;
+}
+
+.care-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.care-code-row code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: #f4f6f8;
+  border: 1px solid #e5e9ee;
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
 .encounter-list {
   list-style: none;
   padding: 0;

@@ -3,18 +3,27 @@ import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient } from "@/lib/telegramAuth";
 import { CareLinkError, requestLink } from "@/lib/careLink";
 
-// The patient's connections, newest first, with the doctor's name.
+// The patient's connections, newest first, with the doctor's name. Also the
+// patient's own invite code, so the "Мои врачи" screen can show it for the
+// other direction (a doctor entering the patient's code — see connectByInviteCode).
 export async function GET(req: NextRequest) {
   const auth = await resolveMiniAppPatient(req);
   if (!auth) return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
 
-  const links = await prisma.careLink.findMany({
-    where: { patientId: auth.patientId },
-    orderBy: { updatedAt: "desc" },
-    include: { doctor: { select: { name: true, clinic: { select: { name: true } } } } },
-  });
+  const [links, patient] = await Promise.all([
+    prisma.careLink.findMany({
+      where: { patientId: auth.patientId },
+      orderBy: { updatedAt: "desc" },
+      include: { doctor: { select: { name: true, clinic: { select: { name: true } } } } },
+    }),
+    prisma.patient.findUnique({
+      where: { id: auth.patientId },
+      select: { inviteCode: true },
+    }),
+  ]);
 
   return NextResponse.json({
+    inviteCode: patient?.inviteCode ?? null,
     links: links.map((l) => ({
       id: l.id,
       status: l.status,

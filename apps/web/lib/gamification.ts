@@ -190,13 +190,11 @@ export function damStatusLine(stage: number, entriesLast30: number): string {
 /**
  * Shown on the first open after a gap of >= 14 days with no qualifying entry.
  * No guilt, no counter of missed days: the dam held while you were away.
- *
- * NOTE(A5): the spec quotes "Рад" here (masculine) but "сидит довольная"
- * (feminine) for the DamScene sprite. Settle Тиша's grammatical gender in the
- * copy pass; this string is the spec's wording verbatim for now.
+ * Degendered — Тиша never refers to itself with a gendered adjective, and the
+ * line never genders the patient.
  */
 export function welcomeBackLine(): string {
-  return "Рад, что ты снова здесь. Продолжим по веточке.";
+  return "Ты снова здесь. Продолжим по веточке.";
 }
 
 /** Days since the most recent qualifying entry, or null when there are none. */

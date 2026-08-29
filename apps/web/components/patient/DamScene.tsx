@@ -22,7 +22,7 @@ interface DamData {
 
 const SPRITE: Record<TodayState, { src: string; alt: string }> = {
   added: { src: "/gamification/tisha-today-active.png", alt: "Тиша кладёт веточку" },
-  done: { src: "/gamification/tisha-today-content.png", alt: "Тиша сидит рядом" },
+  done: { src: "/gamification/tisha-today-content.png", alt: "Тиша отдыхает у воды" },
   pending: { src: "/gamification/tisha-today-pending.png", alt: "Тиша смотрит на воду" },
 };
 

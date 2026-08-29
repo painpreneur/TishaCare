@@ -190,13 +190,33 @@ export function damStatusLine(stage: number, entriesLast30: number): string {
 /**
  * Shown on the first open after a gap of >= 14 days with no qualifying entry.
  * No guilt, no counter of missed days: the dam held while you were away.
- *
- * NOTE(A5): the spec quotes "Рад" here (masculine) but "сидит довольная"
- * (feminine) for the DamScene sprite. Settle Тиша's grammatical gender in the
- * copy pass; this string is the spec's wording verbatim for now.
+ * Degendered — Тиша never refers to itself with a gendered adjective, and the
+ * line never genders the patient.
  */
 export function welcomeBackLine(): string {
-  return "Рад, что ты снова здесь. Продолжим по веточке.";
+  return "Ты снова здесь. Продолжим по веточке.";
+}
+
+/**
+ * A6: one descriptive line for the doctor's patient card — how long the patient
+ * has been recording and how many of the last 30 days carried an entry. Not an
+ * assessment (cf. buildPatientInsights): no "regular" / "poor", no target, no
+ * mention of what was recorded. Returns null when nothing is recorded yet.
+ */
+export function doctorDamLine(
+  checkIns: CheckInLike[],
+  responses: ResponseLike[],
+  otherDates: Array<Date | string> = [],
+  now: number = Date.now(),
+): string | null {
+  const entryCount = countQualifyingEntries(checkIns, responses, otherDates);
+  if (entryCount < 1) return null;
+  const daysActive = daysSinceFirstEntry(firstEntryAt(checkIns, responses, otherDates), now);
+  // clamp: a rolling 30x24h window can touch 31 calendar dates, but "X/30" must
+  // not read as 31/30.
+  const last30 = Math.min(entriesInWindow(30, checkIns, responses, otherDates, now), 30);
+  const span = daysActive < 30 ? "меньше месяца" : `${Math.round(daysActive / 30)} мес.`;
+  return `Ведёт записи ${span}, регулярность за 30 дней: ${last30}/30.`;
 }
 
 /** Days since the most recent qualifying entry, or null when there are none. */

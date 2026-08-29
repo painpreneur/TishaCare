@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient, resolveConsentedPatient } from "@/lib/telegramAuth";
 import { STATE_TAG_IDS, NOTE_MAX_LENGTH } from "@/lib/checkin";
+import { recordDamMilestones } from "@/lib/damMilestones";
 
 const MEDS_VALUES = ["yes", "no", "partial"];
 
@@ -58,6 +59,8 @@ export async function POST(req: NextRequest) {
       medsStatus: medsStatus ?? null,
     },
   });
+
+  await recordDamMilestones(auth.patientId);
 
   return NextResponse.json({ ok: true, checkIn });
 }

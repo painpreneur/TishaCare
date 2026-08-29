@@ -7,6 +7,7 @@ import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient"
 import { usePatientBasePath } from "@/lib/patientPortal";
 import { INTRO_SEEN_KEY } from "@/lib/intro";
 import FeatureGrid from "./FeatureGrid";
+import DamScene from "./DamScene";
 import type { PatientFeature } from "./patientFeature";
 
 export type { PatientFeature };
@@ -112,6 +113,7 @@ export default function PatientHome({
           ⚙
         </Link>
       </div>
+      <DamScene size="compact" />
       <FeatureGrid features={primary} cardClassName="primary" />
       <div style={{ height: 12 }} />
       <FeatureGrid features={features} />

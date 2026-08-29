@@ -19,11 +19,14 @@ import {
 export interface UnlockInfo {
   code: string;
   title: string;
-  /** One-time "Тиша заметил…" card copy. null = no card (cosmetic unlock). */
-  copy: string | null;
+  /** Shown under the title in the "Открытия" list once earned, and in the card. */
+  copy: string;
   /** Shown, dimmed, next to a not-yet-earned unlock. A plain statement of the
    *  trigger — no nudge, no "N of M". */
   lockedHint: string;
+  /** Whether earning it pops a one-time "Тиша заметил…" card. Cosmetic unlocks
+   *  (seasons) still appear in the list but do not interrupt. */
+  card: boolean;
 }
 
 export const UNLOCKS: UnlockInfo[] = [
@@ -32,42 +35,49 @@ export const UNLOCKS: UnlockInfo[] = [
     title: "Связи",
     copy: "Записей уже хватает, чтобы посмотреть, что с чем связано.",
     lockedHint: "Откроется после 7 записей.",
+    card: true,
   },
   {
     code: "balance",
     title: "История колеса баланса",
     copy: "Колесо теперь можно сравнивать во времени.",
     lockedHint: "Откроется, когда пройдёте колесо баланса.",
+    card: true,
   },
   {
     code: "compare",
     title: "Шкалы рядом",
     copy: "Пять опросников позади, теперь их видно рядом.",
     lockedHint: "Откроется после 5 опросников.",
+    card: true,
   },
   {
     code: "baseline",
     title: "Точка отсчёта",
     copy: "Есть с чем сравнивать дальше.",
     lockedHint: "Откроется, когда пройдёте все опросники к первому приёму.",
+    card: true,
   },
   {
     code: "rhythm",
     title: "Ритм недели",
     copy: "Стало видно, как состояние ходит по неделе.",
     lockedHint: "Откроется после 30 записей.",
+    card: true,
   },
   {
     code: "year",
     title: "Год назад",
     copy: "Год наблюдений. Можно оглянуться.",
     lockedHint: "Откроется через год после первой записи.",
+    card: true,
   },
   {
     code: "seasons",
     title: "Сезоны у плотины",
-    copy: null,
+    copy: "Сцена у плотины теперь отзывается на время года.",
     lockedHint: "Откроется на стадии «Крепкая плотина».",
+    card: false,
   },
 ];
 

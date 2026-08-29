@@ -967,3 +967,90 @@ table.responses td {
   padding-top: 16px;
   border-top: 1px solid #eef1f4;
 }
+
+/* Unlock card (one-time "Тиша заметил") + "Открытия" list */
+.unlock-card {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 0 0 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+}
+
+.unlock-card img {
+  width: 72px;
+  height: 72px;
+}
+
+.unlock-card-kicker {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #8a95a1;
+}
+
+.unlock-card h2 {
+  margin: 2px 0 4px;
+  font-size: 17px;
+}
+
+.unlock-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #4a5560;
+}
+
+.unlocks-section {
+  margin: 12px 0 0;
+}
+
+.unlocks-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.unlock-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #eef1f4;
+}
+
+.unlock-row:first-child {
+  border-top: none;
+}
+
+.unlock-row img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+}
+
+.unlock-row.locked img {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.unlock-row-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.unlock-row.locked .unlock-row-title {
+  color: #9aa4b2;
+  font-weight: 500;
+}
+
+.unlock-row-text {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #4a5560;
+}
+
+.unlock-row.locked .unlock-row-text {
+  color: #9aa4b2;
+}

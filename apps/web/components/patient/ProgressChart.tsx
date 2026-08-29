@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { miniAppAuthHeaders } from "@/lib/miniappClient";
 import type { WellbeingPoint } from "@/lib/wellbeing";
 import type { QScoreSeries } from "@/lib/questionnaireSeries";
+import { entriesLabel, type Connection } from "@/lib/connections";
 import WellbeingChart from "@/components/WellbeingChart";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import BackLink from "@/components/miniapp/BackLink";
@@ -18,6 +19,7 @@ export default function ProgressChart() {
   const [days, setDays] = useState(30);
   const [series, setSeries] = useState<WellbeingPoint[] | null>(null);
   const [questionnaires, setQuestionnaires] = useState<QScoreSeries[]>([]);
+  const [connections, setConnections] = useState<Connection[] | null>(null);
   const [tab, setTab] = useState<"mood" | string>("mood");
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export default function ProgressChart() {
         if (!active) return;
         setSeries(data.series ?? []);
         setQuestionnaires(data.questionnaires ?? []);
+        setConnections(data.connections ?? null);
       })
       .catch(() => {
         if (active) setSeries([]);
@@ -92,6 +95,22 @@ export default function ProgressChart() {
               <p className="empty">Загрузка...</p>
             ) : (
               <WellbeingChart data={series} />
+            )}
+
+            {connections && connections.length > 0 && (
+              <div className="connections-block">
+                <h4 className="chart-subtitle">Связи</h4>
+                <ul className="correlation-list">
+                  {connections.map((c) => (
+                    <li key={c.label}>
+                      {c.label}: {c.strength} ({entriesLabel(c.n)})
+                    </li>
+                  ))}
+                </ul>
+                <p className="hint">
+                  Это связь в ваших отметках, а не причина и следствие.
+                </p>
+              </div>
             )}
           </>
         ) : (

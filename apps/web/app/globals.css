@@ -1054,3 +1054,8 @@ table.responses td {
 .unlock-row.locked .unlock-row-text {
   color: #9aa4b2;
 }
+
+/* "Связи" block under the mood chart (connections unlock) */
+.connections-block {
+  margin-top: 20px;
+}

@@ -140,7 +140,10 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
         <div className="miniapp-question-options">
           {q.options.map((o, i) => (
             <button
-              key={i}
+              // Key by question index too: the option buttons remount on every
+              // question, so the browser focus ring does not linger on the
+              // button at the same position and read as a carried-over answer.
+              key={`${index}-${i}`}
               type="button"
               className={`miniapp-option-btn ${answers[index] === o.value ? "active" : ""}`}
               onClick={() => answer(o.value)}

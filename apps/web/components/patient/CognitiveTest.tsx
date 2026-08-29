@@ -14,28 +14,73 @@ import LuscherColorTest from "@/components/miniapp/subtests/LuscherColorTest";
 import MemoryDelayedRecall from "@/components/miniapp/subtests/MemoryDelayedRecall";
 
 const SUBTESTS: SubtestDef[] = [
-  { key: "memoryImmediate", title: "Запоминание слов", category: CATEGORY_LABELS.memory, Component: MemoryEncode },
+  {
+    key: "memoryImmediate",
+    title: "Запоминание слов",
+    category: CATEGORY_LABELS.memory,
+    description:
+      "Покажем список слов на несколько секунд. Постарайтесь запомнить как можно больше, ближе к концу теста нужно будет их вспомнить.",
+    Component: MemoryEncode,
+  },
   {
     key: "attentionSerialSevens",
     title: "Последовательное вычитание",
     category: CATEGORY_LABELS.attention,
+    description:
+      "Нужно несколько раз подряд вычесть 7: от стартового числа, затем от каждого нового результата. Каждый ответ вводите отдельно.",
     Component: AttentionSerialSevens,
   },
   {
     key: "attentionSchulte",
     title: "Таблица чисел",
     category: CATEGORY_LABELS.attention,
+    description:
+      "На поле числа вразброс. Нажимайте их по порядку начиная с 1, как можно быстрее. Время считается с момента старта, поэтому приступайте сразу.",
     Component: AttentionSchulteTable,
   },
-  { key: "thinkingAnalogies", title: "Существенные признаки", category: CATEGORY_LABELS.thinking, Component: ThinkingAnalogies },
-  { key: "spatial", title: "Сравнение узоров", category: CATEGORY_LABELS.spatial, Component: SpatialPatternMatch },
-  { key: "verbalFluency", title: "Беглость речи", category: CATEGORY_LABELS.speech, Component: VerbalFluency },
-  { key: "regulation", title: "Реакция на сигнал", category: CATEGORY_LABELS.regulation, Component: RegulationGoNoGo },
-  { key: "psychState", title: "Цветовые карточки", category: CATEGORY_LABELS.state, Component: LuscherColorTest },
+  {
+    key: "thinkingAnalogies",
+    title: "Существенные признаки",
+    category: CATEGORY_LABELS.thinking,
+    description: "Для каждого понятия выберите 2 слова, которые обозначают его существенные признаки.",
+    Component: ThinkingAnalogies,
+  },
+  {
+    key: "spatial",
+    title: "Сравнение узоров",
+    category: CATEGORY_LABELS.spatial,
+    description: "Показываем узор А и несколько вариантов Б. Выберите тот вариант, который совпадает с А.",
+    Component: SpatialPatternMatch,
+  },
+  {
+    key: "verbalFluency",
+    title: "Беглость речи",
+    category: CATEGORY_LABELS.speech,
+    description:
+      "За одну минуту назовите как можно больше слов на заданную букву. Отсчёт минуты начнётся со старта.",
+    Component: VerbalFluency,
+  },
+  {
+    key: "regulation",
+    title: "Реакция на сигнал",
+    category: CATEGORY_LABELS.regulation,
+    description:
+      "По очереди будут появляться буквы. Нажимайте кнопку только на нужную букву и пропускайте остальные. Буквы пойдут сразу после старта.",
+    Component: RegulationGoNoGo,
+  },
+  {
+    key: "psychState",
+    title: "Цветовые карточки",
+    category: CATEGORY_LABELS.state,
+    description:
+      "Выбирайте цветные карточки по порядку: от самого приятного сейчас цвета к наименее приятному.",
+    Component: LuscherColorTest,
+  },
   {
     key: "memoryDelayed",
     title: "Отсроченное воспроизведение",
     category: CATEGORY_LABELS.memory,
+    description: "Вспомните слова из самого первого задания и отметьте их в списке.",
     Component: MemoryDelayedRecall,
   },
 ];

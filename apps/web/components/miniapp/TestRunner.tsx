@@ -11,6 +11,10 @@ export interface SubtestDef {
   key: string;
   title: string;
   category: string;
+  /** Shown on the "ready?" screen before the subtest mounts. A few timed
+   *  subtests start their clock on mount, so the patient reads this first and
+   *  the timer only starts on "Начать". */
+  description: string;
   Component: React.ComponentType<SubtestProps>;
 }
 
@@ -22,6 +26,7 @@ export interface TestRunnerProps {
 
 export default function TestRunner({ testCode, subtests, onFinished }: TestRunnerProps) {
   const [stepIndex, setStepIndex] = useState(0);
+  const [started, setStarted] = useState(false);
   const [results, setResults] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +39,7 @@ export default function TestRunner({ testCode, subtests, onFinished }: TestRunne
     if (stepIndex + 1 < subtests.length) {
       setResults(nextResults);
       setStepIndex(stepIndex + 1);
+      setStarted(false);
       return;
     }
 
@@ -82,7 +88,21 @@ export default function TestRunner({ testCode, subtests, onFinished }: TestRunne
         Задание {stepIndex + 1} из {subtests.length} · {current.category}
       </p>
       <h2>{current.title}</h2>
-      <current.Component key={current.key} onComplete={handleComplete} />
+      {started ? (
+        <current.Component key={current.key} onComplete={handleComplete} />
+      ) : (
+        <>
+          <p className="hint" style={{ marginTop: 8 }}>{current.description}</p>
+          <button
+            type="button"
+            className="btn-primary btn-inline"
+            style={{ marginTop: 16 }}
+            onClick={() => setStarted(true)}
+          >
+            Начать
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -17,6 +17,8 @@ export interface DamHomeData {
   entriesLast30: number;
   lastEntryAt: number | null;
   milestones: { stage: number; reachedAt: string }[];
+  /** Earned "Открытия" codes (see lib/unlocks.ts). */
+  unlocks: string[];
 }
 
 export async function fetchDamHome(): Promise<DamHomeData | null> {

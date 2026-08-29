@@ -124,6 +124,7 @@ model Patient {
   thoughts           Thought[]
   patientSessions    PatientSession[]
   milestones         PatientMilestone[]
+  unlocks            PatientUnlock[]
 }
 
 // One visit / contact note. Append-only: rows are created, never edited or
@@ -325,5 +326,21 @@ model PatientMilestone {
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([patientId, stage])
+  @@index([patientId])
+}
+
+// "Открытия": a feature or view that appears once the patient has done a
+// qualifying act enough times (see apps/web/lib/unlocks.ts). Append-only, one
+// row per code the first time it is earned; never removed (progress only grows).
+// Not a trophy — the trigger is always an act, never a score or a streak.
+model PatientUnlock {
+  id         String   @id @default(cuid())
+  patientId  String
+  code       String
+  unlockedAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, code])
   @@index([patientId])
 }

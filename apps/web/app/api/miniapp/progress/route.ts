@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const days = ALLOWED_DAYS.includes(requested) ? requested : DEFAULT_DAYS;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const [checkIns, responses] = await Promise.all([
+  const [checkIns, responses, unlocks] = await Promise.all([
     prisma.checkIn.findMany({
       where: { patientId: auth.patientId, date: { gte: since } },
       orderBy: { date: "asc" },
@@ -34,11 +34,13 @@ export async function GET(req: NextRequest) {
         questionnaire: { select: { code: true, title: true } },
       },
     }),
+    prisma.patientUnlock.findMany({ where: { patientId: auth.patientId }, select: { code: true } }),
   ]);
 
   return NextResponse.json({
     days,
     series: toWellbeingSeries(checkIns),
     questionnaires: buildQuestionnaireSeries(responses),
+    unlocks: unlocks.map((u) => u.code),
   });
 }

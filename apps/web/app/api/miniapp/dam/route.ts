@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   }
   const patientId = auth.patientId;
 
-  const [checkIns, responses, medReports, patient, milestones] = await Promise.all([
+  const [checkIns, responses, medReports, patient, milestones, unlocks] = await Promise.all([
     prisma.checkIn.findMany({ where: { patientId }, select: { date: true, sleepHours: true } }),
     prisma.questionnaireResponse.findMany({
       where: { patientId },
@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
       orderBy: { stage: "asc" },
       select: { stage: true, reachedAt: true },
     }),
+    prisma.patientUnlock.findMany({ where: { patientId }, select: { code: true } }),
   ]);
 
   const otherDates: Date[] = [
@@ -79,5 +80,6 @@ export async function GET(req: NextRequest) {
     welcomeBackLine: snapshot.welcomeBackDue ? welcomeBackLine() : null,
     lastEntryAt,
     milestones: milestones.map((m) => ({ stage: m.stage, reachedAt: m.reachedAt.toISOString() })),
+    unlocks: unlocks.map((u) => u.code),
   });
 }

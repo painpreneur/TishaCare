@@ -197,6 +197,28 @@ export function welcomeBackLine(): string {
   return "Ты снова здесь. Продолжим по веточке.";
 }
 
+/**
+ * A6: one descriptive line for the doctor's patient card — how long the patient
+ * has been recording and how many of the last 30 days carried an entry. Not an
+ * assessment (cf. buildPatientInsights): no "regular" / "poor", no target, no
+ * mention of what was recorded. Returns null when nothing is recorded yet.
+ */
+export function doctorDamLine(
+  checkIns: CheckInLike[],
+  responses: ResponseLike[],
+  otherDates: Array<Date | string> = [],
+  now: number = Date.now(),
+): string | null {
+  const entryCount = countQualifyingEntries(checkIns, responses, otherDates);
+  if (entryCount < 1) return null;
+  const daysActive = daysSinceFirstEntry(firstEntryAt(checkIns, responses, otherDates), now);
+  // clamp: a rolling 30x24h window can touch 31 calendar dates, but "X/30" must
+  // not read as 31/30.
+  const last30 = Math.min(entriesInWindow(30, checkIns, responses, otherDates, now), 30);
+  const span = daysActive < 30 ? "меньше месяца" : `${Math.round(daysActive / 30)} мес.`;
+  return `Ведёт записи ${span}, регулярность за 30 дней: ${last30}/30.`;
+}
+
 /** Days since the most recent qualifying entry, or null when there are none. */
 export function daysSinceLastEntry(lastAt: number | null, now: number = Date.now()): number | null {
   if (lastAt == null) return null;

@@ -31,6 +31,7 @@ import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
 import { toWellbeingSeries } from "@/lib/wellbeing";
 import { buildPatientInsights } from "@/lib/insights";
+import { doctorDamLine } from "@/lib/gamification";
 import { medsToNumber } from "@/lib/checkin";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
@@ -130,6 +131,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
   const wellbeingSeries = toWellbeingSeries(patient.checkIns);
   const insights = buildPatientInsights(patient.checkIns, patient.responses);
+  const damLine = doctorDamLine(patient.checkIns, patient.responses);
 
   const medsNum = (c: { medsStatus: string | null }) => medsToNumber(c.medsStatus);
   const medsVsMood = pearsonCorrelation(
@@ -190,6 +192,11 @@ export default async function PatientPage({ params }: { params: { id: string } }
         ← Все пациенты
       </Link>
       <h2>{patient.name}</h2>
+      {damLine && (
+        <p className="hint" style={{ marginTop: -6 }}>
+          {damLine}
+        </p>
+      )}
 
       <div className="panel">
         <h3>Самочувствие и приём препаратов</h3>

@@ -9,6 +9,8 @@ import { INTRO_SEEN_KEY } from "@/lib/intro";
 import FeatureGrid from "./FeatureGrid";
 import DamScene from "./DamScene";
 import MilestoneCard from "./MilestoneCard";
+import ActivityBlock from "./ActivityBlock";
+import { fetchDamHome, type DamHomeData } from "@/lib/damClient";
 import type { PatientFeature } from "./patientFeature";
 
 export type { PatientFeature };
@@ -34,6 +36,7 @@ export default function PatientHome({
   const base = usePatientBasePath();
   const [patientName, setPatientName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [damData, setDamData] = useState<DamHomeData | null>(null);
 
   useEffect(() => {
     // Guards against React StrictMode's double-invoke in dev and against the
@@ -64,6 +67,8 @@ export default function PatientHome({
           return;
         }
         setPatientName(data.patientName);
+        // one fetch for MilestoneCard + ActivityBlock + DamScene
+        fetchDamHome().then((d) => active && setDamData(d));
       })
       .catch(() => {
         if (!active) return;
@@ -114,11 +119,12 @@ export default function PatientHome({
           ⚙
         </Link>
       </div>
-      <MilestoneCard />
-      <DamScene size="compact" />
+      <MilestoneCard data={damData} />
       <FeatureGrid features={primary} cardClassName="primary" />
       <div style={{ height: 12 }} />
       <FeatureGrid features={features} />
+      <ActivityBlock data={damData} />
+      <DamScene size="compact" data={damData} />
     </div>
   );
 }

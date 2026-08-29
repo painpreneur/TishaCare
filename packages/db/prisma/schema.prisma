@@ -123,6 +123,7 @@ model Patient {
   medicationReports  MedicationReport[]
   thoughts           Thought[]
   patientSessions    PatientSession[]
+  milestones         PatientMilestone[]
 }
 
 // One visit / contact note. Append-only: rows are created, never edited or
@@ -307,4 +308,22 @@ model Thought {
   createdAt DateTime @default(now())
 
   patient Patient @relation(fields: [patientId], references: [id])
+}
+
+// Frozen timeline of "Плотина Тиши" stages a patient has reached. Append-only:
+// one row per stage the first time it is reached, never updated or removed
+// (progress only grows; gaps freeze it). The stage number itself is always a
+// pure function of the patient's qualifying entries + days active
+// (apps/web/lib/gamification.ts) — this table exists only to remember WHEN each
+// stage was crossed, for the /progress timeline and the one-time milestone card.
+model PatientMilestone {
+  id        String   @id @default(cuid())
+  patientId String
+  stage     Int
+  reachedAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, stage])
+  @@index([patientId])
 }

@@ -153,13 +153,16 @@ export function damStage(entryCount: number, daysActive: number): number {
   return current;
 }
 
+// The current living state of the dam. Kept distinct from the milestoneCopy
+// above (which is the one-time "you crossed it" line) so the two do not echo
+// each other when both are on screen.
 const STATUS_LEAD: Record<number, string> = {
-  1: "Веточка на месте.",
+  1: "Записи понемногу набираются.",
   2: "Запруда собирается.",
-  3: "Плотина крепнет.",
+  3: "За плотиной копится вода.",
   4: "Пруд стоит тихо.",
   5: "Домик обжит.",
-  6: "Сезоны идут своим чередом.",
+  6: "Год позади, сезоны идут.",
 };
 
 /** Russian plural for "веточка" (twig). */

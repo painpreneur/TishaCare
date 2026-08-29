@@ -926,3 +926,37 @@ table.responses td {
   cursor: pointer;
   padding: 4px;
 }
+
+/* Activity summary block (home) */
+.activity-block {
+  margin: 0 0 12px;
+}
+
+.activity-line {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #3a4551;
+}
+
+.activity-questionnaires {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-questionnaires li {
+  font-size: 13px;
+  color: #4a5560;
+  padding: 3px 0;
+}
+
+/* DamScene sits at the bottom of the home screen, kept quiet */
+.dam-compact {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #eef1f4;
+}
+
+.dam-compact .dam-illustration {
+  max-width: 220px;
+}

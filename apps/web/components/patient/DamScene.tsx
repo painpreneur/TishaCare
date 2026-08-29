@@ -2,23 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { miniAppAuthHeaders } from "@/lib/miniappClient";
 import { STAGES } from "@/lib/gamification";
+import { fetchDamHome, type DamHomeData, type TodayState } from "@/lib/damClient";
 
 // "Плотина Тиши" scene. Rewards the act of regular recording, never the content.
 // The beaver lives inside each stage illustration, so the "today" sprite is a
 // small indicator beside the status line, not an overlay on the scene.
-
-type TodayState = "added" | "done" | "pending";
-
-interface DamData {
-  stage: number;
-  stageTitle: string;
-  statusLine: string;
-  todayState: TodayState;
-  welcomeBackLine: string | null;
-  milestones: { stage: number; reachedAt: string }[];
-}
+//
+// On the home screen PatientHome fetches the snapshot once and passes it in; on
+// /progress there is no such parent, so DamScene fetches for itself.
 
 const SPRITE: Record<TodayState, { src: string; alt: string }> = {
   added: { src: "/gamification/tisha-today-active.png", alt: "Тиша кладёт веточку" },
@@ -37,29 +29,32 @@ function stageSrc(stage: number): string {
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-export default function DamScene({ size = "compact" }: { size?: "compact" | "full" }) {
-  const [data, setData] = useState<DamData | null>(null);
-  const [failed, setFailed] = useState(false);
+export default function DamScene({
+  size = "compact",
+  data: dataProp,
+}: {
+  size?: "compact" | "full";
+  data?: DamHomeData | null;
+}) {
+  const selfFetch = dataProp === undefined;
+  const [fetched, setFetched] = useState<DamHomeData | null>(null);
 
   useEffect(() => {
+    if (!selfFetch) return;
     let active = true;
-    fetch("/api/miniapp/dam", { headers: miniAppAuthHeaders() })
-      .then((r) => {
-        if (!r.ok) throw new Error();
-        return r.json();
-      })
-      .then((d: DamData) => active && setData(d))
-      .catch(() => active && setFailed(true));
+    fetchDamHome().then((d) => active && setFetched(d));
     return () => {
       active = false;
     };
-  }, []);
+  }, [selfFetch]);
 
-  // A decorative-but-meaningful surface: on any error just render nothing.
-  if (failed || !data) return null;
+  const data = selfFetch ? fetched : dataProp;
+  // No qualifying entry yet means there is no dam to show. The invitation to
+  // start is the check-in button in the menu.
+  if (!data || data.entryCount < 1) return null;
 
   const full = size === "full";
-  const dim = full ? 420 : 260;
+  const dim = full ? 420 : 240;
   const spriteDim = full ? 56 : 44;
   const sprite = SPRITE[data.todayState];
 

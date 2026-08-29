@@ -885,3 +885,44 @@ table.responses td {
   font-size: 13px;
   color: #4a5560;
 }
+
+/* Milestone card (one-time, on crossing a "Плотина Тиши" stage) */
+.milestone-card {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 0 0 16px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.06);
+}
+
+.milestone-card img {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+}
+
+.milestone-card h2 {
+  margin: 8px 0 4px;
+  font-size: 17px;
+}
+
+.milestone-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #4a5560;
+}
+
+.milestone-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #8a95a1;
+  cursor: pointer;
+  padding: 4px;
+}

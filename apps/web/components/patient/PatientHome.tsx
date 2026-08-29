@@ -8,6 +8,7 @@ import { usePatientBasePath } from "@/lib/patientPortal";
 import { INTRO_SEEN_KEY } from "@/lib/intro";
 import FeatureGrid from "./FeatureGrid";
 import DamScene from "./DamScene";
+import MilestoneCard from "./MilestoneCard";
 import type { PatientFeature } from "./patientFeature";
 
 export type { PatientFeature };
@@ -113,6 +114,7 @@ export default function PatientHome({
           ⚙
         </Link>
       </div>
+      <MilestoneCard />
       <DamScene size="compact" />
       <FeatureGrid features={primary} cardClassName="primary" />
       <div style={{ height: 12 }} />

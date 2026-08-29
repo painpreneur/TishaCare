@@ -26,8 +26,7 @@ export async function GET(req: NextRequest) {
     prisma.checkIn.findMany({ where: { patientId }, select: { date: true, sleepHours: true } }),
     prisma.questionnaireResponse.findMany({
       where: { patientId },
-      orderBy: { completedAt: "desc" },
-      select: { completedAt: true, questionnaire: { select: { code: true, title: true } } },
+      select: { completedAt: true },
     }),
     prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
     prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
@@ -61,16 +60,6 @@ export async function GET(req: NextRequest) {
     todayState = checkInsToday.some((c) => c.sleepHours != null) ? "done" : "added";
   }
 
-  // completed questionnaires, grouped: count + most recent (responses are
-  // already newest-first).
-  const byCode = new Map<string, { code: string; title: string; count: number; lastAt: string }>();
-  for (const r of responses) {
-    const q = r.questionnaire;
-    const cur = byCode.get(q.code);
-    if (cur) cur.count += 1;
-    else byCode.set(q.code, { code: q.code, title: q.title, count: 1, lastAt: r.completedAt.toISOString() });
-  }
-
   const allTimes = [
     ...checkIns.map((c) => c.date.getTime()),
     ...responses.map((r) => r.completedAt.getTime()),
@@ -90,6 +79,5 @@ export async function GET(req: NextRequest) {
     welcomeBackLine: snapshot.welcomeBackDue ? welcomeBackLine() : null,
     lastEntryAt,
     milestones: milestones.map((m) => ({ stage: m.stage, reachedAt: m.reachedAt.toISOString() })),
-    questionnaires: [...byCode.values()].sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1)),
   });
 }

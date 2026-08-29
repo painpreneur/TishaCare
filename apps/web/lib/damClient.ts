@@ -1,8 +1,8 @@
 import { miniAppAuthHeaders } from "@/lib/miniappClient";
 
 // Shape of GET /api/miniapp/dam — the home-screen summary: dam stage + status,
-// today's state, the milestone timeline, and a plain activity summary (last
-// entry, 30-day count, completed questionnaires).
+// today's state, the milestone timeline, and a minimal activity summary (last
+// entry, 30-day count).
 
 export type TodayState = "added" | "done" | "pending";
 
@@ -17,7 +17,6 @@ export interface DamHomeData {
   entriesLast30: number;
   lastEntryAt: number | null;
   milestones: { stage: number; reachedAt: string }[];
-  questionnaires: { code: string; title: string; count: number; lastAt: string }[];
 }
 
 export async function fetchDamHome(): Promise<DamHomeData | null> {

@@ -4,8 +4,8 @@ import ProgressChart from "@/components/patient/ProgressChart";
 export default function AppProgressPage() {
   return (
     <>
-      <DamScene size="full" />
       <ProgressChart />
+      <DamScene size="full" />
     </>
   );
 }

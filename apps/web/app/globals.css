@@ -1318,6 +1318,41 @@ table.responses td {
   color: #d64545;
 }
 
+/* "Точка отсчёта" (baseline unlock) — frozen intake battery, было -> стало */
+.baseline-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.baseline-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid #eef1f4;
+  font-size: 13px;
+  color: #33404f;
+}
+
+.baseline-list li:first-child {
+  border-top: none;
+}
+
+.baseline-scale {
+  font-weight: 600;
+  color: #465063;
+}
+
+.baseline-line em {
+  font-style: normal;
+  color: #9aa4b2;
+}
+
+.baseline-muted {
+  color: #9aa4b2;
+}
+
 /* "Сезоны у плотины" (seasons unlock) — a gentle season touch on the full scene */
 .dam-season {
   margin: 4px 0 0;

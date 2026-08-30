@@ -25,6 +25,7 @@ import { entriesLabel, type Connection } from "@/lib/connections";
 import type { BalanceHistory } from "@/lib/balanceHistory";
 import type { WeekRhythmDay } from "@/lib/weekRhythm";
 import type { YearCompare as YearCompareData } from "@/lib/yearCompare";
+import type { Baseline } from "@/lib/baseline";
 import WellbeingChart from "@/components/WellbeingChart";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import BackLink from "@/components/miniapp/BackLink";
@@ -45,6 +46,7 @@ export default function ProgressChart() {
   const [weekRhythm, setWeekRhythm] = useState<WeekRhythmDay[] | null>(null);
   const [yearCompare, setYearCompare] = useState<YearCompareData | null>(null);
   const [unlocks, setUnlocks] = useState<string[]>([]);
+  const [baseline, setBaseline] = useState<Baseline | null>(null);
   const [tab, setTab] = useState<"mood" | "balance" | string>("mood");
   // `compare` unlock: a second questionnaire scale overlaid on the score chart.
   const [overlay, setOverlay] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export default function ProgressChart() {
         setWeekRhythm(data.weekRhythm ?? null);
         setYearCompare(data.yearCompare ?? null);
         setUnlocks(data.unlocks ?? []);
+        setBaseline(data.baseline ?? null);
       })
       .catch(() => {
         if (active) setSeries([]);
@@ -72,8 +75,10 @@ export default function ProgressChart() {
     };
   }, [days]);
 
-  const q = tab === "mood" || tab === "balance" ? null : questionnaires.find((x) => x.code === tab);
+  const FIXED_TABS = ["mood", "balance", "baseline"];
+  const q = FIXED_TABS.includes(tab) ? null : questionnaires.find((x) => x.code === tab);
   const hasBalance = (balance?.entries.length ?? 0) > 0;
+  const hasBaseline = (baseline?.rows.length ?? 0) > 0;
   // a selected tab that is no longer available falls back to mood
   const activeTab =
     tab === "mood"
@@ -82,11 +87,15 @@ export default function ProgressChart() {
         ? hasBalance
           ? "balance"
           : "mood"
-        : q
-          ? tab
-          : "mood";
+        : tab === "baseline"
+          ? hasBaseline
+            ? "baseline"
+            : "mood"
+          : q
+            ? tab
+            : "mood";
 
-  const showChips = questionnaires.length > 0 || hasBalance;
+  const showChips = questionnaires.length > 0 || hasBalance || hasBaseline;
 
   function selectTab(next: string) {
     setTab(next);
@@ -135,6 +144,15 @@ export default function ProgressChart() {
                 onClick={() => selectTab("balance")}
               >
                 Колесо баланса
+              </button>
+            )}
+            {hasBaseline && (
+              <button
+                type="button"
+                className={`miniapp-word-chip ${activeTab === "baseline" ? "active" : ""}`}
+                onClick={() => selectTab("baseline")}
+              >
+                Точка отсчёта
               </button>
             )}
           </div>
@@ -187,6 +205,8 @@ export default function ProgressChart() {
           </>
         ) : activeTab === "balance" && balance ? (
           <BalanceCompare balance={balance} />
+        ) : activeTab === "baseline" && baseline ? (
+          <BaselineView baseline={baseline} />
         ) : (
           q && (
             <>
@@ -305,6 +325,46 @@ function ScaleCompareChart({ a, b }: { a: QScoreSeries; b: QScoreSeries }) {
         />
       </LineChart>
     </ResponsiveContainer>
+  );
+}
+
+// `baseline` unlock: the frozen intake battery. было -> стало per scale, with a
+// numeric delta shown but deliberately not coloured — this is a reference
+// point, not a score. All five of these scales run "higher = more symptoms",
+// but that judgement is left to the appointment, not the chart.
+function BaselineView({ baseline }: { baseline: Baseline }) {
+  return (
+    <>
+      <p className="hint">
+        Первые результаты опросников к приёму, собраны {baseline.collectedOn}. Дальше есть с чем
+        сравнивать. Это самонаблюдение, не оценка и не диагноз.
+      </p>
+      <ul className="baseline-list">
+        {baseline.rows.map((r) => (
+          <li key={r.code}>
+            <span className="baseline-scale">{r.label}</span>
+            <span className="baseline-line">
+              Было: {r.first.score} из {r.max} — {r.first.band} ({r.first.date})
+            </span>
+            {r.count > 1 ? (
+              <span className="baseline-line">
+                Сейчас: {r.latest.score} из {r.max} — {r.latest.band} ({r.latest.date})
+                <em>
+                  {" "}
+                  {r.delta === 0
+                    ? "без изменений"
+                    : `${r.delta > 0 ? "+" : ""}${r.delta} к первому разу`}
+                </em>
+              </span>
+            ) : (
+              <span className="baseline-line baseline-muted">
+                Пройдите опросник ещё раз, чтобы увидеть сдвиг.
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

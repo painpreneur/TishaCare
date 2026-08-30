@@ -135,6 +135,18 @@ a {
   justify-content: space-between;
 }
 
+.topbar-brand-link {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  margin: -4px -8px;
+  padding: 4px 8px;
+}
+
+.topbar-brand-link:hover {
+  background: #f4f6f8;
+}
+
 .topbar .brand {
   font-weight: 700;
   font-size: 16px;

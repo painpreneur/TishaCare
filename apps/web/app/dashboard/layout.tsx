@@ -10,10 +10,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div>
       <div className="topbar">
-        <div>
+        <Link href="/dashboard" className="topbar-brand-link">
           <div className="brand">TishaCare</div>
           <div className="clinic">{doctor.clinic?.name ?? "Частная практика"}</div>
-        </div>
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 13, color: "#465063" }}>{doctor.name}</span>
           <Link href="/dashboard/settings" className="logout-btn" style={{ textDecoration: "none" }}>

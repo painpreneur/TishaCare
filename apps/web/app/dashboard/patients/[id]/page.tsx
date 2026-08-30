@@ -25,6 +25,7 @@ import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
 import PrescribeMedication from "@/components/PrescribeMedication";
 import DoctorMedControls from "@/components/DoctorMedControls";
+import DoctorUnlinkPatient from "@/components/DoctorUnlinkPatient";
 import { ENCOUNTER_FIELDS, ENCOUNTER_FIELD_LABEL, ENCOUNTER_TYPE_LABEL } from "@/lib/encounter";
 import { MED_STATUS_LABEL, PRESCRIBER_LABEL, tagsToLabels, isPoorlyTolerated } from "@/lib/medication";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
@@ -104,6 +105,10 @@ export default async function PatientPage({ params }: { params: { id: string } }
       careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
     },
     include: {
+      careLinks: {
+        where: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
+        select: { id: true },
+      },
       checkIns: { orderBy: { date: "asc" } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },
       medications: {
@@ -193,7 +198,12 @@ export default async function PatientPage({ params }: { params: { id: string } }
       <Link href="/dashboard" className="back-link">
         ← Все пациенты
       </Link>
-      <h2>{patient.name}</h2>
+      <div className="page-header">
+        <h2>{patient.name}</h2>
+        {patient.careLinks[0] && (
+          <DoctorUnlinkPatient linkId={patient.careLinks[0].id} patientName={patient.name} />
+        )}
+      </div>
       {damLine && (
         <p className="hint" style={{ marginTop: -6 }}>
           {damLine}

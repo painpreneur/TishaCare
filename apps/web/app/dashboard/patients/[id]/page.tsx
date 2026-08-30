@@ -7,18 +7,12 @@ import {
   MDQ_CODE,
   MDQ_MAX_SCORE,
   COGNITIVE_TEST_CODE,
-  COGNITIVE_TEST_MAX_SCORE,
   CATEGORY_LABELS,
-  interpretBeck,
-  MdqResult,
   CognitiveCategory,
   CognitiveTestInterpretation,
-  QUESTIONNAIRE_DEFS,
-  questionnaireMaxScore,
-  interpretByBands,
-  BALANCE_WHEEL_CODE,
 } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
+import { describeResponse, QUESTIONNAIRE_MAX_SCORE } from "@/lib/questionnaireInterpret";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
@@ -37,15 +31,6 @@ import { doctorDamLine } from "@/lib/gamification";
 import { medsToNumber } from "@/lib/checkin";
 import { parseEmotions, emotionLabels } from "@/lib/thoughts";
 
-const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
-  [BECK_CODE]: BECK_MAX_SCORE,
-  [MDQ_CODE]: MDQ_MAX_SCORE,
-  [COGNITIVE_TEST_CODE]: COGNITIVE_TEST_MAX_SCORE,
-  ...Object.fromEntries(
-    Object.values(QUESTIONNAIRE_DEFS).map((def) => [def.code, questionnaireMaxScore(def)])
-  ),
-};
-
 const COGNITIVE_CATEGORY_COLORS: Record<CognitiveCategory, string> = {
   memory: "#4f6bfe",
   attention: "#22b8b0",
@@ -58,41 +43,6 @@ const COGNITIVE_CATEGORY_COLORS: Record<CognitiveCategory, string> = {
 
 function formatShortDate(date: Date): string {
   return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
-}
-
-function describeResponse(code: string, score: number, answersJson: string): string {
-  if (code === BECK_CODE) {
-    return interpretBeck(score).diagnosis;
-  }
-  if (code === MDQ_CODE) {
-    try {
-      const result = JSON.parse(answersJson) as MdqResult;
-      return result.diagnosis;
-    } catch {
-      return "·";
-    }
-  }
-  if (code === COGNITIVE_TEST_CODE) {
-    try {
-      const { interpretation } = JSON.parse(answersJson) as { interpretation: CognitiveTestInterpretation };
-      return interpretation.summary;
-    } catch {
-      return "·";
-    }
-  }
-  // Sum-scale questionnaires (Beck already handled above): interpret by bands.
-  if (QUESTIONNAIRE_DEFS[code]) {
-    return interpretByBands(QUESTIONNAIRE_DEFS[code], score).label;
-  }
-  if (code === BALANCE_WHEEL_CODE) {
-    try {
-      const { interpretation } = JSON.parse(answersJson) as { interpretation: { note: string } };
-      return interpretation.note;
-    } catch {
-      return "·";
-    }
-  }
-  return "·";
 }
 
 export default async function PatientPage({ params }: { params: { id: string } }) {
@@ -200,9 +150,18 @@ export default async function PatientPage({ params }: { params: { id: string } }
       </Link>
       <div className="page-header">
         <h2>{patient.name}</h2>
-        {patient.careLinks[0] && (
-          <DoctorUnlinkPatient linkId={patient.careLinks[0].id} patientName={patient.name} />
-        )}
+        <div className="page-header-actions">
+          <Link
+            href={`/dashboard/patients/${patient.id}/export`}
+            target="_blank"
+            className="link-btn"
+          >
+            Выгрузить карту
+          </Link>
+          {patient.careLinks[0] && (
+            <DoctorUnlinkPatient linkId={patient.careLinks[0].id} patientName={patient.name} />
+          )}
+        </div>
       </div>
       {damLine && (
         <p className="hint" style={{ marginTop: -6 }}>

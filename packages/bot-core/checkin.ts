@@ -36,14 +36,18 @@ const CODE_TAG: Record<string, string> = Object.fromEntries(
   Object.entries(TAG_CODE).map(([id, code]) => [code, id]),
 );
 
-// Sleep buckets — value is the representative hours * 10 (an int for callback_data).
-const SLEEP_BUCKETS: { label: string; h10: number }[] = [
-  { label: "меньше 5 ч", h10: 45 },
-  { label: "5–6 ч", h10: 55 },
-  { label: "6–7 ч", h10: 65 },
-  { label: "7–8 ч", h10: 75 },
-  { label: "8–9 ч", h10: 85 },
-  { label: "больше 9 ч", h10: 95 },
+// Whole hours of sleep. Buttons carry the exact number in callback_data — no
+// buckets, no representative midpoint that reads as false precision. The
+// endpoints are inclusive ("≤4" stores 4, "≥11" stores 11).
+const SLEEP_HOURS: { label: string; h: number }[] = [
+  { label: "≤4", h: 4 },
+  { label: "5", h: 5 },
+  { label: "6", h: 6 },
+  { label: "7", h: 7 },
+  { label: "8", h: 8 },
+  { label: "9", h: 9 },
+  { label: "10", h: 10 },
+  { label: "≥11", h: 11 },
 ];
 
 const NOTE_PROMPT = "Напишите заметку к отметке одним сообщением.";
@@ -74,7 +78,10 @@ async function loadConsentedPatient(ctx: Context) {
 
 function modeKeyboard() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback("Сейчас", "ci:go:mom"), Markup.button.callback("Итог дня", "ci:go:day")],
+    [
+      Markup.button.callback("🕐 Сейчас", "ci:go:mom"),
+      Markup.button.callback("🌙 Итог дня", "ci:go:day"),
+    ],
     [CANCEL_BTN],
   ]);
 }
@@ -98,8 +105,8 @@ function tagKeyboard(mood: number, sel: string) {
     );
   }
   rows.push([
-    Markup.button.callback("Дальше →", `ci:tagok:${mood}:${sel}`),
-    Markup.button.callback("Пропустить", `ci:tagok:${mood}:-`),
+    Markup.button.callback("Дальше ➡️", `ci:tagok:${mood}:${sel}`),
+    Markup.button.callback("Пропустить ⏭️", `ci:tagok:${mood}:-`),
   ]);
   rows.push([CANCEL_BTN]);
   return Markup.inlineKeyboard(rows);
@@ -108,24 +115,30 @@ function tagKeyboard(mood: number, sel: string) {
 function energyKeyboard(mood: number, sel: string) {
   return Markup.inlineKeyboard([
     [1, 2, 3, 4, 5].map((e) => Markup.button.callback(String(e), `ci:en:${mood}:${sel}:${e}`)),
-    [Markup.button.callback("Пропустить", `ci:en:${mood}:${sel}:0`)],
+    [Markup.button.callback("Пропустить ⏭️", `ci:en:${mood}:${sel}:0`)],
     [CANCEL_BTN],
   ]);
 }
 
+// Sleep is asked as whole hours and, in the "итог дня" flow, is not skippable —
+// it is a core part of the day's picture (and a key signal in bipolar care).
 function sleepKeyboard(mood: number) {
-  const rows: InlineKeyboardButton[][] = SLEEP_BUCKETS.map((b) => [
-    Markup.button.callback(b.label, `ci:sl:${mood}:${b.h10}`),
-  ]);
-  rows.push([Markup.button.callback("Пропустить", `ci:sl:${mood}:0`)]);
+  const rows: InlineKeyboardButton[][] = [];
+  for (let i = 0; i < SLEEP_HOURS.length; i += 4) {
+    rows.push(
+      SLEEP_HOURS.slice(i, i + 4).map((s) =>
+        Markup.button.callback(s.label, `ci:sl:${mood}:${s.h}`),
+      ),
+    );
+  }
   rows.push([CANCEL_BTN]);
   return Markup.inlineKeyboard(rows);
 }
 
-function medsKeyboard(mood: number, h10: number) {
+function medsKeyboard(mood: number, h: number) {
   return Markup.inlineKeyboard([
-    MEDS_OPTIONS.map((o) => Markup.button.callback(o.label, `ci:md:${mood}:${h10}:${o.id[0]}`)),
-    [Markup.button.callback("Пропустить", `ci:md:${mood}:${h10}:-`)],
+    MEDS_OPTIONS.map((o) => Markup.button.callback(o.label, `ci:md:${mood}:${h}:${o.id[0]}`)),
+    [Markup.button.callback("Пропустить ⏭️", `ci:md:${mood}:${h}:-`)],
     [CANCEL_BTN],
   ]);
 }
@@ -221,7 +234,7 @@ export function registerCheckinWizard(bot: Telegraf) {
     if (mode === "mom") {
       return ctx.editMessageText("Как это ощущается? Можно выбрать несколько.", tagKeyboard(mood, "-"));
     }
-    return ctx.editMessageText("Сколько удалось поспать?", sleepKeyboard(mood));
+    return ctx.editMessageText("Сколько часов спали?", sleepKeyboard(mood));
   });
 
   // moment: toggle a tag
@@ -256,8 +269,8 @@ export function registerCheckinWizard(bot: Telegraf) {
   bot.action(/^ci:sl:(-?[0-2]):(\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const mood = Number(ctx.match[1]);
-    const h10 = Number(ctx.match[2]);
-    return ctx.editMessageText("Приняли лекарства сегодня?", medsKeyboard(mood, h10));
+    const hours = Number(ctx.match[2]);
+    return ctx.editMessageText("Приняли лекарства сегодня?", medsKeyboard(mood, hours));
   });
 
   // day: meds picked -> SAVE
@@ -266,9 +279,9 @@ export function registerCheckinWizard(bot: Telegraf) {
     const { patient } = await loadConsentedPatient(ctx);
     if (!patient) return ctx.editMessageText("Откройте приложение, чтобы отметиться.");
     const mood = Number(ctx.match[1]);
-    const h10 = Number(ctx.match[2]);
+    const hours = Number(ctx.match[2]);
     const medsCode = ctx.match[3];
-    const sleepHours = h10 > 0 ? h10 / 10 : null;
+    const sleepHours = hours > 0 ? hours : null;
     const meds: MedsStatus | null =
       medsCode === "y" ? "yes" : medsCode === "p" ? "partial" : medsCode === "n" ? "no" : null;
     await saveCheckIn(patient.id, { mood, sleepHours, medsStatus: meds });

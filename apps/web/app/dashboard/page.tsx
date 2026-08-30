@@ -3,6 +3,7 @@ import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import CareRequests from "@/components/CareRequests";
+import DoctorConnectCode from "@/components/DoctorConnectCode";
 
 const MOOD_LABEL: Record<number, string> = {
   [-2]: "Очень плохо",
@@ -42,6 +43,8 @@ export default async function DashboardPage() {
           requests={pending.map((p) => ({ id: p.id, patientName: p.patient.name }))}
         />
       )}
+
+      <DoctorConnectCode code={doctor.connectCode} />
 
       <div className="page-header">
         <h2>Пациенты ({links.length})</h2>

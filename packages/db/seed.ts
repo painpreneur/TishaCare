@@ -211,6 +211,11 @@ async function main() {
           // Mini App можно было тестировать в браузере через dev-bypass
           // (см. apps/web/lib/telegramAuth.ts), без реальной сессии Telegram.
           telegramId: i === 0 ? DEV_FIXTURE_TELEGRAM_ID : undefined,
+          // Connected demo patients have already been through onboarding — set
+          // consent so write endpoints (resolveConsentedPatient) work in dev.
+          // Keep in sync with apps/web/lib/consent.ts CONSENT_VERSION.
+          consentAt: new Date(),
+          consentVersion: "2026-08-27",
         },
       })
     )
@@ -427,6 +432,19 @@ async function main() {
       data: {
         patientId: patient.id,
         content: "Сегодня было тяжело сосредоточиться на работе, но настроение ровное.",
+        emotions: JSON.stringify(["anxiety"]),
+        intensity: 4,
+      },
+    });
+    await prisma.thought.create({
+      data: {
+        patientId: patient.id,
+        kind: "guided",
+        situation: "Не ответили на сообщение полдня.",
+        content: "Наверное, я сказал(а) что-то не так и на меня обиделись.",
+        reframe: "Человек мог просто быть занят. Спрошу напрямую вечером.",
+        emotions: JSON.stringify(["anxiety", "shame"]),
+        intensity: 7,
       },
     });
 

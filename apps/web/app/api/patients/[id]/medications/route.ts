@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { notifyPatientTelegram } from "@/lib/patientNotify";
 
 // Doctor prescribes a medication for a patient they currently follow.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -30,6 +31,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       prescriberDoctorId: doctor.id,
     },
   });
+
+  await notifyPatientTelegram(
+    params.id,
+    `${doctor.name} назначил(а) препарат: ${medication.name}, ${medication.dosage}, ${medication.frequency} раз/день.` +
+      (medication.reason ? `\nПоказание: ${medication.reason}.` : "") +
+      "\nПодробности — в приложении, раздел «Медикаменты».",
+  );
 
   return NextResponse.json({ ok: true, id: medication.id });
 }

@@ -24,6 +24,7 @@ import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
 import PrescribeMedication from "@/components/PrescribeMedication";
+import DoctorMedControls from "@/components/DoctorMedControls";
 import { ENCOUNTER_FIELDS, ENCOUNTER_FIELD_LABEL, ENCOUNTER_TYPE_LABEL } from "@/lib/encounter";
 import { MED_STATUS_LABEL, PRESCRIBER_LABEL, tagsToLabels, isPoorlyTolerated } from "@/lib/medication";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
@@ -412,6 +413,12 @@ export default async function PatientPage({ params }: { params: { id: string } }
                     {m.prescriberDoctor && ` (${m.prescriberDoctor.name})`}
                     {m.reason && ` · ${m.reason}`}
                   </p>
+                  {m.status !== "active" && m.stopReason && (
+                    <p className="encounter-field">
+                      <span className="encounter-field-label">Причина отмены:</span> {m.stopReason}
+                    </p>
+                  )}
+                  <DoctorMedControls patientId={patient.id} medId={m.id} status={m.status} />
                   {poorlyTolerated && (
                     <p className="encounter-field" style={{ color: "#d64545" }}>
                       ⚠ Пациент отмечает плохую переносимость

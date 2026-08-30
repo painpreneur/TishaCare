@@ -895,6 +895,24 @@ table.responses td {
   margin: 12px 0 0;
 }
 
+/* Patient card — stop / reactivate a medication course */
+.med-controls {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.med-stop-form input {
+  flex: 1 1 180px;
+  padding: 6px 10px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
 .encounter-list li {
   padding: 12px 0;
   border-bottom: 1px solid #eef1f4;

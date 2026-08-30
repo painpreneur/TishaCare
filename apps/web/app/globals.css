@@ -404,6 +404,27 @@ table.responses td {
   transition: width 0.2s ease;
 }
 
+/* TestRunner: header row with the "Прервать" control, and the stop-confirm */
+.test-runner-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.test-runner-head .link-btn {
+  color: #9aa4b2;
+  flex: none;
+}
+
+.test-stop-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+}
+
 .miniapp-word-grid {
   display: flex;
   flex-wrap: wrap;

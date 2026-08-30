@@ -116,8 +116,9 @@ export default function ProgressChart() {
         {activeTab === "mood" ? (
           <>
             <p className="hint">
-              Здесь видно, как за последнее время менялись настроение, сон и энергия. Это не оценка
-              и не диагноз, просто ваши отметки на графике.
+              Здесь видно, как за последнее время менялись настроение и энергия. Сон и приём
+              препаратов можно включить в легенде под графиком. Это не оценка и не диагноз,
+              просто ваши отметки.
             </p>
             <div className="miniapp-word-grid" style={{ margin: "12px 0" }}>
               {RANGES.map((r) => (
@@ -134,7 +135,7 @@ export default function ProgressChart() {
             {series === null ? (
               <p className="empty">Загрузка...</p>
             ) : (
-              <WellbeingChart data={series} />
+              <WellbeingChart data={series} initialHidden={["sleepPct", "medsPct"]} />
             )}
 
             {connections && connections.length > 0 && (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import DrugFields from "@/components/DrugFields";
 
 export default function PrescribeMedication({ patientId }: { patientId: string }) {
   const router = useRouter();
@@ -50,15 +51,8 @@ export default function PrescribeMedication({ patientId }: { patientId: string }
 
   return (
     <div style={{ marginTop: 8 }}>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <div className="field" style={{ flex: "1 1 160px" }}>
-          <label>Название</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="field" style={{ flex: "0 0 120px" }}>
-          <label>Дозировка</label>
-          <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="200 мг" />
-        </div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <DrugFields name={name} dosage={dosage} onName={setName} onDosage={setDosage} />
         <div className="field" style={{ flex: "0 0 100px" }}>
           <label>Раз/день</label>
           <input type="number" value={frequency} onChange={(e) => setFrequency(e.target.value)} />

@@ -7,9 +7,14 @@ import { useState } from "react";
  * isolates just that one series. Further clicks toggle individual series in/out of the
  * visible set, so the doctor can build up any subset (e.g. just mood + meds) instead of
  * being stuck viewing exactly one line at a time.
+ *
+ * `initialHidden` seeds the hidden set — used on the patient screen to open on just
+ * mood + energy while still letting the patient reveal sleep / meds from the legend.
+ * A view that starts with something hidden counts as already filtered, so the
+ * "показать все" reset stays available.
  */
-export function useIsolatedLegend(allKeys: string[]) {
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
+export function useIsolatedLegend(allKeys: string[], initialHidden: string[] = []) {
+  const [hidden, setHidden] = useState<Set<string>>(new Set(initialHidden));
 
   function toggle(key: string) {
     setHidden((prev) => {

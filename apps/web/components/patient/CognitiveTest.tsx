@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { COGNITIVE_TEST_CODE, CATEGORY_LABELS, type CognitiveTestInterpretation } from "@tishacare/db/client";
+import { usePatientHomeHref } from "@/lib/patientPortal";
+import BackLink from "@/components/miniapp/BackLink";
 import TestRunner, { type SubtestDef } from "@/components/miniapp/TestRunner";
 import MemoryEncode from "@/components/miniapp/subtests/MemoryEncode";
 import AttentionSerialSevens from "@/components/miniapp/subtests/AttentionSerialSevens";
@@ -88,39 +91,46 @@ const SUBTESTS: SubtestDef[] = [
 // Shared by /miniapp/cognitive-test and /app/cognitive-test.
 export default function CognitiveTest() {
   const [result, setResult] = useState<CognitiveTestInterpretation | null>(null);
+  const homeHref = usePatientHomeHref();
 
   if (result) {
     return (
-      <div className="miniapp-card">
-        <h1>Тест завершён</h1>
-        <p className="hint">{result.summary}</p>
-        <table className="responses" style={{ marginTop: 16 }}>
-          <thead>
-            <tr>
-              <th>Категория</th>
-              <th>Балл</th>
-              <th>Уровень</th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.categories.map((c) => (
-              <tr key={c.category}>
-                <td>{c.label}</td>
-                <td>
-                  {c.raw}/{c.max}
-                </td>
-                <td>
-                  <span className={`badge ${["Норма", "Выше нормы"].includes(c.level) ? "ok" : "warn"}`}>
-                    {c.level}
-                  </span>
-                </td>
+      <div>
+        <BackLink />
+        <div className="miniapp-card">
+          <h1>Тест завершён</h1>
+          <p className="hint">{result.summary}</p>
+          <table className="responses" style={{ marginTop: 16 }}>
+            <thead>
+              <tr>
+                <th>Категория</th>
+                <th>Балл</th>
+                <th>Уровень</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="hint" style={{ marginTop: 16 }}>
-          {result.disclaimer}
-        </p>
+            </thead>
+            <tbody>
+              {result.categories.map((c) => (
+                <tr key={c.category}>
+                  <td>{c.label}</td>
+                  <td>
+                    {c.raw}/{c.max}
+                  </td>
+                  <td>
+                    <span className={`badge ${["Норма", "Выше нормы"].includes(c.level) ? "ok" : "warn"}`}>
+                      {c.level}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="hint" style={{ marginTop: 16 }}>
+            {result.disclaimer}
+          </p>
+          <Link href={homeHref} className="btn-primary btn-inline" style={{ marginTop: 16 }}>
+            На главную
+          </Link>
+        </div>
       </div>
     );
   }

@@ -838,6 +838,21 @@ table.responses td {
   color: #d64545;
 }
 
+/* Медикаменты — "Напоминание о приёме" toggle */
+.med-reminder-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.med-reminder-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
 /* "Мои врачи" — the patient's own invite code, for a doctor to enter */
 .care-code-mine {
   margin-top: 16px;

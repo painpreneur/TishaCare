@@ -216,6 +216,8 @@ async function main() {
           // Keep in sync with apps/web/lib/consent.ts CONSENT_VERSION.
           consentAt: new Date(),
           consentVersion: "2026-08-27",
+          // First demo patient opts into the daily med-intake nudge.
+          medReminderEnabled: i === 0,
         },
       })
     )

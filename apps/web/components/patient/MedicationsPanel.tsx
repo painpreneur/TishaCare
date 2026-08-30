@@ -61,6 +61,7 @@ export default function MedicationsPanel() {
   const [sideText, setSideText] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [reminderOn, setReminderOn] = useState<boolean | null>(null);
 
   function load() {
     fetch("/api/miniapp/medications", { headers: miniAppAuthHeaders() })
@@ -72,6 +73,23 @@ export default function MedicationsPanel() {
       .catch(() => setMeds([]));
   }
   useEffect(load, []);
+
+  useEffect(() => {
+    fetch("/api/miniapp/med-reminders", { headers: miniAppAuthHeaders() })
+      .then((r) => r.json())
+      .then((d) => setReminderOn(!!d.enabled))
+      .catch(() => setReminderOn(false));
+  }, []);
+
+  async function toggleReminder(next: boolean) {
+    setReminderOn(next);
+    const res = await fetch("/api/miniapp/med-reminders", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...miniAppAuthHeaders() },
+      body: JSON.stringify({ enabled: next }),
+    });
+    if (!res.ok) setReminderOn(!next);
+  }
 
   async function api(path: string, body?: unknown, method = "POST") {
     setError(null);
@@ -291,6 +309,23 @@ export default function MedicationsPanel() {
             + Добавить
           </button>
         )}
+      </div>
+
+      <div className="miniapp-card" style={{ marginTop: 16 }}>
+        <h2>Напоминание о приёме</h2>
+        <label className="med-reminder-toggle">
+          <input
+            type="checkbox"
+            checked={!!reminderOn}
+            disabled={reminderOn === null}
+            onChange={(e) => toggleReminder(e.target.checked)}
+          />
+          <span>Напоминать в боте раз в день</span>
+        </label>
+        <p className="hint" style={{ marginTop: 6 }}>
+          Приходит вечером вместе с напоминанием отметиться. В напоминании можно сразу отметить
+          приём и настроение.
+        </p>
       </div>
     </div>
   );

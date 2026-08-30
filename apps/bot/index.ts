@@ -1,7 +1,7 @@
 import "dotenv/config";
 import cron from "node-cron";
 import { APP_ENV } from "@tishacare/db";
-import { createBot, sendDueCheckinReminders } from "@tishacare/bot-core";
+import { createBot, sendDueCheckinReminders, sendDueMedReminders } from "@tishacare/bot-core";
 
 // apps/bot is the local dev loop only (long-polling). Production traffic is
 // served by the webhook in apps/web — see docs/ENVIRONMENTS.md. Starting a
@@ -32,7 +32,10 @@ const bot = createBot();
 // /api/cron/reminders). This local poller only schedules them when explicitly
 // asked, so a dev machine can't double-nudge patients if it shares a DB.
 if (process.env.ENABLE_LOCAL_REMINDERS === "1") {
-  cron.schedule("0 20 * * *", () => sendDueCheckinReminders(bot.telegram));
+  cron.schedule("0 20 * * *", () => {
+    sendDueCheckinReminders(bot.telegram);
+    sendDueMedReminders(bot.telegram);
+  });
   console.log("[reminders] local scheduler enabled (daily 20:00)");
 } else {
   console.log("[reminders] local scheduler disabled (handled by Vercel Cron). Set ENABLE_LOCAL_REMINDERS=1 to enable.");

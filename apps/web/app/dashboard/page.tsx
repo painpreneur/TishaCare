@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         />
       )}
 
-      <DoctorConnectCode code={doctor.connectCode} />
+      <DoctorConnectCode code={doctor.connectCode} variant="inline" />
 
       <div className="page-header">
         <h2>Пациенты ({links.length})</h2>

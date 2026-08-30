@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
-// The doctor's own connect code, shown on the dashboard. A patient types this
-// into "Мои врачи" in the app; the request then appears here as "Запросы на
-// подключение". Mirror of the patient's inviteCode for the other direction.
-export default function DoctorConnectCode({ code }: { code: string }) {
+// The doctor's own connect code. A patient types it into "Мои врачи" in the
+// app; the request then shows up on the dashboard as "Запросы на подключение".
+//   variant="full"   — the section on /dashboard/settings (code + explanation)
+//   variant="inline" — one compact line on the dashboard, links to settings
+export default function DoctorConnectCode({
+  code,
+  variant = "full",
+}: {
+  code: string;
+  variant?: "full" | "inline";
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -18,9 +26,20 @@ export default function DoctorConnectCode({ code }: { code: string }) {
     }
   }
 
+  if (variant === "inline") {
+    return (
+      <p className="doctor-code-inline">
+        Ваш код для пациентов: <code>{code}</code>{" "}
+        <button type="button" className="link-btn" onClick={copy}>
+          {copied ? "Скопировано" : "Скопировать"}
+        </button>{" "}
+        · <Link href="/dashboard/settings">Настройки</Link>
+      </p>
+    );
+  }
+
   return (
-    <div className="panel doctor-code-panel">
-      <h3>Ваш код для пациентов</h3>
+    <>
       <div className="care-code-row doctor-code-row">
         <code>{code}</code>
         <button type="button" className="link-btn" onClick={copy}>
@@ -29,9 +48,9 @@ export default function DoctorConnectCode({ code }: { code: string }) {
       </div>
       <p className="hint">
         Дайте его пациенту (в сообщении, на визитке, на стойке). Пациент вводит код в приложении
-        в разделе «Мои врачи», а вы подтверждаете запрос здесь, в «Запросах на подключение».
+        в разделе «Мои врачи», а вы подтверждаете запрос на дашборде, в «Запросах на подключение».
         Если пациент даёт свой код — используйте «+ Подключить пациента».
       </p>
-    </div>
+    </>
   );
 }

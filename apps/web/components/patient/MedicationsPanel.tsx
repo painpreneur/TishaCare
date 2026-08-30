@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { miniAppAuthHeaders } from "@/lib/miniappClient";
+import Link from "next/link";
+import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
+import { usePatientBasePath } from "@/lib/patientPortal";
 import { SIDE_EFFECT_TAGS, tagsToLabels } from "@/lib/medication";
 import BackLink from "@/components/miniapp/BackLink";
+import DrugFields from "@/components/DrugFields";
 
 interface Report {
   id: string;
@@ -46,6 +49,7 @@ function ScalePick({ value, onChange }: { value: number | null; onChange: (n: nu
 }
 
 export default function MedicationsPanel() {
+  const base = usePatientBasePath();
   const [meds, setMeds] = useState<Medication[] | null>(null);
   // When a doctor is connected they own the list — the patient can record
   // tolerability but not add / stop / delete courses.
@@ -278,22 +282,23 @@ export default function MedicationsPanel() {
 
         {managedByDoctor ? null : adding ? (
           <div style={{ marginTop: 16 }}>
-            <div className="field">
-              <label>Название</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Кветиапин" />
-            </div>
-            <div className="field">
-              <label>Дозировка</label>
-              <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="200 мг" />
-            </div>
-            <div className="field">
-              <label>Раз в день</label>
-              <input
-                type="number"
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-                placeholder="2"
-              />
+            <p className="hint" style={{ marginTop: 0 }}>
+              Добавляйте препараты, которые уже принимаете. Если вас наблюдает врач, лучше
+              подключить его в{" "}
+              <Link href={withDevTelegramIdParam(`${base}/care`)}>«Мои врачи»</Link> — тогда
+              назначения и контроль переносимости ведёт он.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
+              <DrugFields name={name} dosage={dosage} onName={setName} onDosage={setDosage} />
+              <div className="field" style={{ flex: "0 0 100px" }}>
+                <label>Раз в день</label>
+                <input
+                  type="number"
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                  placeholder="2"
+                />
+              </div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn-primary btn-inline" onClick={addMedication}>
@@ -308,6 +313,14 @@ export default function MedicationsPanel() {
           <button className="btn-primary btn-inline" style={{ marginTop: 16 }} onClick={() => setAdding(true)}>
             + Добавить
           </button>
+        )}
+
+        {!managedByDoctor && meds !== null && meds.length > 0 && !adding && (
+          <p className="hint">
+            Список ведёте вы.{" "}
+            <Link href={withDevTelegramIdParam(`${base}/care`)}>Подключить врача</Link>, чтобы
+            назначения вёл он.
+          </p>
         )}
       </div>
 

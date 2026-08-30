@@ -6,6 +6,7 @@ import { buildQuestionnaireSeries } from "@/lib/questionnaireSeries";
 import { buildConnections } from "@/lib/connections";
 import { buildBalanceHistory } from "@/lib/balanceHistory";
 import { buildWeekRhythm } from "@/lib/weekRhythm";
+import { buildYearCompare } from "@/lib/yearCompare";
 
 const ALLOWED_DAYS = [7, 30, 90];
 const DEFAULT_DAYS = 30;
@@ -52,5 +53,6 @@ export async function GET(req: NextRequest) {
     connections: unlockedCodes.includes("connections") ? buildConnections(checkIns) : null,
     balanceHistory: unlockedCodes.includes("balance") ? buildBalanceHistory(responses) : null,
     weekRhythm: unlockedCodes.includes("rhythm") ? buildWeekRhythm(checkIns) : null,
+    yearCompare: unlockedCodes.includes("year") ? buildYearCompare(checkIns) : null,
   });
 }

@@ -24,6 +24,7 @@ import type { QScoreSeries } from "@/lib/questionnaireSeries";
 import { entriesLabel, type Connection } from "@/lib/connections";
 import type { BalanceHistory } from "@/lib/balanceHistory";
 import type { WeekRhythmDay } from "@/lib/weekRhythm";
+import type { YearCompare as YearCompareData } from "@/lib/yearCompare";
 import WellbeingChart from "@/components/WellbeingChart";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import BackLink from "@/components/miniapp/BackLink";
@@ -42,6 +43,7 @@ export default function ProgressChart() {
   const [connections, setConnections] = useState<Connection[] | null>(null);
   const [balance, setBalance] = useState<BalanceHistory | null>(null);
   const [weekRhythm, setWeekRhythm] = useState<WeekRhythmDay[] | null>(null);
+  const [yearCompare, setYearCompare] = useState<YearCompareData | null>(null);
   const [tab, setTab] = useState<"mood" | "balance" | string>("mood");
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function ProgressChart() {
         setConnections(data.connections ?? null);
         setBalance(data.balanceHistory ?? null);
         setWeekRhythm(data.weekRhythm ?? null);
+        setYearCompare(data.yearCompare ?? null);
       })
       .catch(() => {
         if (active) setSeries([]);
@@ -160,6 +163,8 @@ export default function ProgressChart() {
             )}
 
             {weekRhythm && <WeekRhythm days={weekRhythm} />}
+
+            {yearCompare && <YearAgo data={yearCompare} />}
           </>
         ) : activeTab === "balance" && balance ? (
           <BalanceCompare balance={balance} />
@@ -318,3 +323,42 @@ const DAY_GEN: Record<string, string> = {
   Вс: "воскресеньям",
 };
 const dayGenitive = (label: string) => DAY_GEN[label] ?? label;
+
+const MOOD_WORDS = ["Очень плохо", "Плохо", "Нормально", "Хорошо", "Отлично"];
+function moodWord(n: number | null): string {
+  if (n == null) return "—";
+  const i = Math.round(n) + 2;
+  return MOOD_WORDS[Math.min(4, Math.max(0, i))] ?? n.toFixed(1);
+}
+
+function YearAgo({ data }: { data: YearCompareData }) {
+  const { nowAvg, nowN, thenAvg, thenN } = data;
+
+  let verdict = "";
+  if (nowAvg != null && thenAvg != null) {
+    const d = nowAvg - thenAvg;
+    verdict =
+      Math.abs(d) < 0.4
+        ? "Примерно как год назад."
+        : d > 0
+          ? "Сейчас настроение выше, чем год назад."
+          : "Сейчас настроение ниже, чем год назад.";
+  }
+
+  return (
+    <div className="connections-block">
+      <h4 className="chart-subtitle">Год назад</h4>
+      <ul className="correlation-list">
+        <li>
+          Последние две недели: {moodWord(nowAvg)}
+          {nowN > 0 && ` (по ${nowN} записям)`}
+        </li>
+        <li>
+          Те же дни год назад:{" "}
+          {thenAvg != null ? `${moodWord(thenAvg)} (по ${thenN} записям)` : "записей не было"}
+        </li>
+      </ul>
+      {verdict && <p className="hint">{verdict}</p>}
+    </div>
+  );
+}

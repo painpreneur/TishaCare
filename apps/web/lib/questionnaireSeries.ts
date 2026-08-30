@@ -16,6 +16,8 @@ import {
 export interface QScorePoint {
   date: string;
   score: number;
+  /** completedAt epoch ms — for merging two scales onto one time axis. */
+  t: number;
 }
 
 export interface QScoreSeries {
@@ -120,7 +122,11 @@ export function buildQuestionnaireSeries(responses: QResponseInput[]): QScoreSer
       code,
       label: SHORT_LABEL[code] ?? list[0].questionnaire.title,
       color: COLOR[code] ?? "#4f6bfe",
-      points: sorted.map((r) => ({ date: fmt(r.completedAt), score: r.score })),
+      points: sorted.map((r) => ({
+        date: fmt(r.completedAt),
+        score: r.score,
+        t: new Date(r.completedAt).getTime(),
+      })),
       max,
       thresholds,
       latest: { score: last.score, band, date: fmt(last.completedAt) },

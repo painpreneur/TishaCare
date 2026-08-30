@@ -58,7 +58,8 @@ export default function UnlockCard({ data: dataProp }: { data?: DamHomeData | nu
     if (next) setCode(next.code);
   }, [data, code]);
 
-  if (code == null) return null;
+  // "" is the "dismissed" sentinel set by the close button.
+  if (!code) return null;
   const info = UNLOCKS.find((u) => u.code === code);
   if (!info) return null;
 

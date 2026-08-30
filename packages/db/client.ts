@@ -5,4 +5,5 @@
 export * from "./clinical";
 export * from "./questionnaires";
 export * from "./lifeBalance";
+export * from "./checkin";
 export * from "./cognitive";

@@ -127,6 +127,7 @@ export * from "@prisma/client";
 export * from "./clinical";
 export * from "./questionnaires";
 export * from "./lifeBalance";
+export * from "./checkin";
 export * from "./invite";
 export * from "./cognitive";
 export * from "./events";

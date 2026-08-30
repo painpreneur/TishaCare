@@ -44,7 +44,10 @@ export default function ProgressChart() {
   const [balance, setBalance] = useState<BalanceHistory | null>(null);
   const [weekRhythm, setWeekRhythm] = useState<WeekRhythmDay[] | null>(null);
   const [yearCompare, setYearCompare] = useState<YearCompareData | null>(null);
+  const [unlocks, setUnlocks] = useState<string[]>([]);
   const [tab, setTab] = useState<"mood" | "balance" | string>("mood");
+  // `compare` unlock: a second questionnaire scale overlaid on the score chart.
+  const [overlay, setOverlay] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -59,6 +62,7 @@ export default function ProgressChart() {
         setBalance(data.balanceHistory ?? null);
         setWeekRhythm(data.weekRhythm ?? null);
         setYearCompare(data.yearCompare ?? null);
+        setUnlocks(data.unlocks ?? []);
       })
       .catch(() => {
         if (active) setSeries([]);
@@ -84,6 +88,21 @@ export default function ProgressChart() {
 
   const showChips = questionnaires.length > 0 || hasBalance;
 
+  function selectTab(next: string) {
+    setTab(next);
+    setOverlay(null);
+  }
+
+  // scales available to overlay on the current questionnaire tab
+  const otherScales =
+    q && unlocks.includes("compare")
+      ? questionnaires.filter((x) => x.code !== q.code && x.points.length > 0)
+      : [];
+  const overlaySeries =
+    overlay && overlay !== activeTab
+      ? questionnaires.find((x) => x.code === overlay && x.points.length > 0) ?? null
+      : null;
+
   return (
     <div>
       <BackLink />
@@ -95,7 +114,7 @@ export default function ProgressChart() {
             <button
               type="button"
               className={`miniapp-word-chip ${activeTab === "mood" ? "active" : ""}`}
-              onClick={() => setTab("mood")}
+              onClick={() => selectTab("mood")}
             >
               Настроение
             </button>
@@ -104,7 +123,7 @@ export default function ProgressChart() {
                 key={x.code}
                 type="button"
                 className={`miniapp-word-chip ${activeTab === x.code ? "active" : ""}`}
-                onClick={() => setTab(x.code)}
+                onClick={() => selectTab(x.code)}
               >
                 {x.label}
               </button>
@@ -113,7 +132,7 @@ export default function ProgressChart() {
               <button
                 type="button"
                 className={`miniapp-word-chip ${activeTab === "balance" ? "active" : ""}`}
-                onClick={() => setTab("balance")}
+                onClick={() => selectTab("balance")}
               >
                 Колесо баланса
               </button>
@@ -186,11 +205,106 @@ export default function ProgressChart() {
               {q.points.length === 1 && (
                 <p className="hint">Пройдите опросник ещё раз, чтобы увидеть динамику.</p>
               )}
+
+              {otherScales.length > 0 && (
+                <div className="connections-block">
+                  <h4 className="chart-subtitle">Сравнить с другой шкалой</h4>
+                  <div className="miniapp-word-grid" style={{ margin: "0 0 8px" }}>
+                    <button
+                      type="button"
+                      className={`miniapp-word-chip ${overlay == null ? "active" : ""}`}
+                      onClick={() => setOverlay(null)}
+                    >
+                      Без сравнения
+                    </button>
+                    {otherScales.map((s) => (
+                      <button
+                        key={s.code}
+                        type="button"
+                        className={`miniapp-word-chip ${overlay === s.code ? "active" : ""}`}
+                        onClick={() => setOverlay(s.code)}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                  {overlaySeries ? (
+                    <>
+                      <ScaleCompareChart a={q} b={overlaySeries} />
+                      <p className="hint">
+                        Обе шкалы приведены к проценту от своего максимума, поэтому их видно рядом.
+                        Это самонаблюдение, не оценка и не диагноз.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="hint">
+                      Выберите шкалу, чтобы наложить её на график поверх «{q.label}».
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )
         )}
       </div>
     </div>
+  );
+}
+
+// `compare` unlock: two questionnaire scales on one chart. Raw scores can't
+// share an axis (Beck is 0..63, GAD-7 is 0..21), so each point is shown as a
+// percent of that scale's own max. Points are merged onto one time axis by
+// completion timestamp; gaps are bridged (connectNulls) since the two
+// questionnaires are rarely taken on the same day.
+function ScaleCompareChart({ a, b }: { a: QScoreSeries; b: QScoreSeries }) {
+  const map = new Map<number, { t: number; date: string; a?: number; b?: number }>();
+  for (const p of a.points) {
+    const row = map.get(p.t) ?? { t: p.t, date: p.date };
+    row.a = Math.round((p.score / a.max) * 100);
+    map.set(p.t, row);
+  }
+  for (const p of b.points) {
+    const row = map.get(p.t) ?? { t: p.t, date: p.date };
+    row.b = Math.round((p.score / b.max) * 100);
+    map.set(p.t, row);
+  }
+  const rows = [...map.values()].sort((x, y) => x.t - y.t);
+
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <LineChart data={rows}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#eef1f4" />
+        <XAxis dataKey="date" fontSize={12} stroke="#9aa4b2" />
+        <YAxis
+          domain={[0, 100]}
+          ticks={[0, 50, 100]}
+          fontSize={12}
+          stroke="#9aa4b2"
+          width={34}
+          unit="%"
+        />
+        <Tooltip formatter={(v: number) => `${Math.round(v)}%`} />
+        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Line
+          type="monotone"
+          dataKey="a"
+          name={a.label}
+          stroke={a.color}
+          strokeWidth={2}
+          dot={{ r: 3 }}
+          connectNulls
+        />
+        <Line
+          type="monotone"
+          dataKey="b"
+          name={b.label}
+          stroke={b.color}
+          strokeWidth={2}
+          dot={{ r: 3 }}
+          connectNulls
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
 

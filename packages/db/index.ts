@@ -128,6 +128,7 @@ export * from "./clinical";
 export * from "./questionnaires";
 export * from "./lifeBalance";
 export * from "./checkin";
+export * from "./medReference";
 export * from "./invite";
 export * from "./cognitive";
 export * from "./events";

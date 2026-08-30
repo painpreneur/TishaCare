@@ -21,19 +21,27 @@ export interface WellbeingEntry {
 }
 
 export interface WellbeingPoint {
-  /** Whole days since the first check-in. */
+  /** Whole days since the first check-in (week index * 7 for weekly buckets). */
   t: number;
   /** "DD.MM" label for the axis tick. */
   date: string;
+  /** Mean mood for the bucket, raw −2…+2. */
   moodRaw: number;
   moodPct: number;
+  /** Lowest / highest single mood in the bucket — the day's (or week's) swing. */
+  moodMin: number;
+  moodMax: number;
   energyRaw: number | null;
   energyPct: number | null;
   sleepRaw: number | null;
   sleepPct: number | null;
   medsRaw: string | null;
   medsPct: number | null;
+  /** 0…1 adherence (1=принял, .5=частично, 0=нет), mean over the bucket. */
+  medsAdherence: number | null;
   entries: WellbeingEntry[];
+  /** Check-ins in the bucket (entries.length for a day; summed for a week). */
+  count: number;
 }
 
 interface CheckInInput {
@@ -78,7 +86,8 @@ export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
       dayStart.setHours(0, 0, 0, 0);
       const dayT = Math.round((dayStart.getTime() - origin) / DAY);
 
-      const moodMean = mean(sorted.map((c) => c.mood));
+      const moods = sorted.map((c) => c.mood);
+      const moodMean = mean(moods);
       const energies = sorted.map((c) => c.energyLevel).filter((v): v is number => v != null);
       const sleep = lastNonNull(sorted.map((c) => c.sleepHours));
       const meds = lastNonNull(sorted.map((c) => c.medsStatus));
@@ -89,12 +98,16 @@ export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
         date: dayStart.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" }),
         moodRaw: Math.round(moodMean * 10) / 10,
         moodPct: moodPct(moodMean),
+        moodMin: Math.min(...moods),
+        moodMax: Math.max(...moods),
         energyRaw: energies.length ? Math.round(mean(energies) * 10) / 10 : null,
         energyPct: energies.length ? ((mean(energies) - 1) / 4) * 100 : null,
         sleepRaw: sleep,
         sleepPct: sleep != null ? Math.min((sleep / 12) * 100, 100) : null,
         medsRaw: meds,
         medsPct: medsN != null ? medsN * 100 : null,
+        medsAdherence: medsN,
+        count: sorted.length,
         entries: sorted.map((c) => ({
           t: dayT + (c.d.getTime() - dayStart.getTime()) / DAY,
           time: c.d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
@@ -103,6 +116,52 @@ export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
           tags: parseStateTags(c.stateTags),
           note: c.note ?? null,
         })),
+      };
+    });
+}
+
+// Roll daily points into ISO-ish weekly buckets (7 days from the first check-in)
+// for long ranges, where 90 daily markers turn the line into noise. Each bucket
+// keeps the mean and the week's min/max mood so the swing still reads.
+export function aggregateWeekly(points: WellbeingPoint[]): WellbeingPoint[] {
+  if (points.length === 0) return [];
+
+  const byWeek = new Map<number, WellbeingPoint[]>();
+  for (const p of points) {
+    const w = Math.floor(p.t / 7);
+    const bucket = byWeek.get(w);
+    if (bucket) bucket.push(p);
+    else byWeek.set(w, [p]);
+  }
+
+  return [...byWeek.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([w, ps]) => {
+      const moodMeans = ps.map((p) => p.moodRaw);
+      const moodMean = mean(moodMeans);
+      const energies = ps.map((p) => p.energyRaw).filter((v): v is number => v != null);
+      const sleeps = ps.map((p) => p.sleepRaw).filter((v): v is number => v != null);
+      const adh = ps.map((p) => p.medsAdherence).filter((v): v is number => v != null);
+      const weekStartT = w * 7;
+      const label =
+        ps[0].date + (ps.length > 1 ? `–${ps[ps.length - 1].date}` : "");
+
+      return {
+        t: weekStartT,
+        date: label,
+        moodRaw: Math.round(moodMean * 10) / 10,
+        moodPct: moodPct(moodMean),
+        moodMin: Math.min(...ps.map((p) => p.moodMin)),
+        moodMax: Math.max(...ps.map((p) => p.moodMax)),
+        energyRaw: energies.length ? Math.round(mean(energies) * 10) / 10 : null,
+        energyPct: energies.length ? ((mean(energies) - 1) / 4) * 100 : null,
+        sleepRaw: sleeps.length ? Math.round(mean(sleeps) * 10) / 10 : null,
+        sleepPct: sleeps.length ? Math.min((mean(sleeps) / 12) * 100, 100) : null,
+        medsRaw: null,
+        medsPct: adh.length ? mean(adh) * 100 : null,
+        medsAdherence: adh.length ? mean(adh) : null,
+        count: ps.reduce((s, p) => s + p.count, 0),
+        entries: [],
       };
     });
 }

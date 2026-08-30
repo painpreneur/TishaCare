@@ -33,6 +33,7 @@ import { toWellbeingSeries } from "@/lib/wellbeing";
 import { buildPatientInsights } from "@/lib/insights";
 import { doctorDamLine } from "@/lib/gamification";
 import { medsToNumber } from "@/lib/checkin";
+import { parseEmotions, emotionLabels } from "@/lib/thoughts";
 
 const QUESTIONNAIRE_MAX_SCORE: Record<string, number> = {
   [BECK_CODE]: BECK_MAX_SCORE,
@@ -445,14 +446,43 @@ export default async function PatientPage({ params }: { params: { id: string } }
           <p className="empty">Записей пока нет</p>
         ) : (
           <ul className="thought-list">
-            {patient.thoughts.map((t) => (
-              <li key={t.id}>
-                <span className="thought-date">
-                  {new Date(t.createdAt).toLocaleDateString("ru-RU")}
-                </span>
-                <span>{t.content}</span>
-              </li>
-            ))}
+            {patient.thoughts.map((t) => {
+              const ems = emotionLabels(parseEmotions(t.emotions));
+              return (
+                <li key={t.id}>
+                  <span className="thought-date">
+                    {new Date(t.createdAt).toLocaleDateString("ru-RU")}
+                  </span>
+                  {t.kind === "guided" ? (
+                    <div className="thought-guided">
+                      {t.situation && (
+                        <p>
+                          <em>Ситуация:</em> {t.situation}
+                        </p>
+                      )}
+                      {t.content && (
+                        <p>
+                          <em>Мысль:</em> {t.content}
+                        </p>
+                      )}
+                      {t.reframe && (
+                        <p>
+                          <em>Другой взгляд:</em> {t.reframe}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="thought-body">{t.content}</p>
+                  )}
+                  {ems.length > 0 && (
+                    <p className="thought-emotions">
+                      {ems.join(", ")}
+                      {t.intensity != null && ` · ${t.intensity}/10`}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient, resolveConsentedPatient } from "@/lib/telegramAuth";
+import { readThoughtFields } from "@/lib/thoughts";
 
 export async function GET(req: NextRequest) {
   const auth = await resolveMiniAppPatient(req);
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
   const thoughts = await prisma.thought.findMany({
     where: { patientId: auth.patientId },
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take: 200,
   });
 
   return NextResponse.json({ thoughts });
@@ -23,13 +24,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
 
-  const { content } = await req.json();
-  if (!content?.trim()) {
+  const body = await req.json().catch(() => ({}));
+  const fields = readThoughtFields(body);
+
+  // Something has to have been written: the note itself, or the thought in a
+  // guided record.
+  if (!fields.content) {
     return NextResponse.json({ error: "Введите текст" }, { status: 400 });
   }
 
   const thought = await prisma.thought.create({
-    data: { patientId: auth.patientId, content: content.trim() },
+    data: { patientId: auth.patientId, ...fields },
   });
 
   return NextResponse.json({ ok: true, thought });

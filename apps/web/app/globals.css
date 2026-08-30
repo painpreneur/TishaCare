@@ -321,6 +321,64 @@ table.responses td {
   margin-bottom: 2px;
 }
 
+/* Дневник мыслей — form + entry list */
+.thought-field-label {
+  display: block;
+  font-size: 13px;
+  color: #465063;
+  margin-top: 12px;
+}
+
+.thought-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.thought-day h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.thought-list li.editing {
+  background: #f4f6ff;
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+  border-bottom-color: transparent;
+}
+
+.thought-body {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+}
+
+.thought-guided {
+  margin-top: 2px;
+}
+
+.thought-guided p {
+  margin: 2px 0 0;
+}
+
+.thought-guided em {
+  font-style: normal;
+  color: #9aa4b2;
+}
+
+.thought-emotions {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #4f6bfe;
+}
+
+.thought-item-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
 /* Mini App (patient-facing, launched inside Telegram) */
 
 .miniapp {

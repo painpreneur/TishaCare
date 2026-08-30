@@ -303,12 +303,28 @@ model MedicationReport {
 }
 
 model Thought {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   patientId String
+
+  // "free"   — just `content`, a note the patient wanted to get out.
+  // "guided" — a short thought record: `situation` (what happened), `content`
+  //            (the thought itself) and `reframe` (another way to see it).
+  kind      String  @default("free")
   content   String
+  situation String?
+  reframe   String?
+
+  // JSON array of emotion ids (see apps/web/lib/thoughts.ts EMOTIONS), plus the
+  // strength of the strongest one, 0..10. Both optional, both modes.
+  emotions  String?
+  intensity Int?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id])
+
+  @@index([patientId])
 }
 
 // Frozen timeline of "Плотина Тиши" stages a patient has reached. Append-only:

@@ -1139,6 +1139,40 @@ table.responses td {
   margin-top: 20px;
 }
 
+/* "Колесо баланса" compare tab (balance unlock) — per-area было -> стало */
+.balance-delta-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.balance-delta-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  padding: 7px 0;
+  border-top: 1px solid #eef1f4;
+  color: #33404f;
+}
+
+.balance-delta-list li:first-child {
+  border-top: none;
+}
+
+.balance-delta-list em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.balance-delta-list em.up {
+  color: #1f9d4b;
+}
+
+.balance-delta-list em.down {
+  color: #d64545;
+}
+
 /* "Сезоны у плотины" (seasons unlock) — a gentle season touch on the full scene */
 .dam-season {
   margin: 4px 0 0;

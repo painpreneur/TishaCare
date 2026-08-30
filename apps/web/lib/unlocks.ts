@@ -187,6 +187,9 @@ export function buildPath(ctx: UnlockContext): PatientPath {
   const intakeDone = INTAKE_CODES.filter(has).length;
   const intakeAll = intakeDone >= INTAKE_CODES.length;
 
+  // "Неделя записей" is last on purpose: it is the slowest of the four to
+  // accumulate, so it should not sit above the acts a patient can finish in one
+  // sitting.
   const blockA: PathStep[] = [
     {
       id: "first-entry",
@@ -194,14 +197,6 @@ export function buildPath(ctx: UnlockContext): PatientPath {
       hint: "Одна отметка о том, как дела",
       done: ctx.qualifyingEntryCount >= 1,
       grants: [],
-    },
-    {
-      id: "week",
-      title: "Неделя записей",
-      hint: "Семь дней с отметкой о состоянии",
-      done: ctx.qualifyingEntryCount >= 7,
-      detail: ctx.qualifyingEntryCount >= 7 ? undefined : `${Math.min(ctx.qualifyingEntryCount, 7)} из 7`,
-      grants: ["connections"],
     },
     {
       id: "wheel",
@@ -217,6 +212,14 @@ export function buildPath(ctx: UnlockContext): PatientPath {
       done: intakeAll,
       detail: intakeAll ? undefined : `${intakeDone} из ${INTAKE_CODES.length}`,
       grants: ["baseline", "compare"],
+    },
+    {
+      id: "week",
+      title: "Неделя записей",
+      hint: "Семь дней с отметкой о состоянии",
+      done: ctx.qualifyingEntryCount >= 7,
+      detail: ctx.qualifyingEntryCount >= 7 ? undefined : `${Math.min(ctx.qualifyingEntryCount, 7)} из 7`,
+      grants: ["connections"],
     },
   ];
 

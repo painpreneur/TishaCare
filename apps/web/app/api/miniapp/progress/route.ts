@@ -4,6 +4,7 @@ import { resolveMiniAppPatient } from "@/lib/telegramAuth";
 import { toWellbeingSeries } from "@/lib/wellbeing";
 import { buildQuestionnaireSeries } from "@/lib/questionnaireSeries";
 import { buildConnections } from "@/lib/connections";
+import { buildBalanceHistory } from "@/lib/balanceHistory";
 
 const ALLOWED_DAYS = [7, 30, 90];
 const DEFAULT_DAYS = 30;
@@ -48,5 +49,6 @@ export async function GET(req: NextRequest) {
     questionnaires: buildQuestionnaireSeries(responses),
     unlocks: unlockedCodes,
     connections: unlockedCodes.includes("connections") ? buildConnections(checkIns) : null,
+    balanceHistory: unlockedCodes.includes("balance") ? buildBalanceHistory(responses) : null,
   });
 }

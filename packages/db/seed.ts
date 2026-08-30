@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./index";
 import { BECK_CODE, MDQ_CODE, interpretMdq, mdqScore } from "./clinical";
+import { BALANCE_WHEEL_CODE, BALANCE_WHEEL_TITLE, interpretBalanceWheel } from "./lifeBalance";
 import { generateInviteCode, generateConnectCode } from "./invite";
 import {
   COGNITIVE_TEST_CODE,
@@ -175,6 +176,14 @@ async function main() {
     },
   });
 
+  const balanceWheel = await prisma.questionnaire.create({
+    data: {
+      code: BALANCE_WHEEL_CODE,
+      title: BALANCE_WHEEL_TITLE,
+      description: "Самоанализ удовлетворённости по восьми сферам жизни",
+    },
+  });
+
   const demoPatientPasswordHash = await bcrypt.hash("demo1234", 10);
   const patientSeeds = [
     {
@@ -344,6 +353,30 @@ async function main() {
           questionnaireId: cognitive.id,
           score: cognitiveTestScore(interpretation),
           answers: JSON.stringify({ submission, interpretation }),
+          completedAt,
+        },
+      });
+    }
+
+    // Колесо баланса — три прохождения с интервалом, чтобы работал разблок
+    // "История колеса баланса" и на "Моей динамике" было что сравнивать.
+    const balanceRunsOverTime = [
+      [4, 6, 5, 7, 3, 5, 6, 8],
+      [5, 6, 6, 7, 4, 6, 6, 8],
+      [7, 6, 6, 8, 5, 7, 7, 8],
+    ];
+    for (const [i, values] of balanceRunsOverTime.entries()) {
+      const completedAt = new Date();
+      completedAt.setDate(completedAt.getDate() - (balanceRunsOverTime.length - 1 - i) * 21);
+      await prisma.questionnaireResponse.create({
+        data: {
+          patientId: patient.id,
+          questionnaireId: balanceWheel.id,
+          score: values.reduce((s, v) => s + v, 0),
+          answers: JSON.stringify({
+            submission: values,
+            interpretation: interpretBalanceWheel(values),
+          }),
           completedAt,
         },
       });

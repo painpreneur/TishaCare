@@ -78,6 +78,16 @@ export async function doctorCanAccessPatient(doctorId: string, patientId: string
   return !!link && (SHARING_STATUSES as readonly string[]).includes(link.status);
 }
 
+/** True if the patient has a doctor actively caring for them (active / paused /
+ *  ending). While that's the case the doctor owns the medication list — the
+ *  patient can record tolerability but not add, edit or stop courses. */
+export async function patientHasManagingDoctor(patientId: string): Promise<boolean> {
+  const count = await prisma.careLink.count({
+    where: { patientId, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
+  });
+  return count > 0;
+}
+
 // ── Patient-initiated actions ────────────────────────────────────────────────
 
 /** Patient requests a connection to the doctor with `connectCode`. */

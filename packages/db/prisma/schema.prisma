@@ -113,6 +113,11 @@ model Patient {
   anamnesisUpdatedAt   DateTime?
   anamnesisUpdatedById String?
 
+  // Opt-in daily "did you take your meds?" nudge in the bot. Delivered with the
+  // evening check-in reminder (once a day — Vercel Hobby crons run daily); a
+  // tap records a check-in with medsStatus + mood.
+  medReminderEnabled Boolean @default(false)
+
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
   careLinks       CareLink[]
   encounters      Encounter[]

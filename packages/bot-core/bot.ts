@@ -3,6 +3,7 @@ import { message } from "telegraf/filters";
 import { prisma, generateInviteCode, logBotEvent } from "@tishacare/db";
 import { openMiniAppKeyboard } from "./menu";
 import { registerCheckinWizard } from "./checkin";
+import { registerMedReminders } from "./medReminders";
 
 // Single source of truth for the bot's behaviour. Both entry points wrap this:
 // apps/web/lib/bot.ts (webhook, production) and apps/bot/index.ts (long-polling,
@@ -76,6 +77,9 @@ export function createBot(): Telegraf {
   // /checkin and its whole inline-keyboard flow (moment + day). Registered
   // before the text catch-all below so the note force-reply is seen first.
   registerCheckinWizard(bot);
+
+  // Inline-button handlers for the opt-in med-intake nudge (mr:*).
+  registerMedReminders(bot);
 
   bot.help((ctx) => miniAppReply(ctx, "Всё управление через приложение. Нажмите кнопку ниже."));
   bot.on(message("text"), (ctx) => miniAppReply(ctx, "Нажмите кнопку ниже, чтобы открыть приложение."));

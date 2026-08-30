@@ -98,8 +98,9 @@ export default function MilestoneCard({ data: dataProp }: { data?: DamHomeData |
     }
   }, [data, stage]);
 
-  if (stage == null) return null;
-  const info = STAGES[Math.min(Math.max(stage, 1), STAGES.length) - 1];
+  // stage < 1 is the "dismissed" sentinel set by the close button.
+  if (stage == null || stage < 1) return null;
+  const info = STAGES[Math.min(stage, STAGES.length) - 1];
 
   return (
     <div className="milestone-card">

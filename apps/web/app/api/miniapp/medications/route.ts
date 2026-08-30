@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveMiniAppPatient, resolveConsentedPatient } from "@/lib/telegramAuth";
+import { patientHasManagingDoctor } from "@/lib/careLink";
+
+const DOCTOR_OWNS_LIST = "Список препаратов ведёт ваш врач.";
 
 export async function GET(req: NextRequest) {
   const auth = await resolveMiniAppPatient(req);
@@ -8,19 +11,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
 
-  const medications = await prisma.medication.findMany({
-    where: { patientId: auth.patientId },
-    orderBy: [{ status: "asc" }, { startedAt: "desc" }],
-    include: { reports: { orderBy: { date: "desc" } } },
-  });
+  const [medications, managedByDoctor] = await Promise.all([
+    prisma.medication.findMany({
+      where: { patientId: auth.patientId },
+      orderBy: [{ status: "asc" }, { startedAt: "desc" }],
+      include: { reports: { orderBy: { date: "desc" } } },
+    }),
+    patientHasManagingDoctor(auth.patientId),
+  ]);
 
-  return NextResponse.json({ medications });
+  return NextResponse.json({ medications, managedByDoctor });
 }
 
 export async function POST(req: NextRequest) {
   const auth = await resolveConsentedPatient(req);
   if (!auth) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
+  }
+
+  if (await patientHasManagingDoctor(auth.patientId)) {
+    return NextResponse.json({ error: DOCTOR_OWNS_LIST }, { status: 403 });
   }
 
   const { name, dosage, frequency } = await req.json();

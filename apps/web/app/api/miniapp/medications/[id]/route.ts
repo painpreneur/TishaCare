@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { resolveConsentedPatient } from "@/lib/telegramAuth";
+import { patientHasManagingDoctor } from "@/lib/careLink";
+
+const DOCTOR_OWNS_LIST = "Список препаратов ведёт ваш врач.";
 
 async function ownedMedication(patientId: string, medicationId: string) {
   const medication = await prisma.medication.findUnique({
@@ -13,6 +16,10 @@ async function ownedMedication(patientId: string, medicationId: string) {
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await resolveConsentedPatient(req);
   if (!auth) return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
+
+  if (await patientHasManagingDoctor(auth.patientId)) {
+    return NextResponse.json({ error: DOCTOR_OWNS_LIST }, { status: 403 });
+  }
 
   const owned = await ownedMedication(auth.patientId, params.id);
   if (!owned) return NextResponse.json({ error: "Медикамент не найден" }, { status: 404 });
@@ -45,6 +52,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await resolveConsentedPatient(req);
   if (!auth) return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
+
+  if (await patientHasManagingDoctor(auth.patientId)) {
+    return NextResponse.json({ error: DOCTOR_OWNS_LIST }, { status: 403 });
+  }
 
   const owned = await ownedMedication(auth.patientId, params.id);
   if (!owned) return NextResponse.json({ error: "Медикамент не найден" }, { status: 404 });

@@ -47,6 +47,9 @@ function ScalePick({ value, onChange }: { value: number | null; onChange: (n: nu
 
 export default function MedicationsPanel() {
   const [meds, setMeds] = useState<Medication[] | null>(null);
+  // When a doctor is connected they own the list — the patient can record
+  // tolerability but not add / stop / delete courses.
+  const [managedByDoctor, setManagedByDoctor] = useState(false);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [dosage, setDosage] = useState("");
@@ -62,7 +65,10 @@ export default function MedicationsPanel() {
   function load() {
     fetch("/api/miniapp/medications", { headers: miniAppAuthHeaders() })
       .then((r) => r.json())
-      .then((data) => setMeds(data.medications ?? []))
+      .then((data) => {
+        setMeds(data.medications ?? []);
+        setManagedByDoctor(!!data.managedByDoctor);
+      })
       .catch(() => setMeds([]));
   }
   useEffect(load, []);
@@ -143,21 +149,22 @@ export default function MedicationsPanel() {
           </div>
         )}
         <div className="care-link-actions">
-          {m.status === "active" ? (
-            <>
-              <button className="link-btn" onClick={() => setReportFor(reportFor === m.id ? null : m.id)}>
-                Отметить переносимость
-              </button>
-              <button
-                className="link-btn danger"
-                onClick={async () => {
-                  if (await api(`/api/miniapp/medications/${m.id}`, { status: "stopped" }, "PATCH")) load();
-                }}
-              >
-                Остановить
-              </button>
-            </>
-          ) : (
+          {m.status === "active" && (
+            <button className="link-btn" onClick={() => setReportFor(reportFor === m.id ? null : m.id)}>
+              Отметить переносимость
+            </button>
+          )}
+          {!managedByDoctor && m.status === "active" && (
+            <button
+              className="link-btn danger"
+              onClick={async () => {
+                if (await api(`/api/miniapp/medications/${m.id}`, { status: "stopped" }, "PATCH")) load();
+              }}
+            >
+              Остановить
+            </button>
+          )}
+          {!managedByDoctor && m.status !== "active" && (
             <button
               className="link-btn"
               onClick={async () => {
@@ -225,10 +232,19 @@ export default function MedicationsPanel() {
       <BackLink />
       <div className="miniapp-card">
         <h1>Медикаменты</h1>
+        {managedByDoctor && (
+          <p className="hint" style={{ marginTop: 0 }}>
+            Список препаратов ведёт ваш врач. Вы можете отмечать переносимость по каждому.
+          </p>
+        )}
         {meds === null ? (
           <p className="empty">Загрузка...</p>
         ) : active.length === 0 && inactive.length === 0 ? (
-          <p className="empty">У вас пока нет сохранённых медикаментов.</p>
+          <p className="empty">
+            {managedByDoctor
+              ? "Врач пока не добавил препараты."
+              : "У вас пока нет сохранённых медикаментов."}
+          </p>
         ) : (
           <>
             {active.length > 0 && <ul className="care-link-list">{active.map(medRow)}</ul>}
@@ -242,7 +258,7 @@ export default function MedicationsPanel() {
         )}
         {error && <p className="error-text">{error}</p>}
 
-        {adding ? (
+        {managedByDoctor ? null : adding ? (
           <div style={{ marginTop: 16 }}>
             <div className="field">
               <label>Название</label>

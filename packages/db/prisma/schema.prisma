@@ -274,6 +274,8 @@ model Medication {
   frequency      Int
   reason         String?
   status         String    @default("active")
+  // Why the course was stopped (set by the doctor when they end it).
+  stopReason     String?
   prescriberType String    @default("self")
   prescriberDoctorId String?
   startedAt      DateTime  @default(now())

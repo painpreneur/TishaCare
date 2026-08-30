@@ -10,6 +10,8 @@ import {
   Legend,
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,6 +23,7 @@ import type { WellbeingPoint } from "@/lib/wellbeing";
 import type { QScoreSeries } from "@/lib/questionnaireSeries";
 import { entriesLabel, type Connection } from "@/lib/connections";
 import type { BalanceHistory } from "@/lib/balanceHistory";
+import type { WeekRhythmDay } from "@/lib/weekRhythm";
 import WellbeingChart from "@/components/WellbeingChart";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import BackLink from "@/components/miniapp/BackLink";
@@ -38,6 +41,7 @@ export default function ProgressChart() {
   const [questionnaires, setQuestionnaires] = useState<QScoreSeries[]>([]);
   const [connections, setConnections] = useState<Connection[] | null>(null);
   const [balance, setBalance] = useState<BalanceHistory | null>(null);
+  const [weekRhythm, setWeekRhythm] = useState<WeekRhythmDay[] | null>(null);
   const [tab, setTab] = useState<"mood" | "balance" | string>("mood");
 
   useEffect(() => {
@@ -51,6 +55,7 @@ export default function ProgressChart() {
         setQuestionnaires(data.questionnaires ?? []);
         setConnections(data.connections ?? null);
         setBalance(data.balanceHistory ?? null);
+        setWeekRhythm(data.weekRhythm ?? null);
       })
       .catch(() => {
         if (active) setSeries([]);
@@ -153,6 +158,8 @@ export default function ProgressChart() {
                 </p>
               </div>
             )}
+
+            {weekRhythm && <WeekRhythm days={weekRhythm} />}
           </>
         ) : activeTab === "balance" && balance ? (
           <BalanceCompare balance={balance} />
@@ -264,3 +271,50 @@ function BalanceCompare({ balance }: { balance: BalanceHistory }) {
     </>
   );
 }
+
+function WeekRhythm({ days }: { days: WeekRhythmDay[] }) {
+  const withData = days.filter((d) => d.moodRaw != null);
+  const lowest = withData.reduce<WeekRhythmDay | null>(
+    (m, d) => (m == null || (d.moodRaw ?? 0) < (m.moodRaw ?? 0) ? d : m),
+    null,
+  );
+  const highest = withData.reduce<WeekRhythmDay | null>(
+    (m, d) => (m == null || (d.moodRaw ?? 0) > (m.moodRaw ?? 0) ? d : m),
+    null,
+  );
+  const spread =
+    lowest && highest && lowest !== highest ? (highest.moodRaw ?? 0) - (lowest.moodRaw ?? 0) : 0;
+
+  const data = days.map((d) => ({ label: d.label, moodPct: d.moodPct, n: d.n }));
+
+  return (
+    <div className="connections-block">
+      <h4 className="chart-subtitle">Ритм недели</h4>
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#eef1f4" vertical={false} />
+          <XAxis dataKey="label" fontSize={12} stroke="#9aa4b2" />
+          <YAxis domain={[0, 100]} ticks={[0, 50, 100]} fontSize={12} stroke="#9aa4b2" width={34} unit="%" />
+          <Tooltip formatter={(v: number) => `${Math.round(v)}%`} />
+          <Bar dataKey="moodPct" name="Настроение" fill="#4f6bfe" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="hint">
+        {spread >= 0.4 && lowest && highest
+          ? `Тяжелее всего по ${dayGenitive(lowest.label)}, легче по ${dayGenitive(highest.label)}.`
+          : "Пока состояние по дням недели ровное."}
+      </p>
+    </div>
+  );
+}
+
+const DAY_GEN: Record<string, string> = {
+  Пн: "понедельникам",
+  Вт: "вторникам",
+  Ср: "средам",
+  Чт: "четвергам",
+  Пт: "пятницам",
+  Сб: "субботам",
+  Вс: "воскресеньям",
+};
+const dayGenitive = (label: string) => DAY_GEN[label] ?? label;

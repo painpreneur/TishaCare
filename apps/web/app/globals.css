@@ -1473,6 +1473,16 @@ table.responses td {
   margin: 12px 0 0;
 }
 
+.clinic-covered-patients {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 13px;
+}
+
 /* Patient card — stop / reactivate a medication course */
 .med-controls {
   margin-top: 6px;

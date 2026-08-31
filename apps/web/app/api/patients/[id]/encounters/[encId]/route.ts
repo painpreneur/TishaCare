@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
-import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { canDoctorAccessPatient } from "@/lib/patientAccess";
 import { licenseGate } from "@/lib/license";
 
 // A planned appointment can be marked done (PATCH) or cancelled (DELETE).
 // Done encounters are the append-only record and neither route touches them.
 
-async function loadPlanned(doctorId: string, patientId: string, encId: string) {
-  const link = await prisma.careLink.findFirst({
-    where: { patientId, doctorId, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
-  });
-  if (!link) return { error: NextResponse.json({ error: "Пациент не найден" }, { status: 404 }) };
-  const enc = await prisma.encounter.findFirst({ where: { id: encId, patientId, doctorId } });
+type DoctorLike = { id: string; clinicId: string | null; role: string };
+
+async function loadPlanned(doctor: DoctorLike, patientId: string, encId: string) {
+  if (!(await canDoctorAccessPatient(doctor, patientId))) {
+    return { error: NextResponse.json({ error: "Пациент не найден" }, { status: 404 }) };
+  }
+  const enc = await prisma.encounter.findFirst({ where: { id: encId, patientId } });
   if (!enc) return { error: NextResponse.json({ error: "Запись не найдена" }, { status: 404 }) };
   if (enc.status !== "planned") {
     return { error: NextResponse.json({ error: "Это уже не запланированный приём" }, { status: 409 }) };
@@ -29,7 +30,7 @@ export async function PATCH(
   const gate = licenseGate(doctor);
   if (gate) return gate;
 
-  const { enc, error } = await loadPlanned(doctor.id, params.id, params.encId);
+  const { enc, error } = await loadPlanned(doctor, params.id, params.encId);
   if (error) return error;
 
   await prisma.encounter.update({ where: { id: enc.id }, data: { status: "done" } });
@@ -45,7 +46,7 @@ export async function DELETE(
   const gate = licenseGate(doctor);
   if (gate) return gate;
 
-  const { enc, error } = await loadPlanned(doctor.id, params.id, params.encId);
+  const { enc, error } = await loadPlanned(doctor, params.id, params.encId);
   if (error) return error;
 
   await prisma.encounter.delete({ where: { id: enc.id } });

@@ -42,6 +42,9 @@ export async function getCurrentDoctor() {
     return null;
   }
 
+  // A deactivated doctor has no access, even if their cookie is still valid.
+  if (session.doctor.deactivatedAt) return null;
+
   return session.doctor;
 }
 

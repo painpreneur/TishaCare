@@ -16,6 +16,7 @@ import {
 import { getCurrentDoctor } from "@/lib/session";
 import { describeResponse, QUESTIONNAIRE_MAX_SCORE } from "@/lib/questionnaireInterpret";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { patientAccessWhere } from "@/lib/patientAccess";
 import { clinicLicenseInactive } from "@/lib/license";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
@@ -56,10 +57,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
   const licenseInactive = clinicLicenseInactive(doctor);
 
   const patient = await prisma.patient.findFirst({
-    where: {
-      id: params.id,
-      careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
-    },
+    where: { id: params.id, ...patientAccessWhere(doctor) },
     include: {
       careLinks: {
         where: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },

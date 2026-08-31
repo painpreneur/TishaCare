@@ -24,17 +24,27 @@ import {
 type Mode = "mom" | "day";
 
 // One-letter codes for state tags, so a multi-select fits in callback_data.
+// Every id in STATE_TAGS needs one — see the assertion below.
 const TAG_CODE: Record<string, string> = {
   calm: "c",
   anxious: "x",
   activated: "v",
+  restless: "e",
   slowed: "s",
+  empty: "p",
   irritable: "r",
+  foggy: "f",
   mixed: "m",
 };
 const CODE_TAG: Record<string, string> = Object.fromEntries(
   Object.entries(TAG_CODE).map(([id, code]) => [code, id]),
 );
+
+// Fail fast if a STATE_TAGS entry has no code — its bot button would silently
+// do nothing (callback_data would carry "undefined").
+for (const t of STATE_TAGS) {
+  if (!TAG_CODE[t.id]) throw new Error(`checkin: no TAG_CODE for state tag "${t.id}"`);
+}
 
 // Whole hours of sleep. Buttons carry the exact number in callback_data — no
 // buckets, no representative midpoint that reads as false precision. The
@@ -161,14 +171,16 @@ function summaryLine(opts: {
   sleepHours?: number | null;
   meds?: MedsStatus | null;
 }) {
-  const parts = [`Записал: ${MOOD_EMOJI[opts.mood] ?? ""}`.trim()];
+  const parts = [MOOD_EMOJI[opts.mood] ?? ""].filter(Boolean);
   if (opts.tags && opts.tags.length) {
     parts.push(opts.tags.map((id) => STATE_TAGS.find((t) => t.id === id)?.label ?? id).join(", "));
   }
   if (opts.energy) parts.push(`энергия ${opts.energy}/5`);
   if (opts.sleepHours != null) parts.push(`сон ${opts.sleepHours} ч`);
   if (opts.meds) parts.push(`препараты ${MEDS_LABEL[opts.meds]}`);
-  return parts.join(" · ");
+  // First line makes it unmistakable the check-in is saved; second line is the
+  // recap of what went in.
+  return `Готово, отметка сохранена ✅\n\n${parts.join(" · ")}`;
 }
 
 async function saveCheckIn(

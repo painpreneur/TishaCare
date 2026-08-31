@@ -28,15 +28,18 @@ export const STATE_TAGS: StateTag[] = [
   { id: "calm", label: "Спокойно" },
   { id: "anxious", label: "Тревожно" },
   { id: "activated", label: "Разогнан(а)" },
+  { id: "restless", label: "На взводе" },
   { id: "slowed", label: "Заторможенно" },
+  { id: "empty", label: "Пусто" },
   { id: "irritable", label: "Раздражённо" },
+  { id: "foggy", label: "Туман в голове" },
   { id: "mixed", label: "«Качает»" },
 ];
 
 export const STATE_TAG_IDS = STATE_TAGS.map((t) => t.id);
 
 // Tags that read as elevation / mixed features — the chart marks these points.
-export const ACTIVATION_TAG_IDS = ["activated", "mixed"];
+export const ACTIVATION_TAG_IDS = ["activated", "restless", "mixed"];
 
 const TAG_LABEL = new Map(STATE_TAGS.map((t) => [t.id, t.label]));
 

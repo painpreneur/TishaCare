@@ -7,6 +7,8 @@ import {
   scoreSum,
   interpretByBands,
   questionnaireMaxScore,
+  PHQ9_CODE,
+  PHQ9_ITEM9_INDEX,
 } from "@tishacare/db/client";
 import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
 import { usePatientBasePath } from "@/lib/patientPortal";
@@ -101,6 +103,10 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
 
   if (result != null) {
     const interp = interpretByBands(def, result);
+    // PHQ-9 item 9 asks about thoughts of self-harm / being better off dead.
+    // Any answer above "совсем нет" points the patient at their safety plan.
+    const phq9SelfHarm =
+      def.code === PHQ9_CODE && (answers[PHQ9_ITEM9_INDEX] ?? 0) >= 1;
     return (
       <div>
         <BackLink />
@@ -110,6 +116,19 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
             Результат: {interp.label} ({result} из {questionnaireMaxScore(def)}).
           </p>
           <p className="hint">{interp.note}</p>
+          {phq9SelfHarm && (
+            <div className="q-safety-callout">
+              <p>
+                В ответах есть пункт про мысли о том, что лучше бы не жить, или о
+                самоповреждении. Если сейчас тяжело, откройте{" "}
+                <Link href={withDevTelegramIdParam(`${base}/safety`)}>
+                  план на трудный момент
+                </Link>
+                : там ваши шаги и контакты, включая телефон доверия. Врачу этот
+                ответ тоже виден.
+              </p>
+            </div>
+          )}
           <p className="hint" style={{ marginTop: 12 }}>{def.disclaimer}</p>
           {def.attribution && (
             <p className="hint" style={{ marginTop: 6, fontSize: 11 }}>{def.attribution}</p>

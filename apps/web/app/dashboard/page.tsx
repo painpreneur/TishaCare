@@ -4,6 +4,7 @@ import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { clinicLicenseInactive } from "@/lib/license";
 import { assessPatient, type TriageFlag } from "@/lib/triage";
+import { isClinicAdmin } from "@/lib/doctorRole";
 import { ENCOUNTER_TYPE_LABEL, type EncounterType } from "@/lib/encounter";
 import CareRequests from "@/components/CareRequests";
 import DoctorConnectCode from "@/components/DoctorConnectCode";
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
   if (!doctor) return null;
 
   const licenseInactive = clinicLicenseInactive(doctor);
+  const clinicAdmin = isClinicAdmin(doctor);
 
   const [links, pending, planned] = await Promise.all([
     prisma.careLink.findMany({
@@ -126,7 +128,7 @@ export default async function DashboardPage() {
         />
       )}
 
-      <DoctorConnectCode code={doctor.connectCode} variant="inline" />
+      {links.length > 0 && <DoctorConnectCode code={doctor.connectCode} variant="inline" />}
 
       {upcoming.length > 0 && (
         <div className="panel">
@@ -189,14 +191,33 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="patient-grid">
-        {rest.map(({ link, patient }) => (
-          <Link key={link.id} href={`/dashboard/patients/${patient.id}`} className="patient-card">
-            <div className="name">{patient.name}</div>
-            {statusBadge(link)}
-          </Link>
-        ))}
-      </div>
+      {links.length === 0 ? (
+        <div className="panel">
+          <h3>Пока нет пациентов</h3>
+          <p className="hint" style={{ marginBottom: 12 }}>
+            Пациент подключается к вам по этому коду:
+          </p>
+          <DoctorConnectCode code={doctor.connectCode} variant="full" />
+          <p className="hint" style={{ marginTop: 16 }}>
+            Уже знаете код пациента? Нажмите «+ Подключить пациента» вверху.
+            {clinicAdmin && (
+              <>
+                {" "}
+                Чтобы добавить в клинику коллег — <Link href="/dashboard/clinic">пригласите их</Link>.
+              </>
+            )}
+          </p>
+        </div>
+      ) : (
+        <div className="patient-grid">
+          {rest.map(({ link, patient }) => (
+            <Link key={link.id} href={`/dashboard/patients/${patient.id}`} className="patient-card">
+              <div className="name">{patient.name}</div>
+              {statusBadge(link)}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

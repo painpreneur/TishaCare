@@ -161,14 +161,16 @@ function summaryLine(opts: {
   sleepHours?: number | null;
   meds?: MedsStatus | null;
 }) {
-  const parts = [`Записал: ${MOOD_EMOJI[opts.mood] ?? ""}`.trim()];
+  const parts = [MOOD_EMOJI[opts.mood] ?? ""].filter(Boolean);
   if (opts.tags && opts.tags.length) {
     parts.push(opts.tags.map((id) => STATE_TAGS.find((t) => t.id === id)?.label ?? id).join(", "));
   }
   if (opts.energy) parts.push(`энергия ${opts.energy}/5`);
   if (opts.sleepHours != null) parts.push(`сон ${opts.sleepHours} ч`);
   if (opts.meds) parts.push(`препараты ${MEDS_LABEL[opts.meds]}`);
-  return parts.join(" · ");
+  // First line makes it unmistakable the check-in is saved; second line is the
+  // recap of what went in.
+  return `Готово, отметка сохранена ✅\n\n${parts.join(" · ")}`;
 }
 
 async function saveCheckIn(

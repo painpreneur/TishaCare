@@ -3,6 +3,7 @@ import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { canDoctorAccessPatient } from "@/lib/patientAccess";
 import { licenseGate } from "@/lib/license";
+import { recordPatientProgress } from "@/lib/patientProgress";
 
 // A planned appointment can be marked done (PATCH) or cancelled (DELETE).
 // Done encounters are the append-only record and neither route touches them.
@@ -34,6 +35,10 @@ export async function PATCH(
   if (error) return error;
 
   await prisma.encounter.update({ where: { id: enc.id }, data: { status: "done" } });
+
+  // Closing the first appointment can earn the patient the "first-visit" unlock.
+  await recordPatientProgress(params.id);
+
   return NextResponse.json({ ok: true });
 }
 

@@ -4,6 +4,7 @@ import { getCurrentDoctor } from "@/lib/session";
 import { canDoctorAccessPatient } from "@/lib/patientAccess";
 import { licenseGate } from "@/lib/license";
 import { ENCOUNTER_FIELDS, isEncounterType, isEncounterStatus } from "@/lib/encounter";
+import { recordPatientProgress } from "@/lib/patientProgress";
 
 // Doctor logs a past contact ("done") or schedules a future appointment
 // ("planned"). Done encounters are append-only (no edit/delete); a planned one
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const encounter = await prisma.encounter.create({
     data: { patientId: params.id, doctorId: doctor.id, date, type, status, ...fields },
   });
+
+  // A logged past appointment can earn the patient the "first-visit" unlock.
+  if (status === "done") await recordPatientProgress(params.id);
 
   return NextResponse.json({ ok: true, id: encounter.id });
 }

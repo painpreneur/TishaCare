@@ -59,6 +59,20 @@ export const UNLOCKS: UnlockInfo[] = [
     card: true,
   },
   {
+    code: "month",
+    title: "Месяц наблюдений",
+    copy: "Месяц записей позади. Уже есть на что оглянуться.",
+    lockedHint: "Откроется через месяц после первой записи.",
+    card: true,
+  },
+  {
+    code: "first-visit",
+    title: "Первый разговор с врачом",
+    copy: "Первый приём состоялся. Дальше есть с кем сверяться.",
+    lockedHint: "Откроется после первого приёма у врача.",
+    card: true,
+  },
+  {
     code: "rhythm",
     title: "Ритм недели",
     copy: "Стало видно, как состояние ходит по неделе.",
@@ -111,6 +125,8 @@ export interface UnlockContext {
   completedCodes: Set<string>;
   /** Total responses among SCALE_CODES (retakes count). */
   scaleResponseCount: number;
+  /** At least one past appointment logged by the doctor (Encounter status "done"). */
+  hasCompletedEncounter: boolean;
 }
 
 /** Codes the patient currently qualifies for. */
@@ -120,6 +136,8 @@ export function evaluateUnlocks(c: UnlockContext): string[] {
   if (c.completedCodes.has(BALANCE_WHEEL_CODE)) out.push("balance");
   if (c.scaleResponseCount >= 5) out.push("compare");
   if (INTAKE_CODES.every((code) => c.completedCodes.has(code))) out.push("baseline");
+  if (c.daysSinceFirstEntry >= 30) out.push("month");
+  if (c.hasCompletedEncounter) out.push("first-visit");
   if (c.qualifyingEntryCount >= 30) out.push("rhythm");
   if (c.daysSinceFirstEntry >= 365) out.push("year");
   if (c.damStage >= 3) out.push("seasons");
@@ -136,6 +154,7 @@ export function newlyUnlocked(ctx: UnlockContext, already: Iterable<string>): st
 export function unlockContext(
   responseCodes: string[],
   snapshot: { entryCount: number; daysActive: number; stage: number },
+  opts: { hasCompletedEncounter?: boolean } = {},
 ): UnlockContext {
   return {
     qualifyingEntryCount: snapshot.entryCount,
@@ -143,6 +162,7 @@ export function unlockContext(
     damStage: snapshot.stage,
     completedCodes: new Set(responseCodes),
     scaleResponseCount: responseCodes.filter((c) => SCALE_CODES.has(c)).length,
+    hasCompletedEncounter: opts.hasCompletedEncounter ?? false,
   };
 }
 
@@ -180,7 +200,7 @@ export interface PatientPath {
   blockB: PathBlockBItem[];
 }
 
-const BLOCK_B_CODES = ["rhythm", "seasons", "year"];
+const BLOCK_B_CODES = ["first-visit", "month", "rhythm", "seasons", "year"];
 
 export function buildPath(ctx: UnlockContext): PatientPath {
   const has = (code: string) => ctx.completedCodes.has(code);

@@ -13,17 +13,19 @@ import { newlyUnlocked, unlockContext } from "@/lib/unlocks";
 // Best-effort: wrapped so this bookkeeping can never break the write it follows.
 export async function recordPatientProgress(patientId: string): Promise<void> {
   try {
-    const [checkIns, responses, medReports, patient, milestones, unlocks] = await Promise.all([
-      prisma.checkIn.findMany({ where: { patientId }, select: { date: true } }),
-      prisma.questionnaireResponse.findMany({
-        where: { patientId },
-        select: { completedAt: true, questionnaire: { select: { code: true } } },
-      }),
-      prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
-      prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
-      prisma.patientMilestone.findMany({ where: { patientId }, select: { stage: true } }),
-      prisma.patientUnlock.findMany({ where: { patientId }, select: { code: true } }),
-    ]);
+    const [checkIns, responses, medReports, patient, milestones, unlocks, doneEncounters] =
+      await Promise.all([
+        prisma.checkIn.findMany({ where: { patientId }, select: { date: true } }),
+        prisma.questionnaireResponse.findMany({
+          where: { patientId },
+          select: { completedAt: true, questionnaire: { select: { code: true } } },
+        }),
+        prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
+        prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
+        prisma.patientMilestone.findMany({ where: { patientId }, select: { stage: true } }),
+        prisma.patientUnlock.findMany({ where: { patientId }, select: { code: true } }),
+        prisma.encounter.count({ where: { patientId, status: "done" } }),
+      ]);
 
     const responseDates = responses.map((r) => ({ completedAt: r.completedAt }));
     const otherDates: Date[] = [
@@ -46,6 +48,7 @@ export async function recordPatientProgress(patientId: string): Promise<void> {
     const ctx = unlockContext(
       responses.map((r) => r.questionnaire.code),
       snapshot,
+      { hasCompletedEncounter: doneEncounters > 0 },
     );
     const codes = newlyUnlocked(
       ctx,

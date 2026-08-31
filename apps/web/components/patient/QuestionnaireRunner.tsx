@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   QuestionnaireDef,
   scoreSum,
   interpretByBands,
   questionnaireMaxScore,
 } from "@tishacare/db/client";
-import { miniAppAuthHeaders } from "@/lib/miniappClient";
+import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
+import { usePatientBasePath } from "@/lib/patientPortal";
 import BackLink from "@/components/miniapp/BackLink";
 
 // Runs any QuestionnaireDef: one question at a time, a Back button, and an
 // autosaved draft so the patient can leave and resume.
 export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) {
+  const base = usePatientBasePath();
   const total = def.questions.length;
   const [answers, setAnswers] = useState<number[]>([]);
   const [index, setIndex] = useState(0);
@@ -111,6 +114,13 @@ export default function QuestionnaireRunner({ def }: { def: QuestionnaireDef }) 
           {def.attribution && (
             <p className="hint" style={{ marginTop: 6, fontSize: 11 }}>{def.attribution}</p>
           )}
+          <Link
+            href={withDevTelegramIdParam(`${base}/tests`)}
+            className="btn-primary btn-block"
+            style={{ marginTop: 16 }}
+          >
+            К опросникам
+          </Link>
         </div>
       </div>
     );

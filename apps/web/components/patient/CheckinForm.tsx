@@ -222,7 +222,7 @@ export default function CheckinForm() {
             </button>
           </div>
         ) : (
-          <>
+          <div className="checkin-wiz">
             <div className="checkin-wiz-progress" aria-hidden="true">
               {steps.map((s, i) => (
                 <span
@@ -291,7 +291,8 @@ export default function CheckinForm() {
 
               {step === "note" && (
                 <textarea
-                  rows={3}
+                  className="checkin-note-input"
+                  rows={5}
                   maxLength={NOTE_MAX_LENGTH}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -320,27 +321,29 @@ export default function CheckinForm() {
             {error && <p className="error-text">{error}</p>}
 
             <div className="checkin-wiz-nav">
+              <div className="checkin-wiz-nav-row">
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => go(-1)}
+                  disabled={stepIdx === 0}
+                >
+                  ← Назад
+                </button>
+                <span className="checkin-wiz-count">
+                  {stepIdx + 1} / {steps.length}
+                </span>
+              </div>
               <button
                 type="button"
-                className="link-btn"
-                onClick={() => go(-1)}
-                disabled={stepIdx === 0}
-              >
-                Назад
-              </button>
-              <span className="checkin-wiz-count">
-                {stepIdx + 1} / {steps.length}
-              </span>
-              <button
-                type="button"
-                className="btn-primary btn-inline"
+                className="btn-primary checkin-wiz-next"
                 onClick={() => go(1)}
                 disabled={saving}
               >
                 {isLast ? (saving ? "Сохраняем..." : "Сохранить") : "Далее"}
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {today.length > 0 && (

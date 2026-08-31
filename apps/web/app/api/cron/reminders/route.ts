@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bot } from "@/lib/bot";
-import { sendDueCheckinReminders, sendDueMedReminders } from "@tishacare/bot-core";
+import {
+  sendDueCheckinReminders,
+  sendDueMedReminders,
+  sendDueEncounterReminders,
+} from "@tishacare/bot-core";
 
 // Vercel invokes cron jobs with `Authorization: Bearer $CRON_SECRET` — see
 // https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs.
@@ -11,9 +15,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [checkins, medReminders] = await Promise.all([
+  const [checkins, medReminders, encounters] = await Promise.all([
     sendDueCheckinReminders(bot.telegram),
     sendDueMedReminders(bot.telegram),
+    sendDueEncounterReminders(bot.telegram),
   ]);
-  return NextResponse.json({ ok: true, checkins, medReminders });
+  return NextResponse.json({ ok: true, checkins, medReminders, encounters });
 }

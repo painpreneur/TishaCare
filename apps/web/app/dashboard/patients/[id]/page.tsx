@@ -18,6 +18,7 @@ import { clinicLicenseInactive } from "@/lib/license";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
+import PlannedEncounters from "@/components/PlannedEncounters";
 import PrescribeMedication from "@/components/PrescribeMedication";
 import DoctorMedControls from "@/components/DoctorMedControls";
 import DoctorUnlinkPatient from "@/components/DoctorUnlinkPatient";
@@ -92,6 +93,13 @@ export default async function PatientPage({ params }: { params: { id: string } }
   const wellbeingSeries = toWellbeingSeries(patient.checkIns);
   const insights = buildPatientInsights(patient.checkIns, patient.responses);
   const damLine = doctorDamLine(patient.checkIns, patient.responses);
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const plannedEncounters = patient.encounters
+    .filter((e) => e.status === "planned")
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const doneEncounters = patient.encounters.filter((e) => e.status !== "planned");
 
   const medsNum = (c: { medsStatus: string | null }) => medsToNumber(c.medsStatus);
   const medsVsMood = pearsonCorrelation(
@@ -230,11 +238,27 @@ export default async function PatientPage({ params }: { params: { id: string } }
       <div className="panel">
         <h3>Приёмы и встречи</h3>
         {!licenseInactive && <AddEncounter patientId={patient.id} />}
-        {patient.encounters.length === 0 ? (
+
+        {plannedEncounters.length > 0 && (
+          <>
+            <h4 className="chart-subtitle" style={{ marginTop: 16 }}>Запланировано</h4>
+            <PlannedEncounters
+              patientId={patient.id}
+              items={plannedEncounters.map((e) => ({
+                id: e.id,
+                date: e.date.toISOString(),
+                type: e.type,
+                overdue: e.date.getTime() < startOfToday.getTime(),
+              }))}
+            />
+          </>
+        )}
+
+        {doneEncounters.length === 0 ? (
           <p className="empty" style={{ marginTop: 12 }}>Записей пока нет</p>
         ) : (
           <ul className="encounter-list">
-            {patient.encounters.map((e) => (
+            {doneEncounters.map((e) => (
               <li key={e.id}>
                 <div className="encounter-head">
                   <strong>{ENCOUNTER_TYPE_LABEL[e.type as keyof typeof ENCOUNTER_TYPE_LABEL] ?? e.type}</strong>

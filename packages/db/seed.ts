@@ -253,6 +253,37 @@ async function main() {
     )
   );
 
+  // Encounters: a past write-up, an upcoming appointment, and an overdue
+  // planned one (exercises "Ближайшие приёмы" and "нужно закрыть").
+  const inDays = (n: number) => new Date(Date.now() + n * 24 * 60 * 60 * 1000);
+  await prisma.encounter.createMany({
+    data: [
+      {
+        patientId: patients[0].id,
+        doctorId: doctor.id,
+        date: inDays(-21),
+        type: "visit",
+        status: "done",
+        complaints: "Сниженное настроение, ранние пробуждения.",
+        plan: "Продолжить текущую схему, контроль через 3 недели.",
+      },
+      {
+        patientId: patients[0].id,
+        doctorId: doctor.id,
+        date: inDays(6),
+        type: "visit",
+        status: "planned",
+      },
+      {
+        patientId: patients[1].id,
+        doctorId: doctor.id,
+        date: inDays(-3),
+        type: "consult",
+        status: "planned",
+      },
+    ],
+  });
+
   const TAG_POOL = ["calm", "anxious", "activated", "slowed", "irritable", "mixed"];
   for (const [pIndex, patient] of patients.entries()) {
     const checkInOps = [];

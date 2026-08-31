@@ -305,6 +305,95 @@ a {
   margin-top: 4px;
 }
 
+/* «Как читать график» on the mood tab of Моя динамика */
+
+.chart-guide {
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: #fbfcfd;
+}
+
+.chart-guide-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1c2530;
+  cursor: pointer;
+}
+
+.chart-guide-caret {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+  color: #9aa4b2;
+}
+
+.chart-guide-caret.up {
+  transform: rotate(180deg);
+}
+
+.chart-guide-rows {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #465063;
+}
+
+.chart-guide-rows li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.chart-guide-swatch {
+  flex: none;
+  margin-top: 4px;
+  width: 16px;
+  height: 12px;
+  display: inline-block;
+}
+
+.chart-guide-swatch.sw-line {
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: #4f6bfe;
+}
+
+.chart-guide-swatch.sw-band {
+  border-radius: 3px;
+  background: rgba(79, 107, 254, 0.18);
+}
+
+.chart-guide-swatch.sw-bar {
+  border-radius: 2px;
+  background: #a35fe0;
+  opacity: 0.5;
+}
+
+.chart-guide-swatch.sw-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22b8b0;
+}
+
+.chart-guide-swatch.sw-none {
+  visibility: hidden;
+}
+
 .wb-legend {
   display: flex;
   flex-wrap: wrap;

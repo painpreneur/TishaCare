@@ -29,6 +29,7 @@ import type { Baseline } from "@/lib/baseline";
 import WellbeingChart from "@/components/WellbeingChart";
 import QuestionnaireScoreChart from "@/components/QuestionnaireScoreChart";
 import BackLink from "@/components/miniapp/BackLink";
+import ChartGuide from "./ChartGuide";
 
 const RANGES = [7, 30, 90];
 
@@ -160,11 +161,7 @@ export default function ProgressChart() {
 
         {activeTab === "mood" ? (
           <>
-            <p className="hint">
-              Линия это настроение по дням, полоса вокруг неё это размах за день. Ниже: столбики
-              это часы сна, точки это приём препаратов. Энергию можно добавить кнопкой. Это не
-              оценка и не диагноз, просто ваши отметки.
-            </p>
+            <ChartGuide />
             <div className="miniapp-word-grid" style={{ margin: "12px 0" }}>
               {RANGES.map((r) => (
                 <button

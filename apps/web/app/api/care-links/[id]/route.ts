@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentDoctor } from "@/lib/session";
 import { CareLinkError, acceptLink, declineLink, endLinkByDoctor } from "@/lib/careLink";
+import { licenseGate } from "@/lib/license";
 
 const ACTIONS = {
   accept: acceptLink,
@@ -17,6 +18,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const body = await req.json().catch(() => ({}));
   const run = ACTIONS[body.action as Action];
   if (!run) return NextResponse.json({ error: "Неизвестное действие" }, { status: 400 });
+
+  // An inactive licence blocks taking on a patient; declining or ending an
+  // existing link (offboarding) stays allowed.
+  if (body.action === "accept") {
+    const gate = licenseGate(doctor);
+    if (gate) return gate;
+  }
 
   try {
     const link = await run(doctor.id, params.id);

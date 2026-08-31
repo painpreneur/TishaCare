@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentDoctor } from "@/lib/session";
 import { CareLinkError, connectByInviteCode } from "@/lib/careLink";
+import { licenseGate } from "@/lib/license";
 
 export async function POST(req: NextRequest) {
   const doctor = await getCurrentDoctor();
   if (!doctor) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
+  const gate = licenseGate(doctor);
+  if (gate) return gate;
 
   const { code } = await req.json();
 

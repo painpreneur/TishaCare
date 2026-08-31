@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   MDQ_CODE,
   MDQ_CO_OCCURRENCE_QUESTION,
@@ -9,7 +10,8 @@ import {
   MDQ_SYMPTOM_QUESTIONS,
   interpretMdq,
 } from "@tishacare/db/client";
-import { miniAppAuthHeaders } from "@/lib/miniappClient";
+import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
+import { usePatientBasePath } from "@/lib/patientPortal";
 import QuestionFlow from "@/components/miniapp/QuestionFlow";
 import BackLink from "@/components/miniapp/BackLink";
 
@@ -69,6 +71,7 @@ function clearDraft() {
 }
 
 export default function MdqRunner() {
+  const base = usePatientBasePath();
   const [loaded, setLoaded] = useState(false);
   const [stage, setStage] = useState<Stage>("symptoms");
   const [index, setIndex] = useState(0);
@@ -136,6 +139,13 @@ export default function MdqRunner() {
           <p className="hint">Результат: {result.diagnosis}.</p>
           <p className="hint">{result.recommendation}</p>
           <p className="hint">Напоминание: MDQ это скрининговый, а не диагностический инструмент.</p>
+          <Link
+            href={withDevTelegramIdParam(`${base}/tests`)}
+            className="btn-primary btn-block"
+            style={{ marginTop: 16 }}
+          >
+            К опросникам
+          </Link>
         </div>
       </div>
     );

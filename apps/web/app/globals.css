@@ -205,6 +205,13 @@ a {
   white-space: nowrap;
 }
 
+/* full-width primary used on an <a>/<Link> */
+.btn-block {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
 .patient-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -283,6 +290,31 @@ a {
   text-decoration: none;
   display: inline-block;
   margin-bottom: 12px;
+}
+
+/* "Домой" for patient screens: fixed in the lower-right thumb zone. */
+.patient-home-btn {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e6ec;
+  box-shadow: 0 4px 16px rgba(20, 30, 50, 0.16);
+  color: #4f6bfe;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.patient-home-btn span {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .panel {
@@ -585,7 +617,8 @@ table.responses td {
 .miniapp-page {
   max-width: 480px;
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  /* extra bottom room so the fixed "Домой" pill never covers content */
+  padding: 20px 16px 96px;
 }
 
 .miniapp-card {
@@ -903,11 +936,17 @@ table.responses td {
 
 /* Check-in wizard */
 
+.checkin-wiz {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
 .checkin-wiz-progress {
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .checkin-wiz-dot {
@@ -928,8 +967,41 @@ table.responses td {
 }
 
 .checkin-wiz-step {
-  min-height: 232px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   animation: checkin-slide 0.26s ease both;
+}
+
+.checkin-wiz-step h1 {
+  margin-bottom: 16px;
+}
+
+/* Short steps: sit their controls a little below the title, not glued to it,
+   without a forced tall gap. */
+.mood-face-wrap,
+.checkin-wiz-step .miniapp-word-grid,
+.energy-meter,
+.sleep-stepper {
+  margin-top: 8px;
+}
+
+.checkin-note-input {
+  flex: 1;
+  min-height: 140px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  resize: none;
+}
+
+.checkin-note-input:focus {
+  outline: none;
+  border-color: #4f6bfe;
 }
 
 .checkin-wiz-step.in-left {
@@ -965,15 +1037,25 @@ table.responses td {
 }
 
 .checkin-wiz-nav {
+  margin-top: 20px;
+}
+
+.checkin-wiz-nav-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 18px;
+  margin-bottom: 10px;
 }
 
 .checkin-wiz-count {
   font-size: 12px;
   color: #9aa4b2;
+}
+
+.checkin-wiz-next {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
 }
 
 .mood-face-wrap {

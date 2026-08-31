@@ -35,6 +35,26 @@ model Clinic {
 
   doctors  Doctor[]
   patients Patient[]
+  invites  ClinicInvite[]
+}
+
+// A one-time link a clinic admin creates to bring a colleague into the clinic.
+// Registering through it makes a Doctor with clinicId set and role "member".
+model ClinicInvite {
+  id          String    @id @default(cuid())
+  clinicId    String
+  token       String    @unique
+  createdById String
+  // Optional intended recipient — shown in the admin's pending list, not enforced.
+  email       String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+  usedById    String?
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
 }
 
 model Doctor {

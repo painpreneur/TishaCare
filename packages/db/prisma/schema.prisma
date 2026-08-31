@@ -91,6 +91,7 @@ model Doctor {
   careLinks             CareLink[]
   encounters            Encounter[]
   prescribedMedications Medication[]
+  doctorNotes           DoctorNote[]
 }
 
 // Opaque server-side sessions for the doctor web panel. The cookie holds a
@@ -168,6 +169,24 @@ model Patient {
   unlocks            PatientUnlock[]
   safetyPlan         SafetyPlan?
   sleepEntries       SleepEntry[]
+  doctorNotes        DoctorNote[]
+}
+
+// A short one-way message from a doctor to a patient (not a chat). The patient
+// sees it in the Mini App and marks it read; there is no reply. Gated by the
+// clinic licence and a sharing care link. Kept out of the exported record.
+model DoctorNote {
+  id        String    @id @default(cuid())
+  patientId String
+  doctorId  String
+  body      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+
+  @@index([patientId])
 }
 
 // A dedicated sleep log, separate from the /checkin sleepHours field. One entry

@@ -22,6 +22,7 @@ import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
 import PlannedEncounters from "@/components/PlannedEncounters";
+import DoctorPatientMessages from "@/components/DoctorPatientMessages";
 import PrescribeMedication from "@/components/PrescribeMedication";
 import DoctorMedControls from "@/components/DoctorMedControls";
 import DoctorUnlinkPatient from "@/components/DoctorUnlinkPatient";
@@ -65,6 +66,11 @@ export default async function PatientPage({ params }: { params: { id: string } }
       },
       checkIns: { orderBy: { date: "asc" } },
       sleepEntries: { select: { date: true, hours: true } },
+      doctorNotes: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: { doctor: { select: { name: true } } },
+      },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },
       medications: {
         orderBy: [{ status: "asc" }, { startedAt: "desc" }],
@@ -242,6 +248,21 @@ export default async function PatientPage({ params }: { params: { id: string } }
         <p className="empty" style={{ marginTop: 12 }}>
           Код подключения пациента: <strong>{patient.inviteCode}</strong>
         </p>
+      </div>
+
+      <div className="panel">
+        <h3>Сообщения пациенту</h3>
+        <DoctorPatientMessages
+          patientId={patient.id}
+          canSend={!licenseInactive}
+          notes={patient.doctorNotes.map((n) => ({
+            id: n.id,
+            body: n.body,
+            doctorName: n.doctor.name,
+            createdAt: n.createdAt.toISOString(),
+            readAt: n.readAt ? n.readAt.toISOString() : null,
+          }))}
+        />
       </div>
 
       <div className="panel">

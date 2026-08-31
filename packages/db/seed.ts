@@ -328,6 +328,26 @@ async function main() {
     },
   });
 
+  // One-way notes from the doctor: one already read, one still unread.
+  const inDaysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+  await prisma.doctorNote.createMany({
+    data: [
+      {
+        patientId: patients[0].id,
+        doctorId: doctor.id,
+        body: "Спасибо, что регулярно отмечаетесь. Продолжайте вести записи, на приёме разберём динамику сна.",
+        createdAt: inDaysAgo(6),
+        readAt: inDaysAgo(5),
+      },
+      {
+        patientId: patients[0].id,
+        doctorId: doctor.id,
+        body: "Заметил несколько дней подряд с коротким сном. Если так продолжится, свяжитесь со мной, не дожидаясь приёма.",
+        createdAt: inDaysAgo(1),
+      },
+    ],
+  });
+
   const TAG_POOL = ["calm", "anxious", "activated", "slowed", "irritable", "mixed"];
   for (const [pIndex, patient] of patients.entries()) {
     const checkInOps = [];

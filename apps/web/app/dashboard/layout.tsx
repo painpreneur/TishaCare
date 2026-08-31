@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentDoctor } from "@/lib/session";
+import { clinicLicenseInactive, LICENSE_INACTIVE_MESSAGE } from "@/lib/license";
 import LogoutButton from "@/components/LogoutButton";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const doctor = await getCurrentDoctor();
   if (!doctor) redirect("/login");
+
+  const licenseInactive = clinicLicenseInactive(doctor);
 
   return (
     <div>
@@ -22,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <LogoutButton />
         </div>
       </div>
+      {licenseInactive && <div className="license-banner">{LICENSE_INACTIVE_MESSAGE}</div>}
       {children}
     </div>
   );

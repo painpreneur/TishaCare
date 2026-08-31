@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { licenseGate } from "@/lib/license";
 import { ENCOUNTER_FIELDS, isEncounterType } from "@/lib/encounter";
 
 // Doctor adds a visit / contact note for a patient they currently follow.
@@ -9,6 +10,8 @@ import { ENCOUNTER_FIELDS, isEncounterType } from "@/lib/encounter";
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const doctor = await getCurrentDoctor();
   if (!doctor) return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
+  const gate = licenseGate(doctor);
+  if (gate) return gate;
 
   const link = await prisma.careLink.findFirst({
     where: {

@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { licenseGate } from "@/lib/license";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const doctor = await getCurrentDoctor();
   if (!doctor) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
+  const gate = licenseGate(doctor);
+  if (gate) return gate;
 
   const patient = await prisma.patient.findFirst({
     where: {

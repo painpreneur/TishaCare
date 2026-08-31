@@ -54,6 +54,11 @@ interface CheckInInput {
   medsStatus: string | null;
 }
 
+interface SleepEntryInput {
+  date: Date | string;
+  hours: number;
+}
+
 const DAY = 24 * 60 * 60 * 1000;
 const moodPct = (mood: number) => ((mood + 2) / 4) * 100;
 const mean = (nums: number[]) => nums.reduce((a, b) => a + b, 0) / nums.length;
@@ -62,8 +67,17 @@ const lastNonNull = <T>(vals: (T | null)[]): T | null => {
   return null;
 };
 
-export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
+export function toWellbeingSeries(
+  checkIns: CheckInInput[],
+  sleepEntries: SleepEntryInput[] = [],
+): WellbeingPoint[] {
   if (checkIns.length === 0) return [];
+
+  // Explicit sleep-diary hours override the check-in field on the same day.
+  const diaryHoursByDay = new Map<string, number>();
+  for (const s of sleepEntries) {
+    diaryHoursByDay.set(new Date(s.date).toISOString().slice(0, 10), s.hours);
+  }
 
   const withDates = checkIns.map((c) => ({ ...c, d: new Date(c.date) }));
   const originMs = new Date(Math.min(...withDates.map((c) => c.d.getTime())));
@@ -80,7 +94,7 @@ export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
 
   return [...byDay.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, rows]) => {
+    .map(([dayKey, rows]) => {
       const sorted = [...rows].sort((a, b) => a.d.getTime() - b.d.getTime());
       const dayStart = new Date(sorted[0].d);
       dayStart.setHours(0, 0, 0, 0);
@@ -89,7 +103,7 @@ export function toWellbeingSeries(checkIns: CheckInInput[]): WellbeingPoint[] {
       const moods = sorted.map((c) => c.mood);
       const moodMean = mean(moods);
       const energies = sorted.map((c) => c.energyLevel).filter((v): v is number => v != null);
-      const sleep = lastNonNull(sorted.map((c) => c.sleepHours));
+      const sleep = diaryHoursByDay.get(dayKey) ?? lastNonNull(sorted.map((c) => c.sleepHours));
       const meds = lastNonNull(sorted.map((c) => c.medsStatus));
       const medsN = medsToNumber(meds);
 

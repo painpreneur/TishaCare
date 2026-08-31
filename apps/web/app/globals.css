@@ -1107,6 +1107,30 @@ table.responses td {
   transform: scale(1.12);
 }
 
+.sleep-quality-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sleep-quality-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #e2e6ec;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1;
+  color: #465063;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.sleep-quality-dot.active {
+  border-color: #a35fe0;
+  background: #f4ecfb;
+  font-weight: 600;
+}
+
 .energy-meter {
   display: flex;
   gap: 8px;

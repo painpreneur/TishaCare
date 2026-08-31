@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const days = ALLOWED_DAYS.includes(requested) ? requested : DEFAULT_DAYS;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const [checkIns, responses, unlocks] = await Promise.all([
+  const [checkIns, responses, unlocks, sleepEntries] = await Promise.all([
     // all check-ins; the wellbeing chart uses the `days` window, "Связи" uses
     // the full history (Pearson needs enough points).
     prisma.checkIn.findMany({
@@ -42,13 +42,20 @@ export async function GET(req: NextRequest) {
       },
     }),
     prisma.patientUnlock.findMany({ where: { patientId: auth.patientId }, select: { code: true } }),
+    prisma.sleepEntry.findMany({
+      where: { patientId: auth.patientId },
+      select: { date: true, hours: true },
+    }),
   ]);
 
   const unlockedCodes = unlocks.map((u) => u.code);
 
   return NextResponse.json({
     days,
-    series: toWellbeingSeries(checkIns.filter((c) => c.date >= since)),
+    series: toWellbeingSeries(
+      checkIns.filter((c) => c.date >= since),
+      sleepEntries.filter((s) => s.date >= since),
+    ),
     questionnaires: buildQuestionnaireSeries(responses),
     unlocks: unlockedCodes,
     connections: unlockedCodes.includes("connections") ? buildConnections(checkIns) : null,

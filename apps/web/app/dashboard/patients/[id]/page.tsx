@@ -64,6 +64,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
         select: { id: true },
       },
       checkIns: { orderBy: { date: "asc" } },
+      sleepEntries: { select: { date: true, hours: true } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "desc" } },
       medications: {
         orderBy: [{ status: "asc" }, { startedAt: "desc" }],
@@ -90,7 +91,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
     }
   }
 
-  const wellbeingSeries = toWellbeingSeries(patient.checkIns);
+  const wellbeingSeries = toWellbeingSeries(patient.checkIns, patient.sleepEntries);
   const insights = buildPatientInsights(patient.checkIns, patient.responses);
   const damLine = doctorDamLine(patient.checkIns, patient.responses);
 

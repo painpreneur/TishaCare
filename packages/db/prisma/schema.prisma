@@ -167,6 +167,30 @@ model Patient {
   milestones         PatientMilestone[]
   unlocks            PatientUnlock[]
   safetyPlan         SafetyPlan?
+  sleepEntries       SleepEntry[]
+}
+
+// A dedicated sleep log, separate from the /checkin sleepHours field. One entry
+// per night, keyed by the morning's calendar date. When both exist for a day
+// the explicit SleepEntry wins in the wellbeing chart (lib/wellbeing.ts).
+model SleepEntry {
+  id        String   @id @default(cuid())
+  patientId String
+  // Calendar date (UTC midnight) of the morning the patient woke.
+  date      DateTime
+  // Local "HH:MM" strings as entered; `hours` is derived (handles crossing midnight).
+  bedtime   String?
+  wakeTime  String?
+  hours     Float
+  // Optional self-rated quality, 1 (плохо) … 5 (отлично).
+  quality   Int?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, date])
 }
 
 // The patient's own "plan for a hard moment", filled in calm times and easy to

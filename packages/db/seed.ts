@@ -134,6 +134,7 @@ async function main() {
   const doctor = await prisma.doctor.create({
     data: {
       clinicId: clinic.id,
+      role: "admin",
       email: "doctor@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Анна Смирнова",

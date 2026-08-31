@@ -43,6 +43,10 @@ model Doctor {
   // always has one. See lib/practiceType.ts for the allowed values.
   clinicId     String?
   practiceType String   @default("clinic")
+  // Role inside a clinic: "admin" runs the clinic (invites colleagues, sees
+  // every clinic patient), "member" is a regular doctor. Unused for a solo
+  // doctor (clinicId = null). Plain string, no enum — like practiceType.
+  role         String   @default("member")
   email        String   @unique
   passwordHash String
   name         String

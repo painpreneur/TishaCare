@@ -51,11 +51,11 @@ export async function POST(req: NextRequest) {
   let doctorId: string;
   try {
     if (practiceType === "clinic") {
-      // First doctor of a freshly created clinic is implicitly its admin.
+      // The doctor who creates a clinic is its admin (invites colleagues later).
       const doctor = await prisma.$transaction(async (tx) => {
         const clinic = await tx.clinic.create({ data: { name: clinicName } });
         return tx.doctor.create({
-          data: { clinicId: clinic.id, practiceType, email, passwordHash, name, connectCode },
+          data: { clinicId: clinic.id, practiceType, role: "admin", email, passwordHash, name, connectCode },
         });
       });
       doctorId = doctor.id;

@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
     return invalidCredentials();
   }
 
+  if (doctor.deactivatedAt) {
+    return NextResponse.json(
+      { error: "Аккаунт отключён администратором клиники. Обратитесь к нему для восстановления." },
+      { status: 403 }
+    );
+  }
+
   if (doctor.failedLoginAttempts !== 0 || doctor.lockedUntil) {
     await prisma.doctor.update({
       where: { id: doctor.id },

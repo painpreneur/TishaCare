@@ -81,6 +81,11 @@ model Doctor {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  // Set when a clinic admin deactivates this doctor: login is refused and live
+  // sessions are dropped, but CareLink rows stay so patient data is not lost.
+  // Their patients become visible to the clinic's admins. Null = active.
+  deactivatedAt DateTime?
+
   clinic                Clinic?      @relation(fields: [clinicId], references: [id])
   sessions              Session[]
   careLinks             CareLink[]

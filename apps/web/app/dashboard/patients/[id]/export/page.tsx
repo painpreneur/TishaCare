@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma, COGNITIVE_TEST_CODE, CognitiveTestInterpretation } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
-import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { patientAccessWhere } from "@/lib/patientAccess";
 import { describeResponse, QUESTIONNAIRE_MAX_SCORE } from "@/lib/questionnaireInterpret";
 import { summarizeCheckIns, moodWord } from "@/lib/patientRecord";
 import { buildPatientInsights } from "@/lib/insights";
@@ -29,10 +29,7 @@ export default async function PatientRecordExportPage({ params }: { params: { id
   if (!doctor) notFound();
 
   const patient = await prisma.patient.findFirst({
-    where: {
-      id: params.id,
-      careLinks: { some: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } } },
-    },
+    where: { id: params.id, ...patientAccessWhere(doctor) },
     include: {
       checkIns: { orderBy: { date: "asc" } },
       responses: { include: { questionnaire: true }, orderBy: { completedAt: "asc" } },

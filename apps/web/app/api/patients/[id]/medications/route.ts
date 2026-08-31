@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
-import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { canDoctorAccessPatient } from "@/lib/patientAccess";
 import { licenseGate } from "@/lib/license";
 import { notifyPatientTelegram } from "@/lib/patientNotify";
 
@@ -12,10 +12,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const gate = licenseGate(doctor);
   if (gate) return gate;
 
-  const link = await prisma.careLink.findFirst({
-    where: { patientId: params.id, doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
-  });
-  if (!link) return NextResponse.json({ error: "Пациент не найден" }, { status: 404 });
+  if (!(await canDoctorAccessPatient(doctor, params.id))) {
+    return NextResponse.json({ error: "Пациент не найден" }, { status: 404 });
+  }
 
   const { name, dosage, frequency, reason } = await req.json();
   if (!name?.trim() || !dosage?.trim() || !Number.isInteger(frequency) || frequency <= 0) {

@@ -156,6 +156,20 @@ async function main() {
     },
   });
 
+  // A deactivated colleague with a patient — exercises the deactivation flow:
+  // login blocked, but the admin still sees this patient under "Врачи клиники".
+  const inactiveDoctor = await prisma.doctor.create({
+    data: {
+      clinicId: clinic.id,
+      role: "member",
+      email: "inactive@demo.local",
+      passwordHash: await bcrypt.hash("demo1234", 10),
+      name: "Сергей Морозов",
+      connectCode: generateConnectCode(),
+      deactivatedAt: new Date(),
+    },
+  });
+
   // Solo practitioner (no clinic) — exercises the practiceType = "solo" path.
   await prisma.doctor.create({
     data: {
@@ -261,6 +275,18 @@ async function main() {
       })
     )
   );
+
+  // The deactivated colleague also follows the second patient — the admin sees
+  // her under "Врачи клиники" and can open her card.
+  await prisma.careLink.create({
+    data: {
+      patientId: patients[1].id,
+      doctorId: inactiveDoctor.id,
+      status: "active",
+      requestedBy: "doctor",
+      activatedAt: new Date(),
+    },
+  });
 
   // Encounters: a past write-up, an upcoming appointment, and an overdue
   // planned one (exercises "Ближайшие приёмы" and "нужно закрыть").

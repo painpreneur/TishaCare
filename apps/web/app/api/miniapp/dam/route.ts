@@ -23,21 +23,23 @@ export async function GET(req: NextRequest) {
   }
   const patientId = auth.patientId;
 
-  const [checkIns, responses, medReports, patient, milestones, unlocks] = await Promise.all([
-    prisma.checkIn.findMany({ where: { patientId }, select: { date: true, sleepHours: true } }),
-    prisma.questionnaireResponse.findMany({
-      where: { patientId },
-      select: { completedAt: true, questionnaire: { select: { code: true } } },
-    }),
-    prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
-    prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
-    prisma.patientMilestone.findMany({
-      where: { patientId },
-      orderBy: { stage: "asc" },
-      select: { stage: true, reachedAt: true },
-    }),
-    prisma.patientUnlock.findMany({ where: { patientId }, select: { code: true } }),
-  ]);
+  const [checkIns, responses, medReports, patient, milestones, unlocks, doneEncounters] =
+    await Promise.all([
+      prisma.checkIn.findMany({ where: { patientId }, select: { date: true, sleepHours: true } }),
+      prisma.questionnaireResponse.findMany({
+        where: { patientId },
+        select: { completedAt: true, questionnaire: { select: { code: true } } },
+      }),
+      prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
+      prisma.patient.findUnique({ where: { id: patientId }, select: { anamnesisUpdatedAt: true } }),
+      prisma.patientMilestone.findMany({
+        where: { patientId },
+        orderBy: { stage: "asc" },
+        select: { stage: true, reachedAt: true },
+      }),
+      prisma.patientUnlock.findMany({ where: { patientId }, select: { code: true } }),
+      prisma.encounter.count({ where: { patientId, status: "done" } }),
+    ]);
 
   const otherDates: Date[] = [
     ...medReports.map((m) => m.date),
@@ -66,6 +68,7 @@ export async function GET(req: NextRequest) {
     unlockContext(
       responses.map((r) => r.questionnaire.code),
       snapshot,
+      { hasCompletedEncounter: doneEncounters > 0 },
     ),
   );
 

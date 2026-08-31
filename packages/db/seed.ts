@@ -81,13 +81,14 @@ const INTAKE_CODES = ["MDQ", "GAD7", "ASRS_A", "AQ10", "MSI_BPD"];
 const SCALE_CODES = new Set(["BECK21", "GAD7", "ASRS_A", "AQ10", "MSI_BPD", "MDQ"]);
 
 async function backfillUnlocks(patientId: string, damStage: number) {
-  const [checkIns, responses, medReports] = await Promise.all([
+  const [checkIns, responses, medReports, doneEncounters] = await Promise.all([
     prisma.checkIn.findMany({ where: { patientId }, select: { date: true } }),
     prisma.questionnaireResponse.findMany({
       where: { patientId },
       select: { completedAt: true, questionnaire: { select: { code: true } } },
     }),
     prisma.medicationReport.findMany({ where: { patientId }, select: { date: true } }),
+    prisma.encounter.count({ where: { patientId, status: "done" } }),
   ]);
 
   const times = [
@@ -107,6 +108,8 @@ async function backfillUnlocks(patientId: string, damStage: number) {
   if (completed.has("BALANCE_WHEEL")) earned.push("balance");
   if (scaleCount >= 5) earned.push("compare");
   if (INTAKE_CODES.every((c) => completed.has(c))) earned.push("baseline");
+  if (daysActive >= 30) earned.push("month");
+  if (doneEncounters > 0) earned.push("first-visit");
   if (entryCount >= 30) earned.push("rhythm");
   if (daysActive >= 365) earned.push("year");
   if (damStage >= 3) earned.push("seasons");

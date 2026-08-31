@@ -35,6 +35,26 @@ model Clinic {
 
   doctors  Doctor[]
   patients Patient[]
+  invites  ClinicInvite[]
+}
+
+// A one-time link a clinic admin creates to bring a colleague into the clinic.
+// Registering through it makes a Doctor with clinicId set and role "member".
+model ClinicInvite {
+  id          String    @id @default(cuid())
+  clinicId    String
+  token       String    @unique
+  createdById String
+  // Optional intended recipient — shown in the admin's pending list, not enforced.
+  email       String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+  usedById    String?
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
 }
 
 model Doctor {
@@ -43,6 +63,10 @@ model Doctor {
   // always has one. See lib/practiceType.ts for the allowed values.
   clinicId     String?
   practiceType String   @default("clinic")
+  // Role inside a clinic: "admin" runs the clinic (invites colleagues, sees
+  // every clinic patient), "member" is a regular doctor. Unused for a solo
+  // doctor (clinicId = null). Plain string, no enum — like practiceType.
+  role         String   @default("member")
   email        String   @unique
   passwordHash String
   name         String

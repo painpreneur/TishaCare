@@ -14,6 +14,7 @@ import {
 import { getCurrentDoctor } from "@/lib/session";
 import { describeResponse, QUESTIONNAIRE_MAX_SCORE } from "@/lib/questionnaireInterpret";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { clinicLicenseInactive } from "@/lib/license";
 import { pearsonCorrelation, describeCorrelation } from "@/lib/correlation";
 import EditAnamnesis from "@/components/EditAnamnesis";
 import AddEncounter from "@/components/AddEncounter";
@@ -48,6 +49,8 @@ function formatShortDate(date: Date): string {
 export default async function PatientPage({ params }: { params: { id: string } }) {
   const doctor = await getCurrentDoctor();
   if (!doctor) return null;
+
+  const licenseInactive = clinicLicenseInactive(doctor);
 
   const patient = await prisma.patient.findFirst({
     where: {
@@ -212,6 +215,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           patientId={patient.id}
           anamnesis={patient.anamnesis}
           birthDate={patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : null}
+          readOnly={licenseInactive}
         />
         {patient.anamnesisUpdatedAt && (
           <p className="empty" style={{ marginTop: 8 }}>
@@ -225,7 +229,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
       <div className="panel">
         <h3>Приёмы и встречи</h3>
-        <AddEncounter patientId={patient.id} />
+        {!licenseInactive && <AddEncounter patientId={patient.id} />}
         {patient.encounters.length === 0 ? (
           <p className="empty" style={{ marginTop: 12 }}>Записей пока нет</p>
         ) : (
@@ -355,7 +359,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
       <div className="panel">
         <h3>Медикаменты</h3>
-        <PrescribeMedication patientId={patient.id} />
+        {!licenseInactive && <PrescribeMedication patientId={patient.id} />}
         {patient.medications.length === 0 ? (
           <p className="empty" style={{ marginTop: 12 }}>Медикаменты не назначены</p>
         ) : (
@@ -387,7 +391,9 @@ export default async function PatientPage({ params }: { params: { id: string } }
                       <span className="encounter-field-label">Причина отмены:</span> {m.stopReason}
                     </p>
                   )}
-                  <DoctorMedControls patientId={patient.id} medId={m.id} status={m.status} />
+                  {!licenseInactive && (
+                    <DoctorMedControls patientId={patient.id} medId={m.id} status={m.status} />
+                  )}
                   {poorlyTolerated && (
                     <p className="encounter-field" style={{ color: "#d64545" }}>
                       ⚠ Пациент отмечает плохую переносимость

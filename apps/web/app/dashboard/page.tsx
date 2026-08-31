@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
+import { clinicLicenseInactive } from "@/lib/license";
 import CareRequests from "@/components/CareRequests";
 import DoctorConnectCode from "@/components/DoctorConnectCode";
 
@@ -21,6 +22,8 @@ export default async function DashboardPage() {
   const doctor = await getCurrentDoctor();
   if (!doctor) return null;
 
+  const licenseInactive = clinicLicenseInactive(doctor);
+
   const [links, pending] = await Promise.all([
     prisma.careLink.findMany({
       where: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
@@ -38,7 +41,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="page">
-      {pending.length > 0 && (
+      {!licenseInactive && pending.length > 0 && (
         <CareRequests
           requests={pending.map((p) => ({ id: p.id, patientName: p.patient.name }))}
         />
@@ -48,9 +51,11 @@ export default async function DashboardPage() {
 
       <div className="page-header">
         <h2>Пациенты ({links.length})</h2>
-        <Link href="/dashboard/patients/connect" className="btn-primary btn-inline">
-          + Подключить пациента
-        </Link>
+        {!licenseInactive && (
+          <Link href="/dashboard/patients/connect" className="btn-primary btn-inline">
+            + Подключить пациента
+          </Link>
+        )}
       </div>
       <div className="patient-grid">
         {links.map((link) => {

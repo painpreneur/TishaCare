@@ -134,10 +134,24 @@ async function main() {
   const doctor = await prisma.doctor.create({
     data: {
       clinicId: clinic.id,
+      role: "admin",
       email: "doctor@demo.local",
       passwordHash: await bcrypt.hash("demo1234", 10),
       name: "Анна Смирнова",
       connectCode: "DEMO01",
+    },
+  });
+
+  // Second doctor in the same clinic, a plain member — exercises the clinic
+  // management screen and the member role.
+  await prisma.doctor.create({
+    data: {
+      clinicId: clinic.id,
+      role: "member",
+      email: "member@demo.local",
+      passwordHash: await bcrypt.hash("demo1234", 10),
+      name: "Ольга Лебедева",
+      connectCode: generateConnectCode(),
     },
   });
 
@@ -465,8 +479,9 @@ async function main() {
   });
 
   console.log("Seed complete.");
-  console.log(`Doctor login (clinic): doctor@demo.local / demo1234`);
-  console.log(`Doctor login (solo):   solo@demo.local / demo1234`);
+  console.log(`Doctor login (clinic admin):  doctor@demo.local / demo1234`);
+  console.log(`Doctor login (clinic member): member@demo.local / demo1234`);
+  console.log(`Doctor login (solo):          solo@demo.local / demo1234`);
   console.log(`Patient web login:     patient@demo.local / demo1234`);
   console.log(
     `Connected patients: ${patients.map((p) => p.name).join(", ")}`

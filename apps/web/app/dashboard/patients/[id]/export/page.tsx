@@ -66,7 +66,7 @@ export default async function PatientRecordExportPage({ params }: { params: { id
 
   return (
     <div className="record-export">
-      <PatientRecordToolbar backHref={`/dashboard/patients/${patient.id}`} />
+      <PatientRecordToolbar backHref={`/dashboard/patients/${patient.id}`} csvHref={`/dashboard/patients/${patient.id}/export.csv`} />
 
       <header className="record-head">
         <h1>Медицинская карта пациента</h1>
@@ -359,7 +359,7 @@ export default async function PatientRecordExportPage({ params }: { params: { id
       </section>
 
       <footer className="record-foot no-print">
-        <PatientRecordToolbar backHref={`/dashboard/patients/${patient.id}`} />
+        <PatientRecordToolbar backHref={`/dashboard/patients/${patient.id}`} csvHref={`/dashboard/patients/${patient.id}/export.csv`} />
       </footer>
     </div>
   );

@@ -10,4 +10,8 @@ build/
 .DS_Store
 *.tsbuildinfo
 .vercel
-.env*
+
+# Raw art drops from the illustrator — processed versions live in
+# apps/web/public/gamification/, the originals are not tracked.
+/tisha-health-assets/
+/tisha-unlock-medallions/

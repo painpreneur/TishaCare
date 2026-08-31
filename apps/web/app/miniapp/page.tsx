@@ -10,6 +10,7 @@ const PRIMARY: PatientFeature[] = [
 // Everything else.
 const FEATURES: PatientFeature[] = [
   { href: "/tests", emoji: "📋", title: "Опросники и тесты", desc: "Скрининги и самонаблюдение" },
+  { href: "/sleep", emoji: "😴", title: "Дневник сна", desc: "Когда лёг и когда встал" },
   { href: "/thoughts", emoji: "📓", title: "Дневник мыслей", desc: "Записать, что беспокоит" },
   { href: "/medications", emoji: "💊", title: "Медикаменты", desc: "Список и приём" },
   { href: "/discoveries", emoji: "🧭", title: "Открытия", desc: "Путь к первому приёму и дальше" },

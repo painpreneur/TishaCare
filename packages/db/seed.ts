@@ -361,6 +361,33 @@ async function main() {
     }
     await Promise.all(checkInOps);
 
+    // Explicit sleep-diary entries for the first patient on the last 5 nights —
+    // these override the check-in sleepHours in the wellbeing chart.
+    if (pIndex === 0) {
+      const sleepOps = [];
+      for (let i = 0; i < 5; i++) {
+        const date = new Date();
+        date.setUTCHours(0, 0, 0, 0);
+        date.setUTCDate(date.getUTCDate() - i);
+        const bedH = 22 + Math.floor(Math.random() * 3); // 22..24
+        const wakeH = 6 + Math.floor(Math.random() * 3); // 6..8
+        const hours = Math.round((wakeH + 24 - bedH) * 10) / 10;
+        sleepOps.push(
+          prisma.sleepEntry.create({
+            data: {
+              patientId: patient.id,
+              date,
+              bedtime: `${String(bedH % 24).padStart(2, "0")}:${Math.random() > 0.5 ? "30" : "00"}`,
+              wakeTime: `${String(wakeH).padStart(2, "0")}:${Math.random() > 0.5 ? "15" : "45"}`,
+              hours,
+              quality: 1 + Math.floor(Math.random() * 5),
+            },
+          })
+        );
+      }
+      await Promise.all(sleepOps);
+    }
+
     // Первому демо-пациенту добавляем длинную предысторию (одна запись в день,
     // примерно за 3 месяца до недавних 14 дней), чтобы на /progress была видна
     // непустая лента вех ("Плотина Тиши"). Иногда день пропускаем: лента при

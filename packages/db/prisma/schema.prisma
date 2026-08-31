@@ -167,6 +167,13 @@ model Encounter {
   doctorId     String
   date         DateTime
   type         String   @default("visit")
+  // "done" — a past contact that happened (the append-only record).
+  // "planned" — a future appointment; content fields may be empty until it
+  // happens, then the doctor marks it done or adds a separate write-up.
+  status       String   @default("done")
+  // Set when the "your appointment is tomorrow" bot nudge has gone out, so the
+  // daily reminder cron never sends it twice.
+  reminderSentAt DateTime?
   complaints   String?
   observations String?
   assessment   String?
@@ -178,6 +185,7 @@ model Encounter {
   doctor  Doctor  @relation(fields: [doctorId], references: [id])
 
   @@index([patientId])
+  @@index([doctorId, status])
 }
 
 // A patient <-> doctor connection with an explicit lifecycle. Either side can

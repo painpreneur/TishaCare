@@ -1,7 +1,12 @@
 import "dotenv/config";
 import cron from "node-cron";
 import { APP_ENV } from "@tishacare/db";
-import { createBot, sendDueCheckinReminders, sendDueMedReminders } from "@tishacare/bot-core";
+import {
+  createBot,
+  sendDueCheckinReminders,
+  sendDueMedReminders,
+  sendDueEncounterReminders,
+} from "@tishacare/bot-core";
 
 // apps/bot is the local dev loop only (long-polling). Production traffic is
 // served by the webhook in apps/web — see docs/ENVIRONMENTS.md. Starting a
@@ -35,6 +40,7 @@ if (process.env.ENABLE_LOCAL_REMINDERS === "1") {
   cron.schedule("0 20 * * *", () => {
     sendDueCheckinReminders(bot.telegram);
     sendDueMedReminders(bot.telegram);
+    sendDueEncounterReminders(bot.telegram);
   });
   console.log("[reminders] local scheduler enabled (daily 20:00)");
 } else {

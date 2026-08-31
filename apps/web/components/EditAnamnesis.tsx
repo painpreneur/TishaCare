@@ -7,9 +7,11 @@ interface Props {
   patientId: string;
   anamnesis: string | null;
   birthDate: string | null;
+  /** Clinic licence inactive: show the anamnesis, hide the edit affordance. */
+  readOnly?: boolean;
 }
 
-export default function EditAnamnesis({ patientId, anamnesis, birthDate }: Props) {
+export default function EditAnamnesis({ patientId, anamnesis, birthDate, readOnly = false }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(anamnesis ?? "");
@@ -37,9 +39,11 @@ export default function EditAnamnesis({ patientId, anamnesis, birthDate }: Props
             Дата рождения: {new Date(birthDate).toLocaleDateString("ru-RU")}
           </p>
         )}
-        <button className="link-btn" onClick={() => setEditing(true)} style={{ marginTop: 8 }}>
-          Редактировать
-        </button>
+        {!readOnly && (
+          <button className="link-btn" onClick={() => setEditing(true)} style={{ marginTop: 8 }}>
+            Редактировать
+          </button>
+        )}
       </div>
     );
   }

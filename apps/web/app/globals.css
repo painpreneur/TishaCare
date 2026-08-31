@@ -2458,3 +2458,99 @@ table.responses td {
     transition: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Doctor panel readability: a text-size control (A− / A / A+) and a few
+   contrast/size bumps. Scoped to .doc-panel so the patient Mini App is
+   untouched.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.doc-panel[data-doc-scale="m"] {
+  zoom: 1.13;
+}
+.doc-panel[data-doc-scale="l"] {
+  zoom: 1.28;
+}
+/* at the largest size the two-column patient record is too tight — stack it */
+.doc-panel[data-doc-scale="l"] .patient-record-grid {
+  grid-template-columns: 1fr;
+}
+
+.doc-scale {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+  background: #fff;
+}
+.doc-scale-btn {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: #465063;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.doc-scale-btn:hover:not(:disabled) {
+  background: #f1f4f8;
+  color: #1f2733;
+}
+.doc-scale-btn:disabled {
+  color: #b6bdc8;
+  cursor: default;
+}
+.doc-scale-reset {
+  font-weight: 600;
+}
+.doc-scale-sign {
+  font-size: 10px;
+  vertical-align: 1px;
+  margin-left: 1px;
+}
+.doc-scale-btn:focus-visible {
+  outline: 2px solid #4f6bfe;
+  outline-offset: -1px;
+}
+
+.topbar-doctor {
+  font-size: 14px;
+  color: #3a4453;
+}
+
+/* content-text bumps — doctor panel only */
+.doc-panel .hint {
+  font-size: 13px;
+  color: #79828f;
+}
+.doc-panel .empty {
+  font-size: 13.5px;
+}
+.doc-panel .badge {
+  font-size: 12px;
+  padding: 3px 9px;
+}
+.doc-panel .encounter-field {
+  font-size: 14px;
+}
+.doc-panel .encounter-field-label {
+  color: #59626f;
+}
+.doc-panel table.responses {
+  font-size: 13.5px;
+}
+.doc-panel table.responses th {
+  color: #59626f;
+}
+.doc-panel table.responses th,
+.doc-panel table.responses td {
+  padding: 9px 10px 9px 0;
+}
+.doc-panel .triage-flags {
+  font-size: 13.5px;
+}

@@ -292,28 +292,31 @@ a {
   margin-bottom: 12px;
 }
 
-/* "Домой" for patient screens: fixed in the lower-right thumb zone. */
+/* "Домой" for patient screens: fixed on the right edge, about a third of the
+   way up — where a right thumb rests on a one-handed grip. Also reachable by a
+   pull-in swipe from the right edge (see BackLink.tsx). */
 .patient-home-btn {
   position: fixed;
-  right: 14px;
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  right: 12px;
+  bottom: clamp(88px, 26%, 300px);
   z-index: 30;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 5px;
+  padding: 9px 14px;
   border-radius: 999px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(2px);
   border: 1px solid #e2e6ec;
-  box-shadow: 0 4px 16px rgba(20, 30, 50, 0.16);
+  box-shadow: 0 6px 20px rgba(20, 30, 50, 0.18);
   color: #4f6bfe;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .patient-home-btn span {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -617,8 +620,8 @@ table.responses td {
 .miniapp-page {
   max-width: 480px;
   margin: 0 auto;
-  /* extra bottom room so the fixed "Домой" pill never covers content */
-  padding: 20px 16px 96px;
+  /* a little tail so the last line clears the floating "Домой" button */
+  padding: 20px 16px 56px;
 }
 
 .miniapp-card {

@@ -1,4 +1,4 @@
-import { MDQ_CODE, MDQ_MAX_SCORE } from "@tishacare/db";
+import { MDQ_CODE, MDQ_MAX_SCORE, PHQ9_CODE, PHQ9_ITEM9_INDEX } from "@tishacare/db";
 import { isPoorlyTolerated } from "@/lib/medication";
 
 // Deterministic per-patient triage for the doctor's dashboard. Every flag is a
@@ -13,14 +13,33 @@ export const MOOD_DROP = 0.7; // drop in the −2…+2 weekly average
 export const MEDS_MISSED_MIN = 2; // "not taken" days in the last week
 
 export interface TriageFlag {
-  kind: "silent" | "mood_drop" | "meds_missed" | "poor_tolerability" | "mdq_positive";
+  kind:
+    | "silent"
+    | "mood_drop"
+    | "meds_missed"
+    | "poor_tolerability"
+    | "mdq_positive"
+    | "phq9_self_harm";
   label: string;
 }
 
 export interface TriageInput {
   checkIns: { date: Date; mood: number; medsStatus: string | null }[];
-  responses: { score: number; completedAt: Date; questionnaire: { code: string } }[];
+  responses: { score: number; completedAt: Date; answers: string; questionnaire: { code: string } }[];
   medications: { reports: { tolerability: number | null }[] }[];
+}
+
+/** Reads the PHQ-9 item-9 (self-harm / suicidal ideation) answer from a stored
+ *  response's `answers` JSON, or null if it can't be read. */
+function phq9Item9(answers: string): number | null {
+  try {
+    const parsed = JSON.parse(answers);
+    const submission = Array.isArray(parsed) ? parsed : parsed?.submission;
+    const v = Array.isArray(submission) ? submission[PHQ9_ITEM9_INDEX] : null;
+    return typeof v === "number" ? v : null;
+  } catch {
+    return null;
+  }
 }
 
 export interface TriageResult {
@@ -96,6 +115,20 @@ export function assessPatient(input: TriageInput): TriageResult {
       kind: "mdq_positive",
       label: `MDQ положительный (${latestMdq.score}/${MDQ_MAX_SCORE})`,
     });
+  }
+
+  // 6. Latest PHQ-9 flags item 9 (thoughts of self-harm / being better off dead).
+  const latestPhq9 = input.responses
+    .filter((r) => r.questionnaire.code === PHQ9_CODE)
+    .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())[0];
+  if (latestPhq9) {
+    const item9 = phq9Item9(latestPhq9.answers);
+    if (item9 != null && item9 >= 1) {
+      flags.push({
+        kind: "phq9_self_harm",
+        label: "PHQ-9: отмечены мысли о самоповреждении — свяжитесь с пациентом",
+      });
+    }
   }
 
   const signals = [

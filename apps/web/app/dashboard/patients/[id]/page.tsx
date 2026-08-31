@@ -6,6 +6,8 @@ import {
   BECK_MAX_SCORE,
   MDQ_CODE,
   MDQ_MAX_SCORE,
+  PHQ9_CODE,
+  YMRS_CODE,
   COGNITIVE_TEST_CODE,
   CATEGORY_LABELS,
   CognitiveCategory,
@@ -131,6 +133,14 @@ export default async function PatientPage({ params }: { params: { id: string } }
 
   const mdqSeries = responsesAsc
     .filter((r) => r.questionnaire.code === MDQ_CODE)
+    .map((r) => ({ date: formatShortDate(r.completedAt), score: r.score }));
+
+  const phq9Series = responsesAsc
+    .filter((r) => r.questionnaire.code === PHQ9_CODE)
+    .map((r) => ({ date: formatShortDate(r.completedAt), score: r.score }));
+
+  const ymrsSeries = responsesAsc
+    .filter((r) => r.questionnaire.code === YMRS_CODE)
     .map((r) => ({ date: formatShortDate(r.completedAt), score: r.score }));
 
   const cognitiveCategorySeries = responsesAsc
@@ -310,7 +320,11 @@ export default async function PatientPage({ params }: { params: { id: string } }
         )}
       </div>
 
-      {(beckSeries.length > 0 || mdqSeries.length > 0 || cognitiveCategorySeries.length > 0) && (
+      {(beckSeries.length > 0 ||
+        mdqSeries.length > 0 ||
+        phq9Series.length > 0 ||
+        ymrsSeries.length > 0 ||
+        cognitiveCategorySeries.length > 0) && (
         <div className="panel">
           <h3>Динамика по шкалам</h3>
           {beckSeries.length > 0 && (
@@ -327,11 +341,39 @@ export default async function PatientPage({ params }: { params: { id: string } }
               )}
             </div>
           )}
+          {phq9Series.length > 0 && (
+            <div className="chart-block">
+              <h4 className="chart-subtitle">PHQ-9 (депрессия)</h4>
+              <QuestionnaireScoreChart
+                data={phq9Series}
+                domain={[0, QUESTIONNAIRE_MAX_SCORE[PHQ9_CODE]]}
+                thresholds={[4, 9, 14, 19]}
+                color="#4f6bfe"
+              />
+              {phq9Series.length < 2 && (
+                <p className="hint">Динамика появится после повторного прохождения опросника.</p>
+              )}
+            </div>
+          )}
           {mdqSeries.length > 0 && (
             <div className="chart-block">
               <h4 className="chart-subtitle">MDQ</h4>
               <QuestionnaireScoreChart data={mdqSeries} domain={[0, MDQ_MAX_SCORE]} thresholds={[7]} color="#e0607a" />
               {mdqSeries.length < 2 && (
+                <p className="hint">Динамика появится после повторного прохождения опросника.</p>
+              )}
+            </div>
+          )}
+          {ymrsSeries.length > 0 && (
+            <div className="chart-block">
+              <h4 className="chart-subtitle">YMRS (подъём настроения)</h4>
+              <QuestionnaireScoreChart
+                data={ymrsSeries}
+                domain={[0, QUESTIONNAIRE_MAX_SCORE[YMRS_CODE]]}
+                thresholds={[7, 14, 25]}
+                color="#e0607a"
+              />
+              {ymrsSeries.length < 2 && (
                 <p className="hint">Динамика появится после повторного прохождения опросника.</p>
               )}
             </div>

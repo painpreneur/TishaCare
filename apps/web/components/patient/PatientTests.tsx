@@ -10,7 +10,9 @@ import type { PatientFeature } from "./patientFeature";
 // future "assigned by your doctor" section, not this list.
 const SCREENERS: PatientFeature[] = [
   { href: "/beck", emoji: "📋", title: "Депрессия (Бек)", desc: "Опросник, 21 вопрос" },
+  { href: "/phq9", emoji: "📋", title: "Депрессия (PHQ-9)", desc: "Короткий опросник, 9 вопросов" },
   { href: "/mdq", emoji: "📋", title: "Мания (MDQ)", desc: "Скрининг биполярного спектра" },
+  { href: "/ymrs", emoji: "📋", title: "Мания (YMRS)", desc: "Выраженность подъёма, самооценка" },
   { href: "/gad7", emoji: "📋", title: "Тревога (GAD-7)", desc: "Скрининг тревоги, 7 вопросов" },
   { href: "/asrs", emoji: "📋", title: "Внимание (ASRS)", desc: "Скрининг СДВГ, 6 вопросов" },
   { href: "/aq10", emoji: "📋", title: "Черты спектра (AQ-10)", desc: "Скрининг РАС, 10 утверждений" },

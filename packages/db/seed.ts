@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./index";
 import { BECK_CODE, MDQ_CODE, interpretMdq, mdqScore } from "./clinical";
+import { PHQ9_DEF, YMRS_DEF, PHQ9_ITEM9_INDEX, scoreSum } from "./questionnaires";
 import { BALANCE_WHEEL_CODE, BALANCE_WHEEL_TITLE, interpretBalanceWheel } from "./lifeBalance";
 import { generateInviteCode, generateConnectCode } from "./invite";
 import {
@@ -198,6 +199,14 @@ async function main() {
     },
   });
 
+  const phq9 = await prisma.questionnaire.create({
+    data: { code: PHQ9_DEF.code, title: PHQ9_DEF.title, description: PHQ9_DEF.description },
+  });
+
+  const ymrs = await prisma.questionnaire.create({
+    data: { code: YMRS_DEF.code, title: YMRS_DEF.title, description: YMRS_DEF.description },
+  });
+
   const demoPatientPasswordHash = await bcrypt.hash("demo1234", 10);
   const patientSeeds = [
     {
@@ -380,6 +389,49 @@ async function main() {
           completedAt,
         },
       });
+    }
+
+    // PHQ-9 and YMRS history for the first connected patient only. The last
+    // PHQ-9 has item 9 = 1 to exercise the self-harm triage flag.
+    if (pIndex === 0) {
+      const phq9Runs = [
+        [2, 2, 2, 2, 1, 2, 1, 1, 0],
+        [2, 2, 1, 2, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1],
+      ];
+      for (const [i, answers] of phq9Runs.entries()) {
+        const completedAt = new Date();
+        completedAt.setDate(completedAt.getDate() - (phq9Runs.length - 1 - i) * 14);
+        const interpretation = { item9: answers[PHQ9_ITEM9_INDEX] };
+        await prisma.questionnaireResponse.create({
+          data: {
+            patientId: patient.id,
+            questionnaireId: phq9.id,
+            score: scoreSum(answers),
+            answers: JSON.stringify({ submission: answers, interpretation }),
+            completedAt,
+          },
+        });
+      }
+
+      const ymrsRuns = [
+        [1, 2, 1, 2, 4, 4, 1, 2, 2, 1, 2],
+        [1, 1, 0, 1, 2, 2, 1, 0, 0, 1, 1],
+        [0, 1, 0, 1, 0, 2, 0, 0, 0, 0, 1],
+      ];
+      for (const [i, answers] of ymrsRuns.entries()) {
+        const completedAt = new Date();
+        completedAt.setDate(completedAt.getDate() - (ymrsRuns.length - 1 - i) * 14);
+        await prisma.questionnaireResponse.create({
+          data: {
+            patientId: patient.id,
+            questionnaireId: ymrs.id,
+            score: scoreSum(answers),
+            answers: JSON.stringify({ submission: answers, interpretation: {} }),
+            completedAt,
+          },
+        });
+      }
     }
 
     const cognitiveSubmissionsOverTime: CognitiveTestSubmission[] = [

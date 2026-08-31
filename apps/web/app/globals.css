@@ -133,6 +133,15 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .topbar-brand-link {
@@ -2179,14 +2188,14 @@ table.responses td {
   max-width: 1200px;
 }
 
-.patient-grid {
+.patient-record-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
   align-items: start;
 }
 
-.patient-grid__col {
+.patient-record-grid__col {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2194,14 +2203,14 @@ table.responses td {
 }
 
 @media (min-width: 1080px) {
-  .patient-grid {
+  .patient-record-grid {
     grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
     gap: 18px;
   }
 }
 
 /* inside the grid, spacing comes from the column's gap */
-.patient-grid .panel {
+.patient-record-grid .panel {
   margin-bottom: 0;
 }
 
@@ -2213,7 +2222,7 @@ table.responses td {
   text-transform: uppercase;
   color: #95a0b0;
 }
-.patient-grid__col > .zone-label:first-child {
+.patient-record-grid__col > .zone-label:first-child {
   margin-top: 2px;
 }
 
@@ -2354,4 +2363,37 @@ table.responses td {
 
 .table-scroll {
   overflow-x: auto;
+}
+
+/* triage flags surfaced on the patient page overview */
+.triage-callout {
+  border: 1px solid #ecca9c;
+  background: #fdf4e7;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.triage-callout h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #a5641a;
+}
+.triage-callout ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.triage-callout li {
+  font-size: 13px;
+  color: #8a4d16;
+  line-height: 1.45;
+}
+.triage-callout li::before {
+  content: "• ";
 }

@@ -3,7 +3,7 @@ import { prisma } from "@tishacare/db";
 import { getCurrentDoctor } from "@/lib/session";
 import { DOCTOR_VISIBLE_STATUSES } from "@/lib/careLink";
 import { clinicLicenseInactive } from "@/lib/license";
-import { assessPatient } from "@/lib/triage";
+import { assessPatient, type TriageFlag } from "@/lib/triage";
 import { ENCOUNTER_TYPE_LABEL, type EncounterType } from "@/lib/encounter";
 import CareRequests from "@/components/CareRequests";
 import DoctorConnectCode from "@/components/DoctorConnectCode";
@@ -18,6 +18,26 @@ const MOOD_LABEL: Record<number, string> = {
 
 function formatDate(d: Date): string {
   return new Date(d).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
+}
+
+// Which record panel an attention card should open. Flags about silence or a
+// mood trend have no single panel (the chart is always visible up top), so they
+// just open the record normally.
+const FOCUS_BY_FLAG: Record<TriageFlag["kind"], string | null> = {
+  silent: null,
+  mood_drop: null,
+  meds_missed: "medications",
+  poor_tolerability: "medications",
+  mdq_positive: "responses",
+  phq9_self_harm: "responses",
+};
+
+function focusFor(flags: TriageFlag[]): string | null {
+  for (const f of flags) {
+    const panel = FOCUS_BY_FLAG[f.kind];
+    if (panel) return panel;
+  }
+  return null;
 }
 
 export default async function DashboardPage() {
@@ -148,20 +168,23 @@ export default async function DashboardPage() {
         <div className="panel">
           <h3>Требуют внимания ({attention.length})</h3>
           <div className="patient-grid">
-            {attention.map(({ link, patient, flags }) => (
-              <Link
-                key={link.id}
-                href={`/dashboard/patients/${patient.id}`}
-                className="patient-card attention"
-              >
-                <div className="name">{patient.name}</div>
-                <ul className="triage-flags">
-                  {flags.map((f) => (
-                    <li key={f.kind}>{f.label}</li>
-                  ))}
-                </ul>
-              </Link>
-            ))}
+            {attention.map(({ link, patient, flags }) => {
+              const focus = focusFor(flags);
+              return (
+                <Link
+                  key={link.id}
+                  href={`/dashboard/patients/${patient.id}${focus ? `?focus=${focus}` : ""}`}
+                  className="patient-card attention"
+                >
+                  <div className="name">{patient.name}</div>
+                  <ul className="triage-flags">
+                    {flags.map((f) => (
+                      <li key={f.kind}>{f.label}</li>
+                    ))}
+                  </ul>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

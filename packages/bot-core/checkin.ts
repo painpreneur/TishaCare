@@ -24,17 +24,27 @@ import {
 type Mode = "mom" | "day";
 
 // One-letter codes for state tags, so a multi-select fits in callback_data.
+// Every id in STATE_TAGS needs one — see the assertion below.
 const TAG_CODE: Record<string, string> = {
   calm: "c",
   anxious: "x",
   activated: "v",
+  restless: "e",
   slowed: "s",
+  empty: "p",
   irritable: "r",
+  foggy: "f",
   mixed: "m",
 };
 const CODE_TAG: Record<string, string> = Object.fromEntries(
   Object.entries(TAG_CODE).map(([id, code]) => [code, id]),
 );
+
+// Fail fast if a STATE_TAGS entry has no code — its bot button would silently
+// do nothing (callback_data would carry "undefined").
+for (const t of STATE_TAGS) {
+  if (!TAG_CODE[t.id]) throw new Error(`checkin: no TAG_CODE for state tag "${t.id}"`);
+}
 
 // Whole hours of sleep. Buttons carry the exact number in callback_data — no
 // buckets, no representative midpoint that reads as false precision. The

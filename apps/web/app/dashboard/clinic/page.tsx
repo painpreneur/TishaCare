@@ -59,12 +59,26 @@ export default async function ClinicPage() {
   const pending = invites.filter((i) => !i.usedAt);
   const used = invites.filter((i) => i.usedAt);
 
+  const totalClinicPatients = patientCounts.reduce((sum, c) => sum + c._count._all, 0);
+  const clinicIsNew =
+    doctors.length <= 1 && totalClinicPatients === 0 && pending.length === 0 && used.length === 0;
+
   return (
     <div className="page">
       <Link href="/dashboard" className="back-link">
         ← На дашборд
       </Link>
       <h2>{doctor.clinic?.name ?? "Клиника"}</h2>
+
+      {clinicIsNew && (
+        <div className="panel">
+          <p className="hint" style={{ margin: 0 }}>
+            Клиника создана. Чтобы начать приём пациентов: раздайте им код подключения (у каждого
+            врача он свой — на дашборде и в «Настройках»), а коллег добавьте через приглашения ниже.
+            Каждый приглашённый регистрируется по одноразовой ссылке и попадает в эту клинику как врач.
+          </p>
+        </div>
+      )}
 
       <div className="panel">
         <h3>Врачи клиники ({doctors.length})</h3>

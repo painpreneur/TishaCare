@@ -1247,6 +1247,24 @@ table.responses td {
   margin: 0 0 16px;
 }
 
+.q-safety-callout {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fdf4e7;
+  border: 1px solid #ecca9c;
+}
+.q-safety-callout p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #7a4a16;
+}
+.q-safety-callout a {
+  color: #7a4a16;
+  font-weight: 600;
+}
+
 /* Safety plan */
 
 .patient-home-safety {

@@ -11,6 +11,7 @@ import DamScene from "./DamScene";
 import MilestoneCard from "./MilestoneCard";
 import UnlockCard from "./UnlockCard";
 import ActivityBlock from "./ActivityBlock";
+import DoctorMessages from "./DoctorMessages";
 import { fetchDamHome, type DamHomeData } from "@/lib/damClient";
 import type { PatientFeature } from "./patientFeature";
 
@@ -126,6 +127,7 @@ export default function PatientHome({
       >
         План на трудный момент
       </Link>
+      <DoctorMessages />
       <MilestoneCard data={damData} />
       <UnlockCard data={damData} />
       <ActivityBlock data={damData} />

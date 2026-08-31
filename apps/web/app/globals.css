@@ -1252,6 +1252,42 @@ table.responses td {
   text-decoration: none;
 }
 
+.doctor-messages {
+  margin: 4px 0 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #eef1ff;
+  border: 1px solid #d7ddfb;
+}
+
+.doctor-messages h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #2f3a66;
+}
+
+.doctor-message + .doctor-message {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #d7ddfb;
+}
+
+.doctor-message-body {
+  margin: 0;
+  color: #1c2530;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+
+.doctor-message-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7684;
+}
+
 .safety-section {
   margin-top: 14px;
 }

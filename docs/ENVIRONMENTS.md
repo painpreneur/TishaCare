@@ -71,7 +71,7 @@ webhook против long-polling, плюс планировщик напоми�
 1. Ветка Neon `staging` от `main`.
 2. Отдельный бот `@…_staging_bot`.
 3. Vercel: переменные в окружении **Preview** (`APP_ENV=staging`, `DATABASE_URL` = пуленая строка ветки `staging`, токен, `WEBAPP_URL` = алиас Preview, свои секреты).
-4. `setWebhook` на `<staging-alias>/api/bot/webhook` с `secret_token` = `TELEGRAM_WEBHOOK_SECRET`.
+4. С загруженным staging-окружением: `npm run webhook:set -w @tishacare/web` — регистрирует вебхук на `${WEBAPP_URL}/api/bot/webhook` с `secret_token = TELEGRAM_WEBHOOK_SECRET`. Проверить: `npm run webhook:info -w @tishacare/web`.
 
 Миграции staging накатываются вручную (`prisma migrate deploy` со staging-строкой и её прямым, не-пуленым `DIRECT_URL`) — Preview-деплой их не трогает, чтобы открытые PR не гоняли миграции по общей ветке.
 
@@ -79,7 +79,7 @@ webhook против long-polling, плюс планировщик напоми�
 1. Ветка Neon `main` / отдельный проект. Строка — **только** в Vercel Production env.
 2. Боевой бот.
 3. Vercel: переменные в окружении **Production** (`APP_ENV=production`, `DATABASE_URL` пуленая, `DIRECT_URL` прямая, `MINIAPP_DEV_BYPASS` не задан).
-4. `setWebhook` на боевой домен с `secret_token`.
+4. С загруженным production-окружением (напр. `vercel env pull` для Production): `npm run webhook:set -w @tishacare/web` на боевой домен. Тот же скрипт — `webhook:info` для проверки, `webhook:delete --force` (осознанно) для снятия.
 
 `vercel-build` применяет `prisma migrate deploy` к ветке Neon `main` на каждом Production-деплое (`VERCEL_ENV=production`); при отсутствии `DIRECT_URL` сборка падает намеренно. Первый деплой после долгого дрейфа лучше сделать вручную (см. [DATABASE.md](DATABASE.md)) со снапшотом БД.
 

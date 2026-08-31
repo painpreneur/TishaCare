@@ -142,6 +142,13 @@ model Patient {
   // tap records a check-in with medsStatus + mood.
   medReminderEnabled Boolean @default(false)
 
+  // Opt-out (default on) for the check-in nudges in the bot: the daily
+  // "not checked in yet today" reminder and the gentler "we haven't heard from
+  // you in a while" re-engagement message.
+  checkinReminderEnabled Boolean @default(true)
+  // Last time the re-engagement message was sent, for its multi-day throttle.
+  reengagedAt DateTime?
+
   clinic          Clinic?                @relation(fields: [clinicId], references: [id])
   careLinks       CareLink[]
   encounters      Encounter[]
@@ -154,6 +161,24 @@ model Patient {
   patientSessions    PatientSession[]
   milestones         PatientMilestone[]
   unlocks            PatientUnlock[]
+  safetyPlan         SafetyPlan?
+}
+
+// The patient's own "plan for a hard moment", filled in calm times and easy to
+// return to later. Free text, one per patient, no scoring and no gamification.
+model SafetyPlan {
+  id           String   @id @default(cuid())
+  patientId    String   @unique
+  // Личные признаки, что становится хуже.
+  warningSigns String?
+  // Что помогает, мягкие шаги на сейчас.
+  copingSteps  String?
+  // Кому можно написать или позвонить (свободный текст).
+  contacts     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 // One visit / contact note. Append-only: rows are created, never edited or

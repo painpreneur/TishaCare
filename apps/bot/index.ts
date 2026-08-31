@@ -6,6 +6,7 @@ import {
   sendDueCheckinReminders,
   sendDueMedReminders,
   sendDueEncounterReminders,
+  sendDueReengagement,
 } from "@tishacare/bot-core";
 
 // apps/bot is the local dev loop only (long-polling). Production traffic is
@@ -41,6 +42,7 @@ if (process.env.ENABLE_LOCAL_REMINDERS === "1") {
     sendDueCheckinReminders(bot.telegram);
     sendDueMedReminders(bot.telegram);
     sendDueEncounterReminders(bot.telegram);
+    sendDueReengagement(bot.telegram);
   });
   console.log("[reminders] local scheduler enabled (daily 20:00)");
 } else {

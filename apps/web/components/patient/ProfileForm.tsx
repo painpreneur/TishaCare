@@ -12,6 +12,7 @@ interface Profile {
   inviteCode: string;
   doctorConnected: boolean;
   email: string | null;
+  checkinReminderEnabled: boolean;
 }
 
 const MIN_BIRTH_DATE = "1920-01-01";
@@ -42,6 +43,8 @@ function ProfileFormInner() {
   const [linkPassword, setLinkPassword] = useState("");
   const [linking, setLinking] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+
+  const [reminderSaving, setReminderSaving] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -75,6 +78,18 @@ function ProfileFormInner() {
     }
     setLinkPassword("");
     setProfile((p) => (p ? { ...p, email: linkEmail.trim().toLowerCase() } : p));
+  }
+
+  async function setReminderPref(next: boolean) {
+    if (!name.trim() || !birthDate) return;
+    setReminderSaving(true);
+    setProfile((p) => (p ? { ...p, checkinReminderEnabled: next } : p));
+    await fetch("/api/miniapp/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...miniAppAuthHeaders() },
+      body: JSON.stringify({ name, birthDate, checkinReminderEnabled: next }),
+    }).catch(() => {});
+    setReminderSaving(false);
   }
 
   async function save() {
@@ -156,6 +171,25 @@ function ProfileFormInner() {
           </p>
         )}
       </div>
+
+      {!onboarding && (
+        <div className="miniapp-card" style={{ marginTop: 16 }}>
+          <h2>Напоминания</h2>
+          <label className="choice">
+            <input
+              type="checkbox"
+              checked={profile.checkinReminderEnabled}
+              disabled={reminderSaving}
+              onChange={(e) => setReminderPref(e.target.checked)}
+            />
+            Напоминать о чек-ине в боте
+          </label>
+          <p className="hint">
+            Тиша иногда напишет, если давно не было отметок. Без счётчиков и давления, можно
+            выключить.
+          </p>
+        </div>
+      )}
 
       {!onboarding && (
         <div className="miniapp-card" style={{ marginTop: 16 }}>

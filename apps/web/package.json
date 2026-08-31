@@ -8,7 +8,10 @@
     "vercel-build": "node scripts/vercel-build.mjs",
     "start": "next start",
     "lint": "next lint --max-warnings=0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "webhook:info": "node scripts/webhook.mjs info",
+    "webhook:set": "node scripts/webhook.mjs set",
+    "webhook:delete": "node scripts/webhook.mjs delete"
   },
   "dependencies": {
     "@tishacare/bot-core": "*",

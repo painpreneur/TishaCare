@@ -2173,3 +2173,185 @@ table.responses td {
     margin-top: 18pt;
   }
 }
+
+/* ---- doctor patient page: two-column layout + collapsible panels ---- */
+.page.page--patient {
+  max-width: 1200px;
+}
+
+.patient-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.patient-grid__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+@media (min-width: 1080px) {
+  .patient-grid {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+/* inside the grid, spacing comes from the column's gap */
+.patient-grid .panel {
+  margin-bottom: 0;
+}
+
+.zone-label {
+  margin: 8px 2px 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #95a0b0;
+}
+.patient-grid__col > .zone-label:first-child {
+  margin-top: 2px;
+}
+
+.panel--pinned h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4f6bfe;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f4f6fa;
+  border: 1px solid #e4e8ef;
+  color: #6b7684;
+  white-space: nowrap;
+}
+.chip b {
+  font-weight: 600;
+  color: #1f2733;
+}
+.chip--warn {
+  background: #f9efe0;
+  border-color: #ecca9c;
+  color: #a5641a;
+}
+.chip--warn b {
+  color: #a5641a;
+}
+.chip--accent {
+  background: #eef1ff;
+  border-color: #c3ccfb;
+  color: #3550e6;
+}
+.chip--accent b {
+  color: #3550e6;
+}
+
+.panel--fold {
+  padding: 0;
+  overflow: hidden;
+}
+
+.panel__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  min-height: 48px;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.panel__toggle:hover .panel__title {
+  color: #3550e6;
+}
+.panel__toggle:focus-visible {
+  outline: 2px solid #4f6bfe;
+  outline-offset: -2px;
+}
+
+.panel__chev {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #95a0b0;
+  transition: transform 0.15s ease;
+}
+.panel--fold.is-open .panel__chev {
+  transform: rotate(90deg);
+}
+
+.panel__title {
+  flex: 0 0 auto;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  color: #6b7684;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel__count {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-size: 11.5px;
+  color: #6b7684;
+  background: #f4f6fa;
+  border: 1px solid #e4e8ef;
+  border-radius: 999px;
+  padding: 1px 8px;
+  min-width: 24px;
+  text-align: center;
+}
+.panel__summary + .panel__count {
+  margin-left: 0;
+}
+.panel__count--warn {
+  color: #a5641a;
+  background: #f9efe0;
+  border-color: #ecca9c;
+}
+
+.panel__body {
+  padding: 4px 18px 20px;
+  border-top: 1px solid #e4e8ef;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel__chev {
+    transition: none;
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}

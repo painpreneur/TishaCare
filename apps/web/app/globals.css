@@ -190,6 +190,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   margin-bottom: 16px;
 }
 
@@ -2553,4 +2555,18 @@ table.responses td {
 }
 .doc-panel .triage-flags {
   font-size: 13.5px;
+}
+
+/* doctor panel on a phone: keep the header compact */
+@media (max-width: 560px) {
+  .topbar {
+    padding: 12px 16px;
+    gap: 8px 10px;
+  }
+  .topbar-doctor {
+    display: none;
+  }
+  .doc-panel .page {
+    padding: 20px 16px;
+  }
 }

@@ -2397,3 +2397,46 @@ table.responses td {
 .triage-callout li::before {
   content: "• ";
 }
+
+/* dashboard "Итоги недели" digest */
+.week-digest {
+  padding: 14px 20px;
+}
+.week-digest > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.week-digest > summary::-webkit-details-marker {
+  display: none;
+}
+.week-digest > summary::before {
+  content: "▶";
+  font-size: 10px;
+  color: #95a0b0;
+  transition: transform 0.15s ease;
+}
+.week-digest[open] > summary::before {
+  transform: rotate(90deg);
+}
+.week-digest-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.week-digest-list {
+  margin: 10px 0 2px;
+  padding-left: 20px;
+  font-size: 13.5px;
+  color: #33404f;
+  line-height: 1.6;
+}
+.week-digest-list li {
+  margin: 5px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .week-digest > summary::before {
+    transition: none;
+  }
+}

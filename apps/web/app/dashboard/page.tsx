@@ -48,7 +48,9 @@ export default async function DashboardPage() {
   const licenseInactive = clinicLicenseInactive(doctor);
   const clinicAdmin = isClinicAdmin(doctor);
 
-  const [links, pending, planned] = await Promise.all([
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [links, pending, planned, encountersLoggedThisWeek] = await Promise.all([
     prisma.careLink.findMany({
       where: { doctorId: doctor.id, status: { in: [...DOCTOR_VISIBLE_STATUSES] } },
       include: {
@@ -78,6 +80,9 @@ export default async function DashboardPage() {
       orderBy: { date: "asc" },
       include: { patient: { select: { id: true, name: true } } },
     }),
+    prisma.encounter.count({
+      where: { doctorId: doctor.id, status: "done", createdAt: { gte: weekAgo } },
+    }),
   ]);
 
   const startOfToday = new Date();
@@ -102,6 +107,56 @@ export default async function DashboardPage() {
   const rest = assessed
     .filter((a) => a.flags.length === 0)
     .sort((a, b) => (b.lastSignalAt ?? 0) - (a.lastSignalAt ?? 0));
+
+  // "Итоги недели" — what moved in the last 7 days, so a Monday visit starts
+  // with a recap instead of a re-scan. Every line is derived, nothing stored.
+  const wk = weekAgo.getTime();
+  const newPatients = links
+    .filter((l) => l.createdAt.getTime() >= wk)
+    .map((l) => l.patient.name);
+  const questionnairePatients = [
+    ...new Set(
+      links
+        .filter((l) => l.patient.responses.some((r) => r.completedAt.getTime() >= wk))
+        .map((l) => l.patient.name),
+    ),
+  ];
+  const questionnaireCount = links.reduce(
+    (n, l) => n + l.patient.responses.filter((r) => r.completedAt.getTime() >= wk).length,
+    0,
+  );
+  const weekAhead = startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000;
+  const appointmentsAhead = upcoming.filter((e) => e.date.getTime() <= weekAhead).length;
+  const silentPatients = attention
+    .filter((a) => a.flags.some((f) => f.kind === "silent"))
+    .map((a) => a.patient.name);
+  const poorTolerancePatients = attention
+    .filter((a) => a.flags.some((f) => f.kind === "poor_tolerability"))
+    .map((a) => a.patient.name);
+
+  const digestLines: string[] = [];
+  if (newPatients.length > 0) {
+    digestLines.push(`Новые пациенты: ${newPatients.length} (${newPatients.join(", ")})`);
+  }
+  if (questionnaireCount > 0) {
+    digestLines.push(
+      `Опросники: ${questionnaireCount} за неделю, от ${questionnairePatients.length} ${
+        questionnairePatients.length === 1 ? "пациента" : "пациентов"
+      }`,
+    );
+  }
+  if (encountersLoggedThisWeek > 0 || appointmentsAhead > 0) {
+    const parts: string[] = [];
+    if (encountersLoggedThisWeek > 0) parts.push(`${encountersLoggedThisWeek} записано за неделю`);
+    if (appointmentsAhead > 0) parts.push(`${appointmentsAhead} на ближайшие 7 дней`);
+    digestLines.push(`Приёмы: ${parts.join(", ")}`);
+  }
+  if (silentPatients.length > 0) {
+    digestLines.push(`Замолчали: ${silentPatients.join(", ")}`);
+  }
+  if (poorTolerancePatients.length > 0) {
+    digestLines.push(`Отмечена плохая переносимость: ${poorTolerancePatients.join(", ")}`);
+  }
 
   function statusBadge(link: (typeof links)[number]) {
     if (link.status === "paused") {
@@ -129,6 +184,25 @@ export default async function DashboardPage() {
       )}
 
       {links.length > 0 && <DoctorConnectCode code={doctor.connectCode} variant="inline" />}
+
+      {links.length > 0 && (
+        <details className="panel week-digest" open>
+          <summary>
+            <span className="week-digest-title">Итоги недели</span>
+          </summary>
+          {digestLines.length === 0 ? (
+            <p className="hint" style={{ marginTop: 10 }}>
+              За последние 7 дней без заметных изменений.
+            </p>
+          ) : (
+            <ul className="week-digest-list">
+              {digestLines.map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </details>
+      )}
 
       {upcoming.length > 0 && (
         <div className="panel">

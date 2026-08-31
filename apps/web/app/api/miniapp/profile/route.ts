@@ -16,6 +16,7 @@ function profileDto(patient: Patient, doctorConnected: boolean) {
     // Whether a web-portal login is already set up; the address itself, so the
     // profile screen can show it.
     email: patient.email,
+    checkinReminderEnabled: patient.checkinReminderEnabled,
   };
 }
 
@@ -58,7 +59,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Не авторизованы" }, { status: 401 });
   }
 
-  const { name, birthDate } = await req.json();
+  const { name, birthDate, checkinReminderEnabled } = await req.json();
 
   if (!name?.trim()) {
     return NextResponse.json({ error: "Введите имя" }, { status: 400 });
@@ -73,7 +74,11 @@ export async function PATCH(req: NextRequest) {
 
   const patient = await prisma.patient.update({
     where: { id: auth.patientId },
-    data: { name: name.trim(), birthDate: parsedBirthDate },
+    data: {
+      name: name.trim(),
+      birthDate: parsedBirthDate,
+      ...(typeof checkinReminderEnabled === "boolean" ? { checkinReminderEnabled } : {}),
+    },
   });
 
   return NextResponse.json({

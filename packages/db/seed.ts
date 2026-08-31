@@ -293,6 +293,15 @@ async function main() {
     ],
   });
 
+  await prisma.safetyPlan.create({
+    data: {
+      patientId: patients[0].id,
+      warningSigns: "Перестаю спать, отменяю встречи, всё раздражает, мысли крутятся по кругу.",
+      copingSteps: "Выйти на улицу на 10 минут. Написать сестре. Лечь пораньше. Сообщить врачу.",
+      contacts: "Сестра Аня, +7 900 000-00-00. Врач через приложение.",
+    },
+  });
+
   const TAG_POOL = ["calm", "anxious", "activated", "slowed", "irritable", "mixed"];
   for (const [pIndex, patient] of patients.entries()) {
     const checkInOps = [];

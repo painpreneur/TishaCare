@@ -1123,6 +1123,72 @@ table.responses td {
   margin: 4px 0 16px;
 }
 
+.checkin-done-safety {
+  font-size: 14px;
+  color: #465063;
+  margin: 0 0 16px;
+}
+
+/* Safety plan */
+
+.patient-home-safety {
+  display: block;
+  margin: 4px 0 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f4f6f9;
+  border: 1px solid #e6eaf0;
+  color: #465063;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.safety-section {
+  margin-top: 14px;
+}
+
+.safety-section h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.safety-text {
+  white-space: pre-wrap;
+  color: #2f3745;
+  margin: 0;
+}
+
+.safety-emergency {
+  margin-top: 16px;
+  border: 1px solid #f4d3c1;
+  background: #fdf6f2;
+}
+
+.safety-contacts {
+  list-style: none;
+  margin: 6px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.safety-contacts li {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.safety-contacts li span {
+  color: #6b7684;
+  font-size: 12px;
+}
+
+.safety-contacts li strong {
+  font-size: 16px;
+  color: #1c2530;
+}
+
 .checkin-today {
   list-style: none;
   margin: 6px 0 0;

@@ -120,6 +120,12 @@ export default function PatientHome({
           ⚙
         </Link>
       </div>
+      <Link
+        href={withDevTelegramIdParam(`${base}/safety`)}
+        className="patient-home-safety"
+      >
+        План на трудный момент
+      </Link>
       <MilestoneCard data={damData} />
       <UnlockCard data={damData} />
       <ActivityBlock data={damData} />

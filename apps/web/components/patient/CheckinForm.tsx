@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { miniAppAuthHeaders } from "@/lib/miniappClient";
+import Link from "next/link";
+import { miniAppAuthHeaders, withDevTelegramIdParam } from "@/lib/miniappClient";
+import { usePatientBasePath } from "@/lib/patientPortal";
 import BackLink from "@/components/miniapp/BackLink";
 import {
   MOOD_SCALE,
@@ -48,6 +50,7 @@ const STEP_TITLE: Record<Step, string> = {
 
 // Shared by /miniapp/checkin and /app/checkin.
 export default function CheckinForm() {
+  const base = usePatientBasePath();
   const [mode, setMode] = useState<Mode>("moment");
   const [stepIdx, setStepIdx] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
@@ -208,6 +211,12 @@ export default function CheckinForm() {
             </div>
             <h1>Готово, я записал ваши ответы</h1>
             {recap && <p className="checkin-done-recap">{recap}</p>}
+            {mood !== null && mood <= -1 && (
+              <p className="checkin-done-safety">
+                Если сейчас тяжело, можно открыть{" "}
+                <Link href={withDevTelegramIdParam(`${base}/safety`)}>план на трудный момент</Link>.
+              </p>
+            )}
             <button className="btn-primary btn-inline" onClick={reset}>
               Отметить ещё
             </button>

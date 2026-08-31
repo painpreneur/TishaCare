@@ -19,7 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="brand">TishaCare</div>
           <div className="clinic">{doctor.clinic?.name ?? "Частная практика"}</div>
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="topbar-actions">
           <span style={{ fontSize: 13, color: "#465063" }}>{doctor.name}</span>
           {clinicAdmin && (
             <Link href="/dashboard/clinic" className="logout-btn" style={{ textDecoration: "none" }}>

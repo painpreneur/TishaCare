@@ -39,6 +39,7 @@ export default function CollapsiblePanel({
   count,
   countTone,
   defaultOpen = false,
+  forceOpen = false,
   children,
 }: {
   id: string;
@@ -49,19 +50,27 @@ export default function CollapsiblePanel({
   count?: string | number;
   countTone?: "warn";
   defaultOpen?: boolean;
+  /** open on mount and scroll into view, ignoring stored state (deep-link focus) */
+  forceOpen?: boolean;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen || forceOpen);
   // StrictMode invokes the effect twice in dev; only the first read should win
   // so a fast toggle right after mount is not clobbered.
   const restored = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
+    if (forceOpen) {
+      setOpen(true);
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const saved = readState(id);
     if (saved !== undefined) setOpen(saved);
-  }, [id]);
+  }, [id, forceOpen]);
 
   function toggle() {
     setOpen((prev) => {
@@ -72,7 +81,7 @@ export default function CollapsiblePanel({
   }
 
   return (
-    <section className={`panel panel--fold ${open ? "is-open" : ""}`}>
+    <section ref={sectionRef} id={id} className={`panel panel--fold ${open ? "is-open" : ""}`}>
       <button
         type="button"
         className="panel__toggle"

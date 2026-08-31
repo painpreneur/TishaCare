@@ -34,6 +34,7 @@ import CognitiveCategoryChart from "@/components/CognitiveCategoryChart";
 import WellbeingChart from "@/components/WellbeingChart";
 import { toWellbeingSeries } from "@/lib/wellbeing";
 import { buildPatientInsights } from "@/lib/insights";
+import { assessPatient } from "@/lib/triage";
 import { doctorDamLine } from "@/lib/gamification";
 import { medsToNumber } from "@/lib/checkin";
 import { parseEmotions, emotionLabels } from "@/lib/thoughts";
@@ -52,7 +53,13 @@ function formatShortDate(date: Date): string {
   return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
-export default async function PatientPage({ params }: { params: { id: string } }) {
+export default async function PatientPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { focus?: string };
+}) {
   const doctor = await getCurrentDoctor();
   if (!doctor) return null;
 
@@ -102,6 +109,18 @@ export default async function PatientPage({ params }: { params: { id: string } }
   const wellbeingSeries = toWellbeingSeries(patient.checkIns, patient.sleepEntries);
   const insights = buildPatientInsights(patient.checkIns, patient.responses);
   const damLine = doctorDamLine(patient.checkIns, patient.responses);
+
+  // Same triage read as the dashboard "Требуют внимания" block, shown here at
+  // the top of the record so the reason a patient was surfaced is on the page.
+  const triage = assessPatient({
+    checkIns: patient.checkIns,
+    responses: patient.responses,
+    medications: patient.medications.filter((m) => m.status === "active"),
+  });
+
+  // A dashboard attention card can deep-link with ?focus=<panelId> so the
+  // relevant block opens straight away (see FOCUS_BY_FLAG on the dashboard).
+  const focusPanel = searchParams.focus ?? null;
 
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
@@ -303,10 +322,21 @@ export default async function PatientPage({ params }: { params: { id: string } }
         </p>
       )}
 
-      <div className="patient-grid">
-        <div className="patient-grid__col">
+      <div className="patient-record-grid">
+        <div className="patient-record-grid__col">
           <section className="panel panel--pinned">
             <h3>Обзор</h3>
+
+            {triage.flags.length > 0 && (
+              <div className="triage-callout">
+                <h4>Требуют внимания</h4>
+                <ul>
+                  {triage.flags.map((f) => (
+                    <li key={f.kind}>{f.label}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="chip-row">
               {overviewChips.map((c) => (
@@ -364,6 +394,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
               id="scales"
               title="Динамика по шкалам"
               defaultOpen
+              forceOpen={focusPanel === "scales"}
               summary={scaleNames.join(" · ")}
               count={scaleNames.length}
             >
@@ -434,6 +465,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
             id="responses"
             title="Результаты опросников"
             defaultOpen
+            forceOpen={focusPanel === "responses"}
             summary={responsesSummary}
             count={patient.responses.length}
           >
@@ -472,6 +504,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
             <CollapsiblePanel
               id="cognitive"
               title="Когнитивный тест: последний результат"
+              forceOpen={focusPanel === "cognitive"}
               summary={cognitiveSummary}
               count={cognitiveInterpretation.categories.length}
               countTone={cognitiveTone}
@@ -509,10 +542,15 @@ export default async function PatientPage({ params }: { params: { id: string } }
           )}
         </div>
 
-        <div className="patient-grid__col">
+        <div className="patient-record-grid__col">
           <p className="zone-label">Ведение</p>
 
-          <CollapsiblePanel id="anamnesis" title="Анамнез" summary={anamnesisSummary}>
+          <CollapsiblePanel
+            id="anamnesis"
+            title="Анамнез"
+            forceOpen={focusPanel === "anamnesis"}
+            summary={anamnesisSummary}
+          >
             <EditAnamnesis
               patientId={patient.id}
               anamnesis={patient.anamnesis}
@@ -532,6 +570,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           <CollapsiblePanel
             id="medications"
             title="Медикаменты"
+            forceOpen={focusPanel === "medications"}
             summary={medsSummary}
             count={patient.medications.length}
             countTone={poorlyToleratedNames.length > 0 ? "warn" : undefined}
@@ -602,6 +641,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           <CollapsiblePanel
             id="encounters"
             title="Приёмы и встречи"
+            forceOpen={focusPanel === "encounters"}
             summary={encSummary}
             count={patient.encounters.length}
           >
@@ -650,6 +690,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           <CollapsiblePanel
             id="messages"
             title="Сообщения пациенту"
+            forceOpen={focusPanel === "messages"}
             summary={messagesSummary}
             count={patient._count.doctorNotes}
             countTone={unreadNotes > 0 ? "warn" : undefined}
@@ -672,6 +713,7 @@ export default async function PatientPage({ params }: { params: { id: string } }
           <CollapsiblePanel
             id="thoughts"
             title="Дневник мыслей"
+            forceOpen={focusPanel === "thoughts"}
             summary={thoughtsSummary}
             count={patient._count.thoughts}
           >

@@ -298,7 +298,7 @@ a {
 .patient-home-btn {
   position: fixed;
   right: 12px;
-  bottom: clamp(88px, 26%, 300px);
+  bottom: clamp(64px, 19%, 220px);
   z-index: 30;
   display: inline-flex;
   align-items: center;

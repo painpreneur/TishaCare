@@ -55,14 +55,16 @@ export default function DoctorPatientMessages({
     <div>
       {canSend ? (
         <>
-          <textarea
-            rows={3}
-            maxLength={DOCTOR_NOTE_MAX}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Короткое сообщение пациенту, до 500 символов. Ответить он не сможет."
-          />
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
+          <div className="field" style={{ marginBottom: 0 }}>
+            <textarea
+              rows={4}
+              maxLength={DOCTOR_NOTE_MAX}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Короткое сообщение пациенту, до 500 символов. Ответить он не сможет."
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
             <button
               className="btn-primary btn-inline"
               onClick={send}
